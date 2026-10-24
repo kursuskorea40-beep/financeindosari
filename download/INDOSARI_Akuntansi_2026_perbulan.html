@@ -7,6 +7,7 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/hyperformula@2.7.0/dist/hyperformula.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
   body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
   .scrollbar-thin::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -851,7 +852,10 @@ function renderRincianBulan(type) {
         <label class="text-sm font-medium text-slate-700">Bulan:</label>
         <select id="rincMonthSel" class="select-input">${monthOpts}</select>
       </div>
-      <button id="btnTambahTx" class="inline-flex items-center gap-1.5 rounded-md bg-sky-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-sky-700">+ Tambah Transaksi</button>
+      <div class="flex gap-2">
+        <button id="btnImportTx" class="inline-flex items-center gap-1.5 rounded-md border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-100">⬆ Import Excel/CSV</button>
+        <button id="btnTambahTx" class="inline-flex items-center gap-1.5 rounded-md bg-sky-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-sky-700">+ Tambah Transaksi</button>
+      </div>
     </div>
 
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
@@ -953,6 +957,7 @@ function renderRincianBulan(type) {
   });
 
   document.getElementById("btnTambahTx").onclick = () => showAddTxDialog(type, month);
+  document.getElementById("btnImportTx").onclick = () => showImportDialog(type, { month });
   document.getElementById("rincSub").textContent = `Mode Per Bulan — ${month===0?'Semua Bulan (YTD)':BULAN_NAMES[month-1]} 2026: ${totalTx} transaksi, Total Rp ${fmtRupiah(total)}`;
 }
 
@@ -1269,7 +1274,10 @@ function renderPersediaanBulan() {
         <label class="text-sm font-medium text-slate-700">Bulan:</label>
         <select id="persMonthSel" class="select-input">${monthOpts}</select>
       </div>
-      <button id="btnTambahBarangPers" class="inline-flex items-center gap-1.5 rounded-md bg-sky-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-sky-700">+ Tambah Item</button>
+      <div class="flex gap-2">
+        <button id="btnImportPers" class="inline-flex items-center gap-1.5 rounded-md border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-100">⬆ Import Excel/CSV</button>
+        <button id="btnTambahBarangPers" class="inline-flex items-center gap-1.5 rounded-md bg-sky-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-sky-700">+ Tambah Item</button>
+      </div>
     </div>
 
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
@@ -1317,6 +1325,7 @@ function renderPersediaanBulan() {
     </div>`;
 
   document.getElementById("persMonthSel").onchange = (e) => { persMonth = parseInt(e.target.value,10); renderPersediaanBulan(); };
+  document.getElementById("btnImportPers").onclick = () => showImportDialog("persediaan", { month: persMonth });
 
   const tbody = document.getElementById("persBody_tbody");
   items.forEach((r, idx) => {
@@ -1606,6 +1615,7 @@ function renderMasterData() {
             <button class="tab-btn ${masterTab==='supplier'?'active':''}" data-tab="supplier">🚚 Supplier</button>
             <button class="tab-btn ${masterTab==='pelanggan'?'active':''}" data-tab="pelanggan">👥 Pelanggan</button>
           </div>
+          <button id="btnImportMaster" class="inline-flex items-center gap-1.5 rounded-md border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-100">⬆ Import</button>
           <button id="btnTambahMaster" class="inline-flex items-center gap-1.5 rounded-md bg-sky-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-sky-700">+ Tambah ${totalLabel}</button>
         </div>
       </div>
@@ -1639,6 +1649,13 @@ function renderMasterData() {
   }
 
   document.getElementById("btnTambahMaster").onclick = () => showMasterDialog(masterTab, -1);
+  document.getElementById("btnImportMaster").onclick = () => {
+    // Map tab to import type
+    const importType = masterTab === "barang" ? "master-barang"
+      : masterTab === "supplier" ? "master-supplier"
+      : "master-pelanggan";
+    showImportDialog(importType, {});
+  };
 
   const tbody = document.getElementById("masterTbody");
   filtered.forEach((r, idx) => {
@@ -1747,6 +1764,347 @@ function showMasterDialog(type, editIdx) {
     close();
     renderMasterData();
     showToast(isEdit ? "✓ Diupdate" : "✓ Ditambahkan");
+  };
+}
+
+// ============================================================
+// 13b. GENERIC IMPORT EXCEL/CSV — for Penjualan, Pembelian, Persediaan, Master Data
+// ============================================================
+// Column mapping config per import type. Accepts many header variations (case-insensitive).
+const IMPORT_CONFIG = {
+  penjualan: {
+    label: "Penjualan",
+    fields: [
+      { key: "tanggal",      aliases: ["tanggal","tgl","date","tanggal nota"], required: true, type: "date" },
+      { key: "noNota",       aliases: ["no nota","nota","no_nota","nomor nota","no nota kecil","no nota besar","invoice"], required: false },
+      { key: "namaBarang",   aliases: ["nama barang","barang","item","nama"], required: true },
+      { key: "satuan",       aliases: ["satuan","sat","unit","uom"], required: false, default: "Kg" },
+      { key: "kuantitas",    aliases: ["kuantitas","qty","quantity","jumlah","vol"], required: true, type: "number" },
+      { key: "hargaSatuan",  aliases: ["harga satuan","harga","price","harga/kg","harga per kg"], required: true, type: "number" },
+      { key: "kategori",     aliases: ["kategori","jenis","tipe","type"], required: false, default: "NOTA KECIL" },
+      { key: "pelanggan",    aliases: ["pelanggan","customer","nama pelanggan","pembeli","konsumen"], required: false },
+      { key: "catatan",      aliases: ["catatan","note","keterangan","desc","deskripsi"], required: false },
+    ],
+  },
+  pembelian: {
+    label: "Pembelian",
+    fields: [
+      { key: "tanggal",      aliases: ["tanggal","tgl","date"], required: true, type: "date" },
+      { key: "noFaktur",     aliases: ["no faktur","faktur","no_faktur","nomor faktur","invoice"], required: false },
+      { key: "namaBarang",   aliases: ["nama barang","barang","item","nama"], required: true },
+      { key: "satuan",       aliases: ["satuan","sat","unit","uom"], required: false, default: "Kg" },
+      { key: "kuantitas",    aliases: ["kuantitas","qty","quantity","jumlah","vol"], required: true, type: "number" },
+      { key: "hargaSatuan",  aliases: ["harga satuan","harga","price","harga/kg"], required: true, type: "number" },
+      { key: "supplier",     aliases: ["supplier","vendor","nama supplier","pemasok"], required: false },
+      { key: "isLunas",      aliases: ["lunas","status","is lunas","status lunas","bayar"], required: false, type: "lunas" },
+      { key: "jatuhTempo",   aliases: ["jatuh tempo","due date","tempo","jatuh tempo"], required: false, type: "date" },
+      { key: "catatan",      aliases: ["catatan","note","keterangan","desc"], required: false },
+    ],
+  },
+  persediaan: {
+    label: "Persediaan",
+    fields: [
+      { key: "kode",         aliases: ["kode","code","id","kd"], required: true },
+      { key: "nama",         aliases: ["nama","nama barang","barang","item","name"], required: true },
+      { key: "satuan",       aliases: ["satuan","sat","unit","uom"], required: false, default: "Kg" },
+      { key: "awalQty",      aliases: ["awal qty","awal kuantitas","qty awal","beginning qty","qty awal bulan"], required: false, type: "number", default: 0 },
+      { key: "awalNilai",    aliases: ["awal nilai","nilai awal","beginning value","saldo awal nilai"], required: false, type: "number", default: 0 },
+      { key: "masukQty",     aliases: ["masuk qty","in qty","qty masuk","penerimaan qty","in"], required: false, type: "number", default: 0 },
+      { key: "masukNilai",   aliases: ["masuk nilai","in value","nilai masuk","penerimaan nilai"], required: false, type: "number", default: 0 },
+      { key: "keluarQty",    aliases: ["keluar qty","out qty","qty keluar","pengeluaran qty","out"], required: false, type: "number", default: 0 },
+      { key: "keluarNilai",  aliases: ["keluar nilai","out value","nilai keluar","pengeluaran nilai"], required: false, type: "number", default: 0 },
+    ],
+  },
+  "master-barang": {
+    label: "Master Barang",
+    fields: [
+      { key: "kode",   aliases: ["kode","code","id","kd"], required: false },
+      { key: "nama",   aliases: ["nama","nama barang","barang","item","name"], required: true },
+      { key: "satuan", aliases: ["satuan","sat","unit","uom"], required: false, default: "Kg" },
+    ],
+  },
+  "master-supplier": {
+    label: "Master Supplier",
+    fields: [
+      { key: "nama", aliases: ["nama","name","supplier","vendor","nama supplier"], required: true },
+    ],
+  },
+  "master-pelanggan": {
+    label: "Master Pelanggan",
+    fields: [
+      { key: "nama", aliases: ["nama","name","pelanggan","customer","nama pelanggan"], required: true },
+    ],
+  },
+};
+
+// Normalize header text: lowercase + trim + remove extra spaces
+function normHeader(h) {
+  return String(h||"").toLowerCase().trim().replace(/\s+/g," ").replace(/[_\-./]/g," ").trim();
+}
+
+// Parse uploaded file (CSV or Excel) into array of objects using header row
+function parseImportFile(file, cb) {
+  const ext = (file.name.split(".").pop()||"").toLowerCase();
+  if (ext === "xlsx" || ext === "xls" || ext === "xlsm") {
+    // Use SheetJS
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target.result);
+        const wb = XLSX.read(data, { type: "array", cellDates: true });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json(ws, { defval: "", raw: false });
+        cb(null, json);
+      } catch (err) { cb(err.message || String(err), null); }
+    };
+    reader.onerror = () => cb("Gagal membaca file", null);
+    reader.readAsArrayBuffer(file);
+  } else {
+    // CSV / TSV — use PapaParse
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: (results) => cb(null, results.data),
+      error: (err) => cb(err.message||String(err), null),
+    });
+  }
+}
+
+// Map parsed rows to schema using IMPORT_CONFIG; returns { rows, errors, missing }
+function mapImportRows(importType, parsedRows) {
+  const cfg = IMPORT_CONFIG[importType];
+  if (!cfg) return { rows: [], errors: ["Tipe import tidak dikenal"], missing: [] };
+  if (!parsedRows || parsedRows.length === 0) return { rows: [], errors: ["File kosong / tidak ada baris data"], missing: [] };
+
+  // Build alias-to-field map from actual headers
+  const headers = Object.keys(parsedRows[0]);
+  const headerMap = {}; // aliasNorm -> fieldKey
+  const missing = [];
+  cfg.fields.forEach(f => {
+    let found = false;
+    for (const h of headers) {
+      const hn = normHeader(h);
+      if (f.aliases.includes(hn)) {
+        headerMap[h] = f.key;
+        found = true;
+        break;
+      }
+    }
+    if (!found && f.required) missing.push(f.key + " (cth: " + f.aliases.join(" / ") + ")");
+  });
+  if (missing.length > 0) {
+    return { rows: [], errors: ["Kolom wajib tidak ditemukan: " + missing.join("; ")], missing };
+  }
+
+  const rows = [];
+  const errors = [];
+  parsedRows.forEach((r, idx) => {
+    const row = {};
+    let hasData = false;
+    cfg.fields.forEach(f => {
+      let val = undefined;
+      for (const h of headers) {
+        if (headerMap[h] === f.key) { val = r[h]; break; }
+      }
+      // Type conversion
+      if (f.type === "number") {
+        if (val === undefined || val === "" || val === null) val = f.default || 0;
+        else {
+          const cleaned = String(val).replace(/[^0-9,\-\.]/g,"").replace(/\.(?=\d{3}(\D|$))/g,"").replace(",",".");
+          val = Number(cleaned);
+          if (isNaN(val)) val = f.default || 0;
+        }
+      } else if (f.type === "date") {
+        if (val === undefined || val === "") val = f.default || null;
+        else {
+          // Try to parse various date formats
+          let d = null;
+          if (val instanceof Date) d = val;
+          else {
+            const s = String(val).trim();
+            // Try YYYY-MM-DD
+            let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+            if (m) d = new Date(s);
+            else {
+              // Try DD/MM/YYYY or DD-MM-YYYY
+              m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+              if (m) {
+                let yr = m[3].length === 2 ? "20"+m[3] : m[3];
+                d = new Date(`${yr}-${m[2].padStart(2,"0")}-${m[1].padStart(2,"0")}T00:00:00`);
+              } else {
+                d = new Date(s);
+              }
+            }
+          }
+          if (d && !isNaN(d.getTime())) val = d.toISOString().slice(0,10);
+          else val = f.default || null;
+        }
+      } else if (f.type === "lunas") {
+        const s = String(val||"").toLowerCase().trim();
+        if (s === "" ) val = false;
+        else val = ["lunas","true","1","yes","y","sudah","l"].includes(s);
+      } else {
+        if (val === undefined || val === "") val = f.default || "";
+        val = String(val).trim();
+      }
+      row[f.key] = val;
+      if (val !== "" && val !== 0 && val !== null && val !== undefined) hasData = true;
+    });
+    if (hasData) rows.push(row);
+    else if (idx === 0) { /* skip totally empty row silently */ }
+  });
+
+  return { rows, errors, missing };
+}
+
+// Generate template file for download (CSV format)
+function downloadTemplate(importType) {
+  const cfg = IMPORT_CONFIG[importType];
+  if (!cfg) return;
+  // Use first alias as column header
+  const headers = cfg.fields.map(f => f.aliases[0]);
+  // Sample row
+  const sample = cfg.fields.map(f => {
+    if (f.type === "number") return f.default || 0;
+    if (f.type === "date") return "2026-01-15";
+    if (f.type === "lunas") return "lunas";
+    if (f.key === "kategori") return "NOTA KECIL";
+    if (f.key === "satuan") return "Kg";
+    if (f.key === "kode") return "A00100";
+    if (f.key === "nama" || f.key === "namaBarang") return "CONTOH BARANG";
+    if (f.key === "pelanggan" || f.key === "supplier") return "CONTOH PARTNER";
+    return "";
+  });
+  const csv = Papa.unparse([headers, sample]);
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `template_${importType}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast(`✓ Template diunduh: ${a.download}`);
+}
+
+// Show import dialog (file picker + preview + append/replace)
+function showImportDialog(importType, opts) {
+  // opts: { month?: number (for persediaan) }
+  const cfg = IMPORT_CONFIG[importType];
+  if (!cfg) { alert("Tipe import tidak dikenal"); return; }
+  const title = `Import Data ${cfg.label}`;
+  const fieldList = cfg.fields.map(f => `<li><code class="bg-slate-100 px-1 rounded">${f.aliases[0]}</code> ${f.required?'<span class="text-rose-600 font-medium">*wajib</span>':'<span class="text-slate-400">opsional</span>'} ${f.type?`<span class="text-slate-400">(${f.type})</span>`:''}</li>`).join("");
+  const html = `
+    <div class="fixed inset-0 bg-black/40 z-40 flex items-center justify-center p-4" id="importOverlay">
+      <div class="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-auto">
+        <div class="px-5 py-3 border-b border-slate-200 flex items-center justify-between">
+          <h3 class="font-bold text-slate-800">${title}</h3>
+          <button id="closeImport" class="text-slate-400 hover:text-slate-700">✕</button>
+        </div>
+        <div class="p-5 space-y-4 text-sm">
+          <div class="bg-sky-50 border border-sky-200 rounded-lg p-3 text-xs text-sky-800">
+            <p class="font-medium mb-1">Petunjuk:</p>
+            <ol class="list-decimal ml-5 space-y-0.5">
+              <li>Download template CSV untuk format yang benar, atau buat file sendiri (kolom wajib di bawah).</li>
+              <li>Format yang didukung: <b>.xlsx</b>, <b>.xls</b>, <b>.csv</b>.</li>
+              <li>Kolom wajib ditandai dengan <span class="text-rose-600">*</span>. Kolom lain opsional.</li>
+              <li>Pilih mode: <b>Append</b> (tambah ke data lama) atau <b>Replace</b> (ganti total).</li>
+              <li>Klik <b>Preview</b> untuk lihat data sebelum disimpan.</li>
+            </ol>
+          </div>
+          <div>
+            <p class="text-xs font-medium text-slate-600 mb-1">Kolom yang dikenali (case-insensitive):</p>
+            <ul class="text-xs text-slate-700 grid grid-cols-2 gap-1">${fieldList}</ul>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-medium text-slate-600 mb-1">Pilih File</label>
+              <input id="importFile" type="file" accept=".csv,.xlsx,.xls,.xlsm,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" class="w-full text-xs border border-slate-300 rounded px-2 py-1.5">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-600 mb-1">Mode Import</label>
+              <select id="importMode" class="w-full border border-slate-300 rounded px-2 py-1.5 text-sm">
+                <option value="append">Append (tambahkan ke data lama)</option>
+                <option value="replace">Replace (ganti semua data)</option>
+              </select>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="btnTemplate" class="inline-flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium hover:bg-slate-50">⬇ Download Template CSV</button>
+            <button id="btnPreview" class="inline-flex items-center gap-1.5 rounded-md border border-sky-300 bg-sky-50 px-3 py-1.5 text-xs font-medium text-sky-700 hover:bg-sky-100">👁 Preview</button>
+            <button id="btnSaveImport" class="inline-flex items-center gap-1.5 rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700 ml-auto">💾 Simpan Import</button>
+          </div>
+          <div id="importStatus" class="text-xs text-slate-500"></div>
+          <div id="importPreview" class="hidden bg-slate-50 border border-slate-200 rounded-lg p-3 overflow-auto max-h-96"></div>
+        </div>
+      </div>
+    </div>`;
+  document.body.insertAdjacentHTML("beforeend", html);
+  let parsedRows = null;
+  let mapped = null;
+  const close = () => document.getElementById("importOverlay").remove();
+  document.getElementById("closeImport").onclick = close;
+  document.getElementById("btnTemplate").onclick = () => downloadTemplate(importType);
+  document.getElementById("btnPreview").onclick = () => {
+    const fileInput = document.getElementById("importFile");
+    if (!fileInput.files[0]) { alert("Pilih file dulu"); return; }
+    document.getElementById("importStatus").textContent = "⏳ Memproses...";
+    parseImportFile(fileInput.files[0], (err, rows) => {
+      if (err) {
+        document.getElementById("importStatus").innerHTML = `<span class="text-rose-600">❌ Error: ${escapeHtml(err)}</span>`;
+        return;
+      }
+      parsedRows = rows;
+      mapped = mapImportRows(importType, rows);
+      if (mapped.errors.length > 0) {
+        document.getElementById("importStatus").innerHTML = `<span class="text-rose-600">❌ ${escapeHtml(mapped.errors.join("; "))}</span>`;
+        document.getElementById("importPreview").classList.add("hidden");
+        return;
+      }
+      const sample = mapped.rows.slice(0, 5);
+      const headers = Object.keys(sample[0] || {});
+      const tableHtml = `
+        <p class="text-xs text-slate-600 mb-2"><b>${mapped.rows.length} baris</b> siap diimport. Menampilkan 5 baris pertama:</p>
+        <table class="tx-table">
+          <thead><tr>${headers.map(h=>`<th>${escapeHtml(h)}</th>`).join("")}</tr></thead>
+          <tbody>
+            ${sample.map(r=>`<tr>${headers.map(h=>`<td>${escapeHtml(String(r[h] ?? ""))}</td>`).join("")}</tr>`).join("")}
+          </tbody>
+        </table>`;
+      document.getElementById("importPreview").innerHTML = tableHtml;
+      document.getElementById("importPreview").classList.remove("hidden");
+      document.getElementById("importStatus").innerHTML = `<span class="text-emerald-600">✓ ${mapped.rows.length} baris siap diimport</span>`;
+    });
+  };
+  document.getElementById("btnSaveImport").onclick = () => {
+    if (!mapped || mapped.rows.length === 0) {
+      alert("Klik Preview dulu untuk parse file, pastikan tidak ada error.");
+      return;
+    }
+    const mode = document.getElementById("importMode").value;
+    let existing = [];
+    // Determine target store based on importType
+    if (importType === "penjualan") existing = getTxData("penjualan");
+    else if (importType === "pembelian") existing = getTxData("pembelian");
+    else if (importType === "persediaan") existing = getPersediaanData(opts.month || persMonth);
+    else if (importType === "master-barang") existing = getMasterData("barang");
+    else if (importType === "master-supplier") existing = getMasterData("supplier");
+    else if (importType === "master-pelanggan") existing = getMasterData("pelanggan");
+    let newData;
+    if (mode === "replace") newData = mapped.rows.slice();
+    else newData = existing.concat(mapped.rows);
+    // Save back
+    if (importType === "penjualan") saveTxData("penjualan", newData);
+    else if (importType === "pembelian") saveTxData("pembelian", newData);
+    else if (importType === "persediaan") savePersediaanData(opts.month || persMonth, newData);
+    else if (importType === "master-barang") saveMasterData("barang", newData);
+    else if (importType === "master-supplier") saveMasterData("supplier", newData);
+    else if (importType === "master-pelanggan") saveMasterData("pelanggan", newData);
+    const added = mapped.rows.length;
+    const totalAfter = newData.length;
+    close();
+    // Re-render current view
+    render();
+    showToast(`✓ ${added} baris diimport (${mode}). Total sekarang: ${totalAfter}`);
   };
 }
 
