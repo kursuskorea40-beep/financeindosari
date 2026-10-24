@@ -1278,6 +1278,7 @@ function renderPersediaanBulan() {
       </div>
       <div class="flex gap-2">
         <button id="btnImportPers" class="inline-flex items-center gap-1.5 rounded-md border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-100">⬆ Import Excel/CSV</button>
+        <button id="btnPasteAccuratePers" class="inline-flex items-center gap-1.5 rounded-md border border-violet-300 bg-violet-50 px-3 py-1.5 text-xs font-medium text-violet-700 hover:bg-violet-100">📋 Paste dari Accurate</button>
         <button id="btnTambahBarangPers" class="inline-flex items-center gap-1.5 rounded-md bg-sky-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-sky-700">+ Tambah Item</button>
       </div>
     </div>
@@ -1328,6 +1329,7 @@ function renderPersediaanBulan() {
 
   document.getElementById("persMonthSel").onchange = (e) => { persMonth = parseInt(e.target.value,10); renderPersediaanBulan(); };
   document.getElementById("btnImportPers").onclick = () => showImportDialog("persediaan", { month: persMonth });
+  document.getElementById("btnPasteAccuratePers").onclick = () => showPasteAccurateDialog("persediaan", { month: persMonth });
 
   const tbody = document.getElementById("persBody_tbody");
   items.forEach((r, idx) => {
@@ -2353,17 +2355,200 @@ function parseAccurateRincianPembelianText(text) {
   return transactions;
 }
 
-function showPasteAccurateDialog(type) {
-  // type: "penjualan" | "pembelian"
+// ============================================================
+// 13e. SMART PARSER — Accurate "Daftar Nilai Persediaan" / "Laporan Persediaan Bulanan" PDF text format
+// ============================================================
+// Tabular format (per item one row). Auto-detects columns from header row.
+// Common reports supported:
+//   1. "Daftar Nilai Persediaan" (snapshot): only KODE + NAMA + SATUAN + QTY + NILAI (akhir)
+//      → parser sets masukQty=akhirQty, masukNilai=akhirNilai, awal=0, keluar=0
+//      → akhir (computed) = awal + masuk - keluar = 0 + akhir - 0 = akhirQty ✓
+//   2. "Laporan Persediaan Bulanan" (full): AWAL QTY/NILAI + MASUK QTY/NILAI + KELUAR QTY/NILAI + AKHIR QTY/NILAI
+//      → parser uses all columns directly
+const PERS_FIELD_ALIASES = {
+  kode:       ["kode", "code", "id", "kd", "kode barang", "no", "item code"],
+  nama:       ["nama", "nama barang", "barang", "item", "name", "nama item", "description", "deskripsi", "keterangan"],
+  satuan:     ["satuan", "sat", "sat.", "unit", "uom", "satuan kecil"],
+  awalQty:    ["awal qty", "awal kuantitas", "qty awal", "kuantitas awal", "beginning qty", "saldo awal qty", "saldo awal", "awal", "sa qty", "saldo awal (qty)"],
+  awalNilai:  ["awal nilai", "nilai awal", "beginning value", "saldo awal nilai", "saldo awal value", "sa value", "saldo awal (nilai)", "awal (nilai)"],
+  masukQty:   ["masuk qty", "in qty", "qty masuk", "kuantitas masuk", "penerimaan qty", "mutasi masuk qty", "mutasi masuk", "in", "masuk"],
+  masukNilai: ["masuk nilai", "in value", "nilai masuk", "penerimaan nilai", "mutasi masuk nilai", "mutasi masuk (nilai)", "masuk (nilai)"],
+  keluarQty:  ["keluar qty", "out qty", "qty keluar", "kuantitas keluar", "pengeluaran qty", "mutasi keluar qty", "mutasi keluar", "out", "keluar"],
+  keluarNilai:["keluar nilai", "out value", "nilai keluar", "pengeluaran nilai", "mutasi keluar nilai", "mutasi keluar (nilai)", "keluar (nilai)"],
+  akhirQty:   ["akhir qty", "akhir kuantitas", "qty akhir", "kuantitas akhir", "ending qty", "saldo akhir qty", "saldo akhir", "stok", "stok qty", "qty", "kuantitas", "saldo", "sisa"],
+  akhirNilai: ["akhir nilai", "nilai akhir", "ending value", "saldo akhir nilai", "saldo akhir value", "nilai", "nilai persediaan", "nilai stok", "saldo akhir (nilai)", "total"],
+  hargaPokok: ["harga pokok", "hpp", "harga satuan", "harga rata-rata", "avg cost", "average cost", "rata-rata"],
+};
+
+function normHeaderStr(h) {
+  return String(h||"").toLowerCase().replace(/\s+/g," ").replace(/[._]/g," ").replace(/\(.*?\)/g, "").trim();
+}
+
+function parseAccuratePersediaanText(text) {
+  const lines = text.split(/\r?\n/);
+  // Find the header row — line containing "kode" or "nama" + at least 1 numeric-value column header
+  let headerIdx = -1;
+  let headerCols = []; // array of {raw, norm}
+  for (let i = 0; i < Math.min(lines.length, 30); i++) {
+    const raw = lines[i];
+    // Skip headers/footers of report
+    if (/^(INDOSARI|Daftar Nilai|Laporan Persediaan|Dari |Cabang|ACCURATE|Tercetak|Halaman|Total )/i.test(raw.trim())) continue;
+    // Skip if no "kode" or "nama" indicator
+    if (!/kode|nama|barang|item|stok|qty/i.test(raw)) continue;
+    // Try to split by 2+ spaces (typical PDF column separation)
+    const cols = raw.split(/\s{2,}/).map(c => c.trim()).filter(c => c.length > 0);
+    if (cols.length < 3) continue;
+    // Normalize and check if at least 2 columns match known field aliases
+    const norms = cols.map(c => normHeaderStr(c));
+    let matchCount = 0;
+    norms.forEach(n => {
+      for (const field of Object.keys(PERS_FIELD_ALIASES)) {
+        if (PERS_FIELD_ALIASES[field].includes(n)) { matchCount++; break; }
+      }
+    });
+    if (matchCount >= 2) {
+      headerIdx = i;
+      headerCols = cols.map((c, idx) => ({ raw: c, norm: norms[idx] }));
+      break;
+    }
+  }
+  if (headerIdx < 0) {
+    console.log("Persediaan parser: header row not found");
+    return [];
+  }
+  // Map header columns to fields
+  const colToField = []; // colToField[i] = field name or null
+  headerCols.forEach((col, idx) => {
+    let matched = null;
+    for (const field of Object.keys(PERS_FIELD_ALIASES)) {
+      if (PERS_FIELD_ALIASES[field].includes(col.norm)) { matched = field; break; }
+    }
+    colToField[idx] = matched;
+  });
+  // Determine which fields we have
+  const hasField = (f) => colToField.includes(f);
+  const hasAwal = hasField("awalQty") || hasField("awalNilai");
+  const hasMasuk = hasField("masukQty") || hasField("masukNilai");
+  const hasKeluar = hasField("keluarQty") || hasField("keluarNilai");
+  const hasAkhir = hasField("akhirQty") || hasField("akhirNilai");
+  const onlyAkhir = hasAkhir && !hasAwal && !hasMasuk && !hasKeluar;
+
+  // Parse each subsequent row until we hit a footer or empty section
+  const items = [];
+  for (let i = headerIdx + 1; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    // Stop on footer / total / next-page header
+    if (/^(ACCURATE|Tercetak|Halaman|Total|INDOSARI|Daftar Nilai|Laporan Persediaan|Dari |Cabang)/i.test(trimmed)) continue;
+    if (/^total/i.test(trimmed)) continue;
+    // Split by 2+ spaces
+    const parts = line.split(/\s{2,}/).map(p => p.trim()).filter(p => p.length > 0);
+    if (parts.length < 2) continue;
+    // If row has fewer parts than header columns, try splitting by single space from the right (amount might have separator)
+    // This is a heuristic; PDF text may have inconsistent spacing
+    // Build item by mapping parts to fields by index (assuming parts align with header cols left-to-right)
+    const item = {
+      kode: "", nama: "", satuan: "Kg",
+      awalQty: 0, awalNilai: 0,
+      masukQty: 0, masukNilai: 0,
+      keluarQty: 0, keluarNilai: 0,
+    };
+    // Strategy: text columns (kode, nama, satuan) take leftmost positions; numeric columns take rightmost positions
+    // Walk left-to-right, but for text fields (kode/nama/satuan) we need to be careful — nama can have multiple words
+    // Better strategy: walk parts; for each part, check the column index against headerCols mapping
+    // If header col is text type (kode/nama/satuan), keep as text
+    // If numeric, parse as number
+    const textFields = ["kode", "nama", "satuan"];
+    let textPartIdx = 0;
+    let numPartIdx = 0;
+    const numFieldList = []; // ordered list of numeric field names from header
+    colToField.forEach(f => { if (f && !textFields.includes(f)) numFieldList.push(f); });
+    // Now walk parts and assign
+    // Heuristic: first 1-3 parts are text (kode, nama, satuan). The rest are numeric.
+    // But nama can have multiple words. Approach: count text fields in header from left
+    const headerTextFields = []; // ordered
+    colToField.forEach((f, idx) => {
+      if (textFields.includes(f)) headerTextFields.push({ idx, field: f });
+    });
+    // Count how many parts to assign to text — but nama can span multiple parts
+    // Simpler: if header has kode, nama, satuan as first 3 cols, then first 1-N parts map to text where N = number of text columns
+    // But if nama is 2 parts (e.g., "ALKOHOL PER BAYI"), we have an off-by-one
+    // Even simpler: if header col is text, assign one part to it. If nama needs more, the parts won't align — fail gracefully
+    for (let p = 0; p < parts.length; p++) {
+      const part = parts[p];
+      // Find which header column this part aligns with
+      // For text fields, use the next text column from header
+      // For numeric fields, use the next numeric column from header
+      // Walk header cols left-to-right
+      // We need a smarter alignment strategy...
+      // For now, let's use a simple greedy approach:
+      //   - If colToField[p] is set, use it
+      //   - If p > headerCols.length, treat as continuation of previous text field
+      if (p < colToField.length) {
+        const f = colToField[p];
+        if (!f) {
+          // Continuation of previous text field
+          if (item.nama && !item.satuan) { item.nama += " " + part; }
+          else if (item.kode && !item.nama) { item.nama = part; }
+          continue;
+        }
+        if (textFields.includes(f)) {
+          item[f] = part;
+        } else {
+          item[f] = parseAccurateNumber(part);
+        }
+      } else {
+        // Extra parts beyond header — append to nama if nama set, else to last text field
+        if (item.nama) item.nama += " " + part;
+        else if (item.kode && !item.nama) item.nama = part;
+      }
+    }
+    // Validate: must have kode OR nama
+    if (!item.kode && !item.nama) continue;
+    // If only akhir present, set masuk = akhir (so computed akhir matches)
+    if (onlyAkhir) {
+      if (hasField("akhirQty")) item.masukQty = item.awalQty === 0 ? (parseAccurateNumber(parts[colToField.indexOf("akhirQty")]) || 0) : 0;
+      // Simpler: just set masukQty = the parsed akhirQty value, masukNilai = parsed akhirNilai
+      // Re-parse to get fresh values
+      const akhirQtyField = colToField.indexOf("akhirQty");
+      const akhirNilaiField = colToField.indexOf("akhirNilai");
+      if (akhirQtyField >= 0 && akhirQtyField < parts.length) {
+        item.masukQty = parseAccurateNumber(parts[akhirQtyField]);
+      }
+      if (akhirNilaiField >= 0 && akhirNilaiField < parts.length) {
+        item.masukNilai = parseAccurateNumber(parts[akhirNilaiField]);
+      }
+    }
+    items.push(item);
+  }
+  console.log(`Persediaan parser: parsed ${items.length} items, header cols: ${headerCols.length}, onlyAkhir=${onlyAkhir}`);
+  return items;
+}
+
+function showPasteAccurateDialog(type, opts = {}) {
+  // type: "penjualan" | "pembelian" | "persediaan"
   const isJual = type === "penjualan";
-  const reportName = isJual ? "Rincian Penjualan per Barang" : "Rincian Pembelian per Barang";
-  const title = `Paste dari Laporan Accurate — ${isJual ? "Penjualan" : "Pembelian"}`;
-  const placeholder = isJual
-    ? "Contoh format yang akan diparse:\n\nALKOHOL\nSI.2026.09.00001 01 Sep 2026 NB. 716 39,25 Ltr 2.198.000\n00051260905 05 Sep 2026 1 Kg 12.000\n166,25 9.310.000\n\nBENZOAT HOLLAND\nSI.2026.09.00002 01 Sep 2026 NB. 715 125 Kg 7.375.000\n..."
-    : "Contoh format yang akan diparse:\n\nALKOHOL\nPI.2026.09.000146 24 Aug 2026 Giro 0058 24,25 Kg 8.108.108,11\n00009260901 01 Sep 2026 1 Kg 12.000\n25,25 8.120.108,11\n\nBENZOAT HOLLAND\nPI.2026.09.000150 09 Sep 2026 Tempo 09 Okt 2026 175 Kg 8.750.000\n...";
-  const tips = isJual
-    ? "Format Penjualan: NB. (Nota Besar) / NT. (Nota Tusil/Kecil) akan otomatis diklasifikasi sebagai NOTA BESAR / NOTA KECIL."
-    : "Format Pembelian: keterangan seperti 'Giro xxx' / 'Tempo dd Mmm yyyy' akan otomatis deteksi sebagai kredit (belum lunas) dengan jatuh tempo. Jika kosong, akan ditandai sebagai tunai (LUNAS). Amount bisa pakai sen (cth: 8.108.108,11).";
+  const isBeli = type === "pembelian";
+  const isPers = type === "persediaan";
+  let reportName, title, placeholder, tips, formatUmum;
+  if (isPers) {
+    reportName = "Daftar Nilai Persediaan / Laporan Persediaan Bulanan";
+    title = `Paste dari Laporan Accurate — Persediaan (${opts.month ? BULAN_NAMES[opts.month-1] : ''} 2026)`;
+    placeholder = "Contoh format yang akan diparse:\n\nKODE      NAMA BARANG                       SATUAN   AWAL QTY   AWAL NILAI   MASUK QTY   MASUK NILAI   KELUAR QTY   KELUAR NILAI   AKHIR QTY   AKHIR NILAI\nA00002    ALKOHOL                           Ltr      157,25     6.374.998    200          8.108.108     166,25      6.739.863     191         7.743.242\nA00010    BENZOAT RRC / SODIUM BENZOAT     Kg       59         1.771.112    1.100        38.162.500    1.076,5     37.260.308    82,5        2.673.303\n\nAtau format sederhana (Daftar Nilai Persediaan):\n\nKODE      NAMA BARANG                       SATUAN   QTY        NILAI\nA00002    ALKOHOL                           Ltr      191         7.743.242\nA00010    BENZOAT RRC / SODIUM BENZOAT     Kg       82,5        2.673.303";
+    tips = "Format Persediaan: tabular dengan header row. Parser auto-detect kolom (case-insensitive). Jika hanya ada AKHIR QTY + NILAI (snapshot), akan dianggap saldo akhir → set masuk=akhir, awal=0, keluar=0 (akhir komputasi = akhir input).";
+    formatUmum = "tabular dengan header row (KODE, NAMA BARANG, SATUAN, QTY, NILAI, dll). Pisah kolom otomatis deteksi dari spasi 2+. Parser otomatis deteksi format Indonesia (koma=desimal, titik=ribuan).";
+  } else {
+    reportName = isJual ? "Rincian Penjualan per Barang" : "Rincian Pembelian per Barang";
+    title = `Paste dari Laporan Accurate — ${isJual ? "Penjualan" : "Pembelian"}`;
+    placeholder = isJual
+      ? "Contoh format yang akan diparse:\n\nALKOHOL\nSI.2026.09.00001 01 Sep 2026 NB. 716 39,25 Ltr 2.198.000\n00051260905 05 Sep 2026 1 Kg 12.000\n166,25 9.310.000\n\nBENZOAT HOLLAND\nSI.2026.09.00002 01 Sep 2026 NB. 715 125 Kg 7.375.000\n..."
+      : "Contoh format yang akan diparse:\n\nALKOHOL\nPI.2026.09.000146 24 Aug 2026 Giro 0058 24,25 Kg 8.108.108,11\n00009260901 01 Sep 2026 1 Kg 12.000\n25,25 8.120.108,11\n\nBENZOAT HOLLAND\nPI.2026.09.000150 09 Sep 2026 Tempo 09 Okt 2026 175 Kg 8.750.000\n...";
+    tips = isJual
+      ? "Format Penjualan: NB. (Nota Besar) / NT. (Nota Tusil/Kecil) akan otomatis diklasifikasi sebagai NOTA BESAR / NOTA KECIL."
+      : "Format Pembelian: keterangan seperti 'Giro xxx' / 'Tempo dd Mmm yyyy' akan otomatis deteksi sebagai kredit (belum lunas) dengan jatuh tempo. Jika kosong, akan ditandai sebagai tunai (LUNAS). Amount bisa pakai sen (cth: 8.108.108,11).";
+    formatUmum = "grouped by item (item name sebagai section header, transaksi di bawahnya). Parser otomatis deteksi format Indonesia (koma=desimal, titik=ribuan).";
+  }
   const html = `
     <div class="fixed inset-0 bg-black/40 z-40 flex items-center justify-center p-4" id="pasteOverlay">
       <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-auto">
@@ -2379,10 +2564,10 @@ function showPasteAccurateDialog(type) {
               <li>Export ke PDF, lalu buka PDF-nya. Tekan <b>Ctrl+A</b> (select all) → <b>Ctrl+C</b> (copy).</li>
               <li>Atau langsung <b>copy dari preview Accurate</b> (select all text, copy).</li>
               <li>Paste ke textarea di bawah, lalu klik <b>Parse & Preview</b>.</li>
-              <li>Pastikan jumlah transaksi & total nilai sesuai harapan, lalu klik <b>Simpan</b>.</li>
+              <li>Pastikan jumlah ${isPers ? 'item' : 'transaksi'} & total nilai sesuai harapan, lalu klik <b>Simpan</b>.</li>
             </ol>
             <p class="mt-2 text-amber-700"><b>Tips:</b> ${tips}</p>
-            <p class="mt-1 text-amber-700"><b>Format umum:</b> grouped by item (item name sebagai section header, transaksi di bawahnya). Parser otomatis deteksi format Indonesia (koma=desimal, titik=ribuan).</p>
+            <p class="mt-1 text-amber-700"><b>Format umum:</b> ${formatUmum}</p>
           </div>
           <div>
             <label class="block text-xs font-medium text-slate-600 mb-1">Paste teks laporan Accurate di sini:</label>
@@ -2411,61 +2596,100 @@ function showPasteAccurateDialog(type) {
     document.getElementById("pasteStatus").textContent = "⏳ Parsing...";
     try {
       // Dispatch to right parser based on type
-      parsedTxs = isJual
-        ? parseAccurateRincianText(text)
-        : parseAccurateRincianPembelianText(text);
+      if (isPers) {
+        parsedTxs = parseAccuratePersediaanText(text);
+      } else if (isJual) {
+        parsedTxs = parseAccurateRincianText(text);
+      } else {
+        parsedTxs = parseAccurateRincianPembelianText(text);
+      }
       if (parsedTxs.length === 0) {
-        document.getElementById("pasteStatus").innerHTML = '<span class="text-rose-600">❌ Tidak ada transaksi terparse. Pastikan format teks sesuai.</span>';
+        document.getElementById("pasteStatus").innerHTML = '<span class="text-rose-600">❌ Tidak ada data terparse. Pastikan format teks sesuai.</span>';
         return;
       }
-      const total = parsedTxs.reduce((s, r) => s + r.kuantitas * r.hargaSatuan, 0);
-      const items = new Set(parsedTxs.map(r => r.namaBarang));
-      const sample = parsedTxs.slice(0, 5);
-      // Different preview columns for Penjualan vs Pembelian
-      const tableHtml = isJual ? `
-        <p class="text-xs text-slate-600 mb-2"><b>${parsedTxs.length} transaksi</b> · <b>${items.size} item unik</b> · Total: <b>Rp ${fmtRupiah(total)}</b> · Menampilkan 5 transaksi pertama:</p>
-        <table class="tx-table">
-          <thead><tr><th>TANGGAL</th><th>NO NOTA</th><th>NAMA BARANG</th><th>QTY</th><th>SAT</th><th>HARGA</th><th>TOTAL</th><th>KATEGORI</th></tr></thead>
-          <tbody>
-            ${sample.map(r => `<tr><td>${r.tanggal}</td><td>${escapeHtml(r.noNota)}</td><td>${escapeHtml(r.namaBarang)}</td><td class="num">${fmtNum(r.kuantitas,2)}</td><td>${escapeHtml(r.satuan)}</td><td class="num">Rp ${fmtRupiah(r.hargaSatuan)}</td><td class="num">Rp ${fmtRupiah(r.kuantitas*r.hargaSatuan)}</td><td>${r.kategori}</td></tr>`).join("")}
-          </tbody>
-        </table>` : `
-        <p class="text-xs text-slate-600 mb-2"><b>${parsedTxs.length} transaksi</b> · <b>${items.size} item unik</b> · Total: <b>Rp ${fmtRupiah(total)}</b> · Menampilkan 5 transaksi pertama:</p>
-        <table class="tx-table">
-          <thead><tr><th>TANGGAL</th><th>NO FAKTUR</th><th>NAMA BARANG</th><th>QTY</th><th>SAT</th><th>HARGA</th><th>TOTAL</th><th>STATUS</th><th>JATUH TEMPO</th><th>CATATAN</th></tr></thead>
-          <tbody>
-            ${sample.map(r => `<tr><td>${r.tanggal}</td><td>${escapeHtml(r.noFaktur)}</td><td>${escapeHtml(r.namaBarang)}</td><td class="num">${fmtNum(r.kuantitas,2)}</td><td>${escapeHtml(r.satuan)}</td><td class="num">Rp ${fmtRupiah(r.hargaSatuan)}</td><td class="num">Rp ${fmtRupiah(r.kuantitas*r.hargaSatuan)}</td><td>${r.isLunas?'<span class="text-emerald-600 font-medium">LUNAS</span>':'<span class="text-rose-600 font-medium">KREDIT</span>'}</td><td>${r.jatuhTempo||'-'}</td><td>${escapeHtml(r.catatan||'')}</td></tr>`).join("")}
-          </tbody>
-        </table>`;
-      document.getElementById("pastePreview").innerHTML = tableHtml;
-      document.getElementById("pastePreview").classList.remove("hidden");
-      // Count kredit vs lunas for pembelian
-      let statusInfo = "";
-      if (!isJual) {
-        const lunas = parsedTxs.filter(r => r.isLunas).length;
-        const kredit = parsedTxs.length - lunas;
-        statusInfo = ` (${lunas} LUNAS, ${kredit} KREDIT)`;
+      if (isPers) {
+        // Preview for persediaan
+        const totalAwalNilai = parsedTxs.reduce((s, r) => s + (r.awalNilai || 0), 0);
+        const totalMasukNilai = parsedTxs.reduce((s, r) => s + (r.masukNilai || 0), 0);
+        const totalKeluarNilai = parsedTxs.reduce((s, r) => s + (r.keluarNilai || 0), 0);
+        const totalAkhirNilai = totalAwalNilai + totalMasukNilai - totalKeluarNilai;
+        const sample = parsedTxs.slice(0, 5);
+        const tableHtml = `
+          <p class="text-xs text-slate-600 mb-2"><b>${parsedTxs.length} item</b> · Saldo Awal: <b>Rp ${fmtRupiah(totalAwalNilai)}</b> · Masuk: <b>Rp ${fmtRupiah(totalMasukNilai)}</b> · Keluar: <b>Rp ${fmtRupiah(totalKeluarNilai)}</b> · Saldo Akhir (auto): <b>Rp ${fmtRupiah(totalAkhirNilai)}</b> · Menampilkan 5 item pertama:</p>
+          <table class="tx-table">
+            <thead><tr><th>KODE</th><th>NAMA</th><th>SAT</th><th>AWAL QTY</th><th>AWAL NILAI</th><th>MASUK QTY</th><th>MASUK NILAI</th><th>KELUAR QTY</th><th>KELUAR NILAI</th></tr></thead>
+            <tbody>
+              ${sample.map(r => `<tr><td>${escapeHtml(r.kode)}</td><td>${escapeHtml(r.nama)}</td><td class="center">${escapeHtml(r.satuan)}</td><td class="num">${fmtNum(r.awalQty,2)}</td><td class="num">Rp ${fmtRupiah(r.awalNilai)}</td><td class="num">${fmtNum(r.masukQty,2)}</td><td class="num">Rp ${fmtRupiah(r.masukNilai)}</td><td class="num">${fmtNum(r.keluarQty,2)}</td><td class="num">Rp ${fmtRupiah(r.keluarNilai)}</td></tr>`).join("")}
+            </tbody>
+          </table>`;
+        document.getElementById("pastePreview").innerHTML = tableHtml;
+        document.getElementById("pastePreview").classList.remove("hidden");
+        document.getElementById("pasteStatus").innerHTML = `<span class="text-emerald-600">✓ ${parsedTxs.length} item persediaan siap disimpan. Saldo Akhir (auto-hitung) = Rp ${fmtRupiah(totalAkhirNilai)}</span>`;
+      } else {
+        // Preview for penjualan/pembelian
+        const total = parsedTxs.reduce((s, r) => s + r.kuantitas * r.hargaSatuan, 0);
+        const items = new Set(parsedTxs.map(r => r.namaBarang));
+        const sample = parsedTxs.slice(0, 5);
+        const tableHtml = isJual ? `
+          <p class="text-xs text-slate-600 mb-2"><b>${parsedTxs.length} transaksi</b> · <b>${items.size} item unik</b> · Total: <b>Rp ${fmtRupiah(total)}</b> · Menampilkan 5 transaksi pertama:</p>
+          <table class="tx-table">
+            <thead><tr><th>TANGGAL</th><th>NO NOTA</th><th>NAMA BARANG</th><th>QTY</th><th>SAT</th><th>HARGA</th><th>TOTAL</th><th>KATEGORI</th></tr></thead>
+            <tbody>
+              ${sample.map(r => `<tr><td>${r.tanggal}</td><td>${escapeHtml(r.noNota)}</td><td>${escapeHtml(r.namaBarang)}</td><td class="num">${fmtNum(r.kuantitas,2)}</td><td>${escapeHtml(r.satuan)}</td><td class="num">Rp ${fmtRupiah(r.hargaSatuan)}</td><td class="num">Rp ${fmtRupiah(r.kuantitas*r.hargaSatuan)}</td><td>${r.kategori}</td></tr>`).join("")}
+            </tbody>
+          </table>` : `
+          <p class="text-xs text-slate-600 mb-2"><b>${parsedTxs.length} transaksi</b> · <b>${items.size} item unik</b> · Total: <b>Rp ${fmtRupiah(total)}</b> · Menampilkan 5 transaksi pertama:</p>
+          <table class="tx-table">
+            <thead><tr><th>TANGGAL</th><th>NO FAKTUR</th><th>NAMA BARANG</th><th>QTY</th><th>SAT</th><th>HARGA</th><th>TOTAL</th><th>STATUS</th><th>JATUH TEMPO</th><th>CATATAN</th></tr></thead>
+            <tbody>
+              ${sample.map(r => `<tr><td>${r.tanggal}</td><td>${escapeHtml(r.noFaktur)}</td><td>${escapeHtml(r.namaBarang)}</td><td class="num">${fmtNum(r.kuantitas,2)}</td><td>${escapeHtml(r.satuan)}</td><td class="num">Rp ${fmtRupiah(r.hargaSatuan)}</td><td class="num">Rp ${fmtRupiah(r.kuantitas*r.hargaSatuan)}</td><td>${r.isLunas?'<span class="text-emerald-600 font-medium">LUNAS</span>':'<span class="text-rose-600 font-medium">KREDIT</span>'}</td><td>${r.jatuhTempo||'-'}</td><td>${escapeHtml(r.catatan||'')}</td></tr>`).join("")}
+            </tbody>
+          </table>`;
+        document.getElementById("pastePreview").innerHTML = tableHtml;
+        document.getElementById("pastePreview").classList.remove("hidden");
+        // Count kredit vs lunas for pembelian
+        let statusInfo = "";
+        if (isBeli) {
+          const lunas = parsedTxs.filter(r => r.isLunas).length;
+          const kredit = parsedTxs.length - lunas;
+          statusInfo = ` (${lunas} LUNAS, ${kredit} KREDIT)`;
+        }
+        document.getElementById("pasteStatus").innerHTML = `<span class="text-emerald-600">✓ ${parsedTxs.length} transaksi (${items.size} item, Total Rp ${fmtRupiah(total)})${statusInfo} siap disimpan</span>`;
       }
-      document.getElementById("pasteStatus").innerHTML = `<span class="text-emerald-600">✓ ${parsedTxs.length} transaksi (${items.size} item, Total Rp ${fmtRupiah(total)})${statusInfo} siap disimpan</span>`;
     } catch (err) {
       document.getElementById("pasteStatus").innerHTML = `<span class="text-rose-600">❌ Error: ${escapeHtml(err.message)}</span>`;
     }
   };
   document.getElementById("btnSavePaste").onclick = () => {
     if (!parsedTxs || parsedTxs.length === 0) {
-      alert("Klik 'Parse & Preview' dulu, pastikan ada transaksi yang berhasil di-parse.");
+      alert("Klik 'Parse & Preview' dulu, pastikan ada data yang berhasil di-parse.");
       return;
     }
     const mode = document.getElementById("pasteMode").value;
-    const existing = getTxData(type);
-    let newData;
-    if (mode === "replace") newData = parsedTxs.slice();
-    else newData = existing.concat(parsedTxs);
-    saveTxData(type, newData);
-    const total = parsedTxs.reduce((s, r) => s + r.kuantitas * r.hargaSatuan, 0);
-    close();
-    render();
-    showToast(`✓ ${parsedTxs.length} transaksi ${isJual?'penjualan':'pembelian'} di-${mode === "replace" ? "replace" : "append"} (Total Rp ${fmtRupiah(total)})`);
+    if (isPers) {
+      // Save persediaan
+      const month = opts.month || persMonth;
+      const existing = getPersediaanData(month);
+      let newData;
+      if (mode === "replace") newData = parsedTxs.slice();
+      else newData = existing.concat(parsedTxs);
+      savePersediaanData(month, newData);
+      const totalNilai = parsedTxs.reduce((s, r) => s + (r.masukNilai || 0) - (r.keluarNilai || 0), 0);
+      close();
+      render();
+      showToast(`✓ ${parsedTxs.length} item persediaan ${BULAN_NAMES[month-1]} 2026 di-${mode === "replace" ? "replace" : "append"}`);
+    } else {
+      // Save penjualan/pembelian
+      const existing = getTxData(type);
+      let newData;
+      if (mode === "replace") newData = parsedTxs.slice();
+      else newData = existing.concat(parsedTxs);
+      saveTxData(type, newData);
+      const total = parsedTxs.reduce((s, r) => s + r.kuantitas * r.hargaSatuan, 0);
+      close();
+      render();
+      showToast(`✓ ${parsedTxs.length} transaksi ${isJual?'penjualan':'pembelian'} di-${mode === "replace" ? "replace" : "append"} (Total Rp ${fmtRupiah(total)})`);
+    }
   };
 }
 
