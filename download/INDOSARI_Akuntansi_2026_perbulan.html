@@ -2245,10 +2245,125 @@ function parseAccurateRincianText(text) {
   return transactions;
 }
 
+// ============================================================
+// 13d. SMART PARSER — Accurate "Rincian Pembelian per Barang" PDF text format
+// ============================================================
+// Format mirip dengan Penjualan tapi keterangan bisa berisi "Giro xxx" / "Tempo dd Mmm yyyy"
+// Amount bisa pakai sen (cth: 8.108.108,11)
+// Deteksi isLunas & jatuhTempo dari keterangan
+function parseAccuratePembelianTransaction(line, currentItem) {
+  const s = line.trim();
+  // Match: code date [keterangan] qty satuan amount
+  const m = s.match(/^(\S+)\s+(\d{1,2}\s+\w{3,}\s+\d{4})\s+(.*)$/);
+  if (!m) return null;
+  const noFaktur = m[1];
+  const tanggal = parseAccurateDate(m[2]);
+  if (!tanggal) return null;
+  const rest = m[3].trim();
+  // Try to find qty + satuan + amount at the END of rest
+  // Pattern: [keterangan] qty satuan amount  (keterangan is optional prefix)
+  // qty: decimal/integer (e.g., 24,25 or 1000), satuan: text (Kg/Ltr/PCS), amount: decimal with separators (8.108.108 or 8.108.108,11)
+  const m2 = rest.match(/^(.*?)\s+([\d.,]+)\s+(\S+)\s+([\d.,]+(?:,\d+)?)\s*$/);
+  let keterangan = "";
+  let qty, satuan, pembelian;
+  if (m2) {
+    keterangan = m2[1].trim();
+    qty = parseAccurateNumber(m2[2]);
+    satuan = m2[3];
+    pembelian = parseAccurateNumber(m2[4]);
+  } else {
+    // Try without keterangan
+    const m3 = rest.match(/^([\d.,]+)\s+(\S+)\s+([\d.,]+(?:,\d+)?)$/);
+    if (!m3) return null;
+    qty = parseAccurateNumber(m3[1]);
+    satuan = m3[2];
+    pembelian = parseAccurateNumber(m3[3]);
+  }
+  if (pembelian <= 0 || qty <= 0) return null;
+  const hargaSatuan = Math.round(pembelian / qty);
+
+  // Detect isLunas and jatuhTempo from keterangan
+  // Logic:
+  //   - If keterangan contains "lunas"/"tunai"/"cash"/"cod" → LUNAS (tunai)
+  //   - If keterangan is empty → LUNAS (assume tunai)
+  //   - If keterangan has a date → KREDIT with jatuhTempo
+  //   - Otherwise (non-empty without recognized keyword) → KREDIT (default)
+  let isLunas = false;
+  let jatuhTempo = null;
+  if (/lunas|tunai|cash|cod/i.test(keterangan)) {
+    isLunas = true;
+  } else if (!keterangan) {
+    // Empty keterangan - assume tunai (LUNAS)
+    isLunas = true;
+  }
+  // Try to extract date from keterangan (e.g., "Tempo 23 Sep 2026" or "JT 25/09/2026")
+  const tempoMatch = keterangan.match(/(\d{1,2}\s+\w{3,}\s+\d{4})/);
+  if (tempoMatch) {
+    jatuhTempo = parseAccurateDate(tempoMatch[1]);
+    isLunas = false;  // has tempo, so it's kredit
+  } else {
+    const tempoMatch2 = keterangan.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+    if (tempoMatch2) {
+      let yr = tempoMatch2[3].length === 2 ? "20"+tempoMatch2[3] : tempoMatch2[3];
+      jatuhTempo = `${yr}-${tempoMatch2[2].padStart(2,"0")}-${tempoMatch2[1].padStart(2,"0")}`;
+      isLunas = false;
+    }
+  }
+
+  return {
+    tanggal, noFaktur, namaBarang: currentItem || "",
+    satuan, kuantitas: qty, hargaSatuan,
+    supplier: "",  // Accurate "Rincian Pembelian per Barang" usually doesn't show supplier per row
+    isLunas, jatuhTempo, catatan: keterangan,
+  };
+}
+
+function parseAccurateRincianPembelianText(text) {
+  const lines = text.split(/\r?\n/);
+  const transactions = [];
+  let currentItemLines = [];
+  let currentItem = null;
+  let skipped = 0;
+
+  for (const rawLine of lines) {
+    const line = rawLine.replace(/\s+$/g, "");
+    if (!line.trim()) continue;
+    if (isAccurateHeaderOrFooter(line)) {
+      currentItemLines = [];
+      continue;
+    }
+    if (isAccurateSubtotal(line)) {
+      currentItemLines = [];
+      continue;
+    }
+    if (isAccurateTransaction(line)) {
+      if (currentItemLines.length > 0) {
+        currentItem = currentItemLines.join(" ").replace(/\s+/g, " ").trim();
+        currentItemLines = [];
+      }
+      if (!currentItem) { skipped++; continue; }
+      const tx = parseAccuratePembelianTransaction(line, currentItem);
+      if (tx) transactions.push(tx);
+      else skipped++;
+    } else {
+      currentItemLines.push(line.trim());
+    }
+  }
+  console.log(`Parsed ${transactions.length} pembelian transactions, skipped ${skipped} lines`);
+  return transactions;
+}
+
 function showPasteAccurateDialog(type) {
   // type: "penjualan" | "pembelian"
   const isJual = type === "penjualan";
+  const reportName = isJual ? "Rincian Penjualan per Barang" : "Rincian Pembelian per Barang";
   const title = `Paste dari Laporan Accurate — ${isJual ? "Penjualan" : "Pembelian"}`;
+  const placeholder = isJual
+    ? "Contoh format yang akan diparse:\n\nALKOHOL\nSI.2026.09.00001 01 Sep 2026 NB. 716 39,25 Ltr 2.198.000\n00051260905 05 Sep 2026 1 Kg 12.000\n166,25 9.310.000\n\nBENZOAT HOLLAND\nSI.2026.09.00002 01 Sep 2026 NB. 715 125 Kg 7.375.000\n..."
+    : "Contoh format yang akan diparse:\n\nALKOHOL\nPI.2026.09.000146 24 Aug 2026 Giro 0058 24,25 Kg 8.108.108,11\n00009260901 01 Sep 2026 1 Kg 12.000\n25,25 8.120.108,11\n\nBENZOAT HOLLAND\nPI.2026.09.000150 09 Sep 2026 Tempo 09 Okt 2026 175 Kg 8.750.000\n...";
+  const tips = isJual
+    ? "Format Penjualan: NB. (Nota Besar) / NT. (Nota Tusil/Kecil) akan otomatis diklasifikasi sebagai NOTA BESAR / NOTA KECIL."
+    : "Format Pembelian: keterangan seperti 'Giro xxx' / 'Tempo dd Mmm yyyy' akan otomatis deteksi sebagai kredit (belum lunas) dengan jatuh tempo. Jika kosong, akan ditandai sebagai tunai (LUNAS). Amount bisa pakai sen (cth: 8.108.108,11).";
   const html = `
     <div class="fixed inset-0 bg-black/40 z-40 flex items-center justify-center p-4" id="pasteOverlay">
       <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-auto">
@@ -2260,24 +2375,25 @@ function showPasteAccurateDialog(type) {
           <div class="bg-sky-50 border border-sky-200 rounded-lg p-3 text-xs text-sky-800">
             <p class="font-medium mb-1">Cara pakai:</p>
             <ol class="list-decimal ml-5 space-y-0.5">
-              <li>Buka laporan <b>"Rincian Penjualan per Barang"</b> di Accurate (periode yang diinginkan).</li>
+              <li>Buka laporan <b>"${reportName}"</b> di Accurate (periode yang diinginkan).</li>
               <li>Export ke PDF, lalu buka PDF-nya. Tekan <b>Ctrl+A</b> (select all) → <b>Ctrl+C</b> (copy).</li>
               <li>Atau langsung <b>copy dari preview Accurate</b> (select all text, copy).</li>
               <li>Paste ke textarea di bawah, lalu klik <b>Parse & Preview</b>.</li>
               <li>Pastikan jumlah transaksi & total nilai sesuai harapan, lalu klik <b>Simpan</b>.</li>
             </ol>
-            <p class="mt-2 text-amber-700"><b>Tips:</b> Format yang didukung = grouped by item (item name sebagai section header, transaksi di bawahnya). Parser otomatis deteksi format Indonesia (koma=desimal, titik=ribuan).</p>
+            <p class="mt-2 text-amber-700"><b>Tips:</b> ${tips}</p>
+            <p class="mt-1 text-amber-700"><b>Format umum:</b> grouped by item (item name sebagai section header, transaksi di bawahnya). Parser otomatis deteksi format Indonesia (koma=desimal, titik=ribuan).</p>
           </div>
           <div>
             <label class="block text-xs font-medium text-slate-600 mb-1">Paste teks laporan Accurate di sini:</label>
-            <textarea id="pasteArea" rows="12" class="w-full border border-slate-300 rounded px-3 py-2 text-xs font-mono" placeholder="Contoh format yang akan diparse:&#10;&#10;ALKOHOL&#10;SI.2026.09.00001 01 Sep 2026 NB. 716 39,25 Ltr 2.198.000&#10;00051260905 05 Sep 2026 1 Kg 12.000&#10;166,25 9.310.000&#10;&#10;BENZOAT HOLLAND&#10;SI.2026.09.00002 01 Sep 2026 NB. 715 125 Kg 7.375.000&#10;..."></textarea>
+            <textarea id="pasteArea" rows="12" class="w-full border border-slate-300 rounded px-3 py-2 text-xs font-mono" placeholder="${escapeHtml(placeholder)}"></textarea>
           </div>
           <div class="flex items-center gap-2">
             <button id="btnParse" class="inline-flex items-center gap-1.5 rounded-md border border-sky-300 bg-sky-50 px-3 py-1.5 text-xs font-medium text-sky-700 hover:bg-sky-100">⚙ Parse &amp; Preview</button>
-            <button id="btnSavePaste" class="inline-flex items-center gap-1.5 rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700 ml-auto">💾 Simpan (${isJual ? "Append ke data lama" : "Append ke data lama"})</button>
+            <button id="btnSavePaste" class="inline-flex items-center gap-1.5 rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700 ml-auto">💾 Simpan</button>
             <select id="pasteMode" class="border border-slate-300 rounded px-2 py-1.5 text-xs">
-              <option value="append">Append</option>
-              <option value="replace">Replace</option>
+              <option value="append">Append (tambah ke data lama)</option>
+              <option value="replace">Replace (ganti semua data)</option>
             </select>
           </div>
           <div id="pasteStatus" class="text-xs text-slate-500"></div>
@@ -2294,7 +2410,10 @@ function showPasteAccurateDialog(type) {
     if (!text.trim()) { alert("Paste teks laporan dulu"); return; }
     document.getElementById("pasteStatus").textContent = "⏳ Parsing...";
     try {
-      parsedTxs = parseAccurateRincianText(text);
+      // Dispatch to right parser based on type
+      parsedTxs = isJual
+        ? parseAccurateRincianText(text)
+        : parseAccurateRincianPembelianText(text);
       if (parsedTxs.length === 0) {
         document.getElementById("pasteStatus").innerHTML = '<span class="text-rose-600">❌ Tidak ada transaksi terparse. Pastikan format teks sesuai.</span>';
         return;
@@ -2302,17 +2421,32 @@ function showPasteAccurateDialog(type) {
       const total = parsedTxs.reduce((s, r) => s + r.kuantitas * r.hargaSatuan, 0);
       const items = new Set(parsedTxs.map(r => r.namaBarang));
       const sample = parsedTxs.slice(0, 5);
-      const tableHtml = `
+      // Different preview columns for Penjualan vs Pembelian
+      const tableHtml = isJual ? `
         <p class="text-xs text-slate-600 mb-2"><b>${parsedTxs.length} transaksi</b> · <b>${items.size} item unik</b> · Total: <b>Rp ${fmtRupiah(total)}</b> · Menampilkan 5 transaksi pertama:</p>
         <table class="tx-table">
           <thead><tr><th>TANGGAL</th><th>NO NOTA</th><th>NAMA BARANG</th><th>QTY</th><th>SAT</th><th>HARGA</th><th>TOTAL</th><th>KATEGORI</th></tr></thead>
           <tbody>
             ${sample.map(r => `<tr><td>${r.tanggal}</td><td>${escapeHtml(r.noNota)}</td><td>${escapeHtml(r.namaBarang)}</td><td class="num">${fmtNum(r.kuantitas,2)}</td><td>${escapeHtml(r.satuan)}</td><td class="num">Rp ${fmtRupiah(r.hargaSatuan)}</td><td class="num">Rp ${fmtRupiah(r.kuantitas*r.hargaSatuan)}</td><td>${r.kategori}</td></tr>`).join("")}
           </tbody>
+        </table>` : `
+        <p class="text-xs text-slate-600 mb-2"><b>${parsedTxs.length} transaksi</b> · <b>${items.size} item unik</b> · Total: <b>Rp ${fmtRupiah(total)}</b> · Menampilkan 5 transaksi pertama:</p>
+        <table class="tx-table">
+          <thead><tr><th>TANGGAL</th><th>NO FAKTUR</th><th>NAMA BARANG</th><th>QTY</th><th>SAT</th><th>HARGA</th><th>TOTAL</th><th>STATUS</th><th>JATUH TEMPO</th><th>CATATAN</th></tr></thead>
+          <tbody>
+            ${sample.map(r => `<tr><td>${r.tanggal}</td><td>${escapeHtml(r.noFaktur)}</td><td>${escapeHtml(r.namaBarang)}</td><td class="num">${fmtNum(r.kuantitas,2)}</td><td>${escapeHtml(r.satuan)}</td><td class="num">Rp ${fmtRupiah(r.hargaSatuan)}</td><td class="num">Rp ${fmtRupiah(r.kuantitas*r.hargaSatuan)}</td><td>${r.isLunas?'<span class="text-emerald-600 font-medium">LUNAS</span>':'<span class="text-rose-600 font-medium">KREDIT</span>'}</td><td>${r.jatuhTempo||'-'}</td><td>${escapeHtml(r.catatan||'')}</td></tr>`).join("")}
+          </tbody>
         </table>`;
       document.getElementById("pastePreview").innerHTML = tableHtml;
       document.getElementById("pastePreview").classList.remove("hidden");
-      document.getElementById("pasteStatus").innerHTML = `<span class="text-emerald-600">✓ ${parsedTxs.length} transaksi (${items.size} item, Total Rp ${fmtRupiah(total)}) siap disimpan</span>`;
+      // Count kredit vs lunas for pembelian
+      let statusInfo = "";
+      if (!isJual) {
+        const lunas = parsedTxs.filter(r => r.isLunas).length;
+        const kredit = parsedTxs.length - lunas;
+        statusInfo = ` (${lunas} LUNAS, ${kredit} KREDIT)`;
+      }
+      document.getElementById("pasteStatus").innerHTML = `<span class="text-emerald-600">✓ ${parsedTxs.length} transaksi (${items.size} item, Total Rp ${fmtRupiah(total)})${statusInfo} siap disimpan</span>`;
     } catch (err) {
       document.getElementById("pasteStatus").innerHTML = `<span class="text-rose-600">❌ Error: ${escapeHtml(err.message)}</span>`;
     }
@@ -2331,7 +2465,7 @@ function showPasteAccurateDialog(type) {
     const total = parsedTxs.reduce((s, r) => s + r.kuantitas * r.hargaSatuan, 0);
     close();
     render();
-    showToast(`✓ ${parsedTxs.length} transaksi di-${mode === "replace" ? "replace" : "append"} (Total Rp ${fmtRupiah(total)})`);
+    showToast(`✓ ${parsedTxs.length} transaksi ${isJual?'penjualan':'pembelian'} di-${mode === "replace" ? "replace" : "append"} (Total Rp ${fmtRupiah(total)})`);
   };
 }
 
