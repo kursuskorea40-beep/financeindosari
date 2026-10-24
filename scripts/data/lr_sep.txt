@@ -1,0 +1,43 @@
+INDOSARI
+Laba/Rugi (Standar)
+Dari 01 Sep 2026 s/d 30 Sep 2026
+Cabang : [Semua Cabang], Mata Uang : Indonesian Rupiah
+Deskripsi 1 - 30 Sep 2026
+PENDAPATAN
+Pendapatan Operasional 174.512.860
+Penjualan 174.564.635
+Diskon Penjualan -51.775
+Jumlah Pendapatan 174.512.860
+BEBAN POKOK PENJUALAN
+Beban Pokok Penjualan 140.157.857,07
+Jumlah Beban Pokok Penjualan 140.157.857,07
+LABA KOTOR 34.355.002,93
+BEBAN OPERASIONAL
+Beban Operasional 23.232.450,48
+Beban Bensin, Parkir, Tol Kendaraan 15.000
+Beban Gaji & Upah 21.000.000
+Beban Listrik 782.931
+Beban PAM 137.500
+Beban Telekomunikasi 235.998
+Beban Retribusi & Sumbangan 75.000
+Beban Operasional Lainnya 100.000
+Beban Selisih Stock -56.460,52
+Beban Langganan Software 355.200
+Beban Selisih Harga 162.282
+Beban Pengiriman 425.000
+Jumlah Beban Operasional 23.232.450,48
+PENDAPATAN OPERASIONAL 11.122.552,44
+PENDAPATAN DAN BEBAN NON OPERASIONAL
+Pendapatan Non Operasional
+Pendapatan Diluar Usaha 4.587.500
+Pendapatan Diluar Usaha Lainnya 4.587.500
+Jumlah Pendapatan Non Operasional 4.587.500
+Beban Non Operasional
+Beban Diluar Usaha 1.742.960
+Beban Diluar Usaha Lainnya 1.742.960
+Jumlah Beban Non Operasional 1.742.960
+Jumlah Pendapatan dan Beban Non Operasional 2.844.540
+LABA BERSIH 13.967.092,44
+ACCURATE Accounting System Report
+Tercetak pada 25 October 2026 - 05:53
+Halaman 1 dari 1

@@ -31,3 +31,23 @@ Stage Summary:
 - Menu Hutang: KPI (saldo akhir, beli kredit YTD, bayar YTD, faktur belum lunas) + tabel bulanan editable + rincian 22 faktur supplier
 - Edit saldo bulanan kini bisa langsung dari UI (localStorage) — sebelumnya tidak bisa sama sekali
 - Script artefak: scripts/split_piutang_hutang.py, scripts/section12_new.js, scripts/test_piutang_hutang.js, scripts/inspect_piutang_sheet.js, scripts/check_tunai_kredit_split.js
+
+---
+Task ID: 2
+Agent: main (Z.ai)
+Task: Neraca per bulan (editable + paste Accurate) & Laba Rugi format sesuai laporan Accurate terlampir
+
+Work Log:
+- Ganti section 9 (Laba Rugi debit/kredit lama dari sheet Excel) dengan modul baru "9. LABA RUGI & NERACA — Format Accurate Standar" (scripts/fr_module.js, di-inject via scripts/update_fr.py).
+- Template baris sesuai PDF terlampir: LR_ROWS_SEP (33 baris: PENDAPATAN, BPP, LABA KOTOR, 11 beban operasional, non-operasional, LABA BERSIH) & NERACA_ROWS_SEP (53 baris: ASET/LANCAR/TIDAK LANCAR, LIABILITAS, EKUITAS) dengan nilai September 2026 dari Accurate.
+- Model data: t=header/item/total, lvl indentasi, sc=scope penjumlahan, calc="sum:scope" + formula khusus (lk, po, jno, lb, jas, jle). Baris total auto-hitung (frSumScope/frTotalValue), item editable.
+- Penyimpanan per bulan: userEdits.extras.labaRugiPerBulan / neracaPerBulan (localStorage); Sep = default Accurate; bulan lain LR = konversi dari sheet Laba Rugi lama (C/D/E/H/J+K/D/L → Penjualan/Pend LU/BPP/Gaji/Ops Lainnya/Beban LU), Neraca bulan lain = nol. Tombol Reset per bulan.
+- UI: selector bulan, 4 KPI (LR: Pendapatan/Laba Kotor/Pend Op/Laba Bersih; Neraca: Aset/Kewajiban/Ekuitas/Keseimbangan "✓ Seimbang"), tabel fr-table ala Accurate (indentasi, header bold, total border, grand kuning, negatif merah), edit nilai (sel kuning) + rename (klik nama) + tambah/hapus akun (＋/✕), status bar.
+- Paste parser: parseAccurateLabaRugiText / parseAccurateNeracaText (core parseAccurateFRText) — baris "Nama Akun + angka" dipetakan ke template (norm + alias + strip suffix IDR), skip baris Jumlah*/total Accurate (auto-hitung), skip FR_SKIP_NAMES (Kas & Bank, Nilai Histori), skip anak bernilai -0, nilai kurung = negatif, akun tak dikenal disisipkan di konteks bagian dengan scope warisan. Dialog paste diperluas (tipe labarugi/neraca, default Replace, preview total + jumlah akun baru).
+- Sidebar: Neraca excel→custom "neraca"; dispatch + case renderNeraca; desc Laba Rugi diupdate; CSS fr-table ditambah.
+- Test: scripts/test_fr_parsers.js 63 pass/0 fail (teks PDF asli dari kedua lampiran: semua total cocok — JP 174.512.860, LK 34.355.002,93, JBO 23.232.450,48, LB ≈13.967.092,44; Aset 921.597.914,6, Kewajiban 182.300.119,72, Ekuitas 739.297.794,88, SEIMBANG); smoke test browser scripts/smoke_fr_browser.py 24/24 PASS (paste end-to-end, edit nilai→total ikut, rename, reset, konversi Januari 110.413.750→LB 41.394.310,29 math tepat); regression semua parser lama tetang lulus; verify_syntax OK.
+
+Stage Summary:
+- File deliverable: /home/z/my-project/download/INDOSARI_Akuntansi_2026_perbulan.html (~1,24 MB, syntax OK)
+- Menu Neraca & Laba Rugi kini format persis laporan Accurate Standar, per bulan, editable penuh, + tombol Paste dari Accurate
+- Script artefak: scripts/fr_module.js, scripts/update_fr.py, scripts/patch_fr_skip.py, scripts/test_fr_parsers.js, scripts/smoke_fr_browser.py, scripts/data/{lr_sep.txt,neraca_sep.txt,*.png}

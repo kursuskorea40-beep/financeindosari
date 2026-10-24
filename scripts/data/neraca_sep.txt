@@ -1,0 +1,75 @@
+INDOSARI
+Neraca (Standar)
+Per Tgl. 30 Sep 2026
+Mata Uang : Indonesian Rupiah
+Deskripsi Nilai (IDR)
+ASET
+ASET LANCAR
+Kas dan Setara Kas
+Kas & Bank 15.687.880,5
+Kas Kecil 1.000.000
+Kas Besar 14.468.580,5
+Bank 280.000
+Selisih kas & Bank -60.700
+Jumlah Kas dan Setara Kas 15.687.880,5
+Piutang Usaha
+Piutang Usaha 36.769.260
+Piutang Usaha IDR 36.769.260
+Jumlah Piutang Usaha 36.769.260
+Persediaan
+Persediaan 121.310.270,1
+Persediaan 121.310.270,1
+Persedian Barang Jadi -0
+Pekerjaan Dalam Proses -0
+Jumlah Persediaan 121.310.270,1
+Aset Lancar Lainnya
+Aset Lancar Lainnya 197.830.504
+PPN Masukan 197.830.504
+Jumlah Aset Lancar Lainnya 197.830.504
+Jumlah Aset Lancar 371.597.914,6
+ASET TIDAK LANCAR
+Nilai Histori
+Aset Tetap 550.000.000
+Gedung 500.000.000
+Kendaraan 50.000.000
+Jumlah Nilai Histori 550.000.000
+Akumulasi Penyusutan
+Jumlah Akumulasi Penyusutan 0
+Jumlah Aset Tidak Lancar 550.000.000
+Aset Lainnya
+Jumlah Aset Lainnya 0
+JUMLAH ASET 921.597.914,6
+LIABILITAS DAN EKUITAS
+ACCURATE Accounting System Report
+Tercetak pada 25 October 2026 - 05:47
+Halaman 1 dari 2
+INDOSARI
+Neraca (Standar)
+Per Tgl. 30 Sep 2026
+Mata Uang : Indonesian Rupiah
+Deskripsi Nilai (IDR)
+LIABILITAS
+LIABILITAS JANGKA PENDEK
+Utang Usaha
+Utang Usaha 173.508.611,72
+Utang Usaha IDR 173.508.611,72
+Jumlah Utang 173.508.611,72
+Kewajiban Jangka Pendek Lainnya
+Kewajiban Jangka Pendek Lainnya 8.791.508
+PPN Keluaran 4.400
+Hutang Pembelian Belum Ditagih 8.787.108
+Jumlah Kewajiban Jangka Pendek Lainnya 8.791.508
+Jumlah Kewajiban Jangka Pendek 182.300.119,72
+LIABILITAS JANGKA PANJANG
+Jumlah Kewajiban Jangka Panjang 0
+Jumlah Kewajiban 182.300.119,72
+EKUITAS
+Modal 659.322.106,95
+Equitas Saldo Awal 825.637.777,72
+Laba Ditahan -166.315.670,77
+Laba Tahun Ini 79.975.687,93
+Jumlah Ekuitas 739.297.794,88
+JUMLAH LIABILITAS DAN EKUITAS 921.597.914,6
+ACCURATE Accounting System Report
+Tercetak pada 25 October 2026 - 05:47
+Halaman 2 dari 2
