@@ -2158,9 +2158,11 @@ function parseAccurateDate(s) {
 function isAccurateHeaderOrFooter(line) {
   const s = line.trim();
   if (!s) return true;
-  const skips = ["INDOSARI","Rincian Penjualan","Dari ","Cabang","Nomor #","Tanggal",
+  const skips = ["INDOSARI","Rincian Penjualan","Rincian Pembelian","Mutasi Persediaan",
+                 "Kartu Stok","Nilai Persediaan","Dari ","Cabang","Nomor #","Tanggal",
                  "Keterangan","Kuantitas","Satuan","Penjualan","ACCURATE","Tercetak",
-                 "Halaman","Total Nama Barang","Nama Barang"];
+                 "Halaman","Total Nama Barang","Nama Barang","Kode","Saldo Awal",
+                 "Saldo Akhir","Penerimaan","Pengeluaran","Qty","Nilai"];
   return skips.some(p => s.startsWith(p));
 }
 
@@ -2371,9 +2373,9 @@ const PERS_FIELD_ALIASES = {
   satuan:     ["satuan", "sat", "sat.", "unit", "uom", "satuan kecil"],
   awalQty:    ["awal qty", "awal kuantitas", "qty awal", "kuantitas awal", "beginning qty", "saldo awal qty", "saldo awal", "awal", "sa qty", "saldo awal (qty)"],
   awalNilai:  ["awal nilai", "nilai awal", "beginning value", "saldo awal nilai", "saldo awal value", "sa value", "saldo awal (nilai)", "awal (nilai)"],
-  masukQty:   ["masuk qty", "in qty", "qty masuk", "kuantitas masuk", "penerimaan qty", "mutasi masuk qty", "mutasi masuk", "in", "masuk"],
+  masukQty:   ["masuk qty", "in qty", "qty masuk", "kuantitas masuk", "penerimaan qty", "penerimaan", "mutasi masuk qty", "mutasi masuk", "in", "masuk"],
   masukNilai: ["masuk nilai", "in value", "nilai masuk", "penerimaan nilai", "mutasi masuk nilai", "mutasi masuk (nilai)", "masuk (nilai)"],
-  keluarQty:  ["keluar qty", "out qty", "qty keluar", "kuantitas keluar", "pengeluaran qty", "mutasi keluar qty", "mutasi keluar", "out", "keluar"],
+  keluarQty:  ["keluar qty", "out qty", "qty keluar", "kuantitas keluar", "pengeluaran qty", "pengeluaran", "mutasi keluar qty", "mutasi keluar", "out", "keluar"],
   keluarNilai:["keluar nilai", "out value", "nilai keluar", "pengeluaran nilai", "mutasi keluar nilai", "mutasi keluar (nilai)", "keluar (nilai)"],
   akhirQty:   ["akhir qty", "akhir kuantitas", "qty akhir", "kuantitas akhir", "ending qty", "saldo akhir qty", "saldo akhir", "stok", "stok qty", "qty", "kuantitas", "saldo", "sisa"],
   akhirNilai: ["akhir nilai", "nilai akhir", "ending value", "saldo akhir nilai", "saldo akhir value", "nilai", "nilai persediaan", "nilai stok", "saldo akhir (nilai)", "total"],
@@ -2413,8 +2415,7 @@ function parseAccuratePersediaanText(text) {
     }
   }
   if (headerIdx < 0) {
-    console.log("Persediaan parser: header row not found");
-    return [];
+    console.log("Persediaan parser: header row not found — using trailing-numeric fallback on all lines");
   }
   // Map header columns to fields
   const colToField = []; // colToField[i] = field name or null
@@ -2432,97 +2433,86 @@ function parseAccuratePersediaanText(text) {
   const hasKeluar = hasField("keluarQty") || hasField("keluarNilai");
   const hasAkhir = hasField("akhirQty") || hasField("akhirNilai");
   const onlyAkhir = hasAkhir && !hasAwal && !hasMasuk && !hasKeluar;
+  // Ordered numeric field names from the header (left-to-right) — used to map
+  // the trailing numeric run of each row to the right fields
+  const numFieldList = [];
+  colToField.forEach(f => {
+    if (f && !["kode", "nama", "satuan"].includes(f)) numFieldList.push(f);
+  });
 
-  // Parse each subsequent row until we hit a footer or empty section
+  // Parse data rows — unified strategy (works for multi-space Excel/PDF-layout pastes
+  // AND single-space plain pastes):
+  //   1. Grab the trailing numeric run (rightmost numeric tokens, max 8)
+  //   2. Map numbers to fields: header-guided if counts match, else positional heuristics
+  //   3. Prefix tokens = kode | nama... | satuan (first / middle / last)
+  //   4. Wrapped item names (row split across 2 lines) merged via pendingName
+  const isNumTok = (t) => /^[\d.,]+$/.test(t) && /\d/.test(t);
   const items = [];
-  for (let i = headerIdx + 1; i < lines.length; i++) {
-    const line = lines[i];
-    const trimmed = line.trim();
+  let skipped = 0;
+  let pendingName = "";
+  const MUT_FIELDS = ["awalQty","awalNilai","masukQty","masukNilai","keluarQty","keluarNilai"];
+  for (let i = (headerIdx >= 0 ? headerIdx + 1 : 0); i < lines.length; i++) {
+    const trimmed = lines[i].trim();
     if (!trimmed) continue;
-    // Stop on footer / total / next-page header
-    if (/^(ACCURATE|Tercetak|Halaman|Total|INDOSARI|Daftar Nilai|Laporan Persediaan|Dari |Cabang)/i.test(trimmed)) continue;
-    if (/^total/i.test(trimmed)) continue;
-    // Split by 2+ spaces
-    const parts = line.split(/\s{2,}/).map(p => p.trim()).filter(p => p.length > 0);
-    if (parts.length < 2) continue;
-    // If row has fewer parts than header columns, try splitting by single space from the right (amount might have separator)
-    // This is a heuristic; PDF text may have inconsistent spacing
-    // Build item by mapping parts to fields by index (assuming parts align with header cols left-to-right)
+    if (isAccurateHeaderOrFooter(trimmed)) { pendingName = ""; continue; }
+    if (/^total/i.test(trimmed)) { pendingName = ""; continue; }
+
+    const tokens = trimmed.split(/\s+/);
+    const nums = [];
+    let endIdx = tokens.length - 1;
+    while (nums.length < 8 && endIdx >= 0 && isNumTok(tokens[endIdx])) {
+      nums.unshift(parseAccurateNumber(tokens[endIdx]));
+      endIdx--;
+    }
+    if (nums.length < 2) {
+      // Baris tanpa angka → kemungkinan lanjutan nama item yang wrap ke bawah
+      pendingName = (pendingName ? pendingName + " " : "") + trimmed;
+      continue;
+    }
+
+    // Map the grabbed numbers to fields
+    const vals = {};
+    if (numFieldList.length > 0 && nums.length === numFieldList.length) {
+      // Header-guided mapping (left-to-right, 1:1)
+      numFieldList.forEach((f, j) => { vals[f] = nums[j]; });
+    } else if (nums.length >= 6) {
+      // Full mutasi: [awalQty, awalNilai, masukQty, masukNilai, keluarQty, keluarNilai, (akhirQty, akhirNilai)]
+      vals.awalQty = nums[0]; vals.awalNilai = nums[1];
+      vals.masukQty = nums[2]; vals.masukNilai = nums[3];
+      vals.keluarQty = nums[4]; vals.keluarNilai = nums[5];
+      // extra trailing numbers (akhir) ignored — app recomputes akhir = awal + masuk - keluar
+    } else {
+      // Exactly 2 numbers → snapshot (Daftar Nilai Persediaan)
+      // Documented behavior: masuk = akhir, awal = 0, keluar = 0 → computed akhir = masuk
+      vals.masukQty = nums[0]; vals.masukNilai = nums[1];
+    }
+    // Snapshot via header mapping (only akhir columns matched) → shift akhir to masuk
+    const hasMut = MUT_FIELDS.some(f => vals[f] !== undefined);
+    if (!hasMut) {
+      if (vals.akhirQty !== undefined) vals.masukQty = vals.akhirQty;
+      if (vals.akhirNilai !== undefined) vals.masukNilai = vals.akhirNilai;
+    }
+
+    // Prefix tokens: first = kode, last = satuan, middle = nama
+    const rest = tokens.slice(0, endIdx + 1);
+    const fullPrefix = (pendingName ? pendingName + " " : "") + rest.join(" ");
+    pendingName = "";
+    const fullTokens = fullPrefix.split(/\s+/);
+    if (fullTokens.length < 2) { skipped++; continue; }
+    const kode = fullTokens[0];
+    const satuan = fullTokens[fullTokens.length - 1];
+    const nama = fullTokens.slice(1, -1).join(" ").trim() || kode;
+
     const item = {
-      kode: "", nama: "", satuan: "Kg",
+      kode, nama, satuan,
       awalQty: 0, awalNilai: 0,
       masukQty: 0, masukNilai: 0,
       keluarQty: 0, keluarNilai: 0,
     };
-    // Strategy: text columns (kode, nama, satuan) take leftmost positions; numeric columns take rightmost positions
-    // Walk left-to-right, but for text fields (kode/nama/satuan) we need to be careful — nama can have multiple words
-    // Better strategy: walk parts; for each part, check the column index against headerCols mapping
-    // If header col is text type (kode/nama/satuan), keep as text
-    // If numeric, parse as number
-    const textFields = ["kode", "nama", "satuan"];
-    let textPartIdx = 0;
-    let numPartIdx = 0;
-    const numFieldList = []; // ordered list of numeric field names from header
-    colToField.forEach(f => { if (f && !textFields.includes(f)) numFieldList.push(f); });
-    // Now walk parts and assign
-    // Heuristic: first 1-3 parts are text (kode, nama, satuan). The rest are numeric.
-    // But nama can have multiple words. Approach: count text fields in header from left
-    const headerTextFields = []; // ordered
-    colToField.forEach((f, idx) => {
-      if (textFields.includes(f)) headerTextFields.push({ idx, field: f });
-    });
-    // Count how many parts to assign to text — but nama can span multiple parts
-    // Simpler: if header has kode, nama, satuan as first 3 cols, then first 1-N parts map to text where N = number of text columns
-    // But if nama is 2 parts (e.g., "ALKOHOL PER BAYI"), we have an off-by-one
-    // Even simpler: if header col is text, assign one part to it. If nama needs more, the parts won't align — fail gracefully
-    for (let p = 0; p < parts.length; p++) {
-      const part = parts[p];
-      // Find which header column this part aligns with
-      // For text fields, use the next text column from header
-      // For numeric fields, use the next numeric column from header
-      // Walk header cols left-to-right
-      // We need a smarter alignment strategy...
-      // For now, let's use a simple greedy approach:
-      //   - If colToField[p] is set, use it
-      //   - If p > headerCols.length, treat as continuation of previous text field
-      if (p < colToField.length) {
-        const f = colToField[p];
-        if (!f) {
-          // Continuation of previous text field
-          if (item.nama && !item.satuan) { item.nama += " " + part; }
-          else if (item.kode && !item.nama) { item.nama = part; }
-          continue;
-        }
-        if (textFields.includes(f)) {
-          item[f] = part;
-        } else {
-          item[f] = parseAccurateNumber(part);
-        }
-      } else {
-        // Extra parts beyond header — append to nama if nama set, else to last text field
-        if (item.nama) item.nama += " " + part;
-        else if (item.kode && !item.nama) item.nama = part;
-      }
-    }
-    // Validate: must have kode OR nama
-    if (!item.kode && !item.nama) continue;
-    // If only akhir present, set masuk = akhir (so computed akhir matches)
-    if (onlyAkhir) {
-      if (hasField("akhirQty")) item.masukQty = item.awalQty === 0 ? (parseAccurateNumber(parts[colToField.indexOf("akhirQty")]) || 0) : 0;
-      // Simpler: just set masukQty = the parsed akhirQty value, masukNilai = parsed akhirNilai
-      // Re-parse to get fresh values
-      const akhirQtyField = colToField.indexOf("akhirQty");
-      const akhirNilaiField = colToField.indexOf("akhirNilai");
-      if (akhirQtyField >= 0 && akhirQtyField < parts.length) {
-        item.masukQty = parseAccurateNumber(parts[akhirQtyField]);
-      }
-      if (akhirNilaiField >= 0 && akhirNilaiField < parts.length) {
-        item.masukNilai = parseAccurateNumber(parts[akhirNilaiField]);
-      }
-    }
+    MUT_FIELDS.forEach(f => { if (vals[f] !== undefined) item[f] = vals[f]; });
     items.push(item);
   }
-  console.log(`Persediaan parser: parsed ${items.length} items, header cols: ${headerCols.length}, onlyAkhir=${onlyAkhir}`);
+  console.log(`Persediaan parser: ${items.length} items, ${skipped} skipped, numFields=[${numFieldList.join(",")}]`);
   return items;
 }
 
@@ -2536,7 +2526,7 @@ function showPasteAccurateDialog(type, opts = {}) {
     reportName = "Daftar Nilai Persediaan / Laporan Persediaan Bulanan";
     title = `Paste dari Laporan Accurate — Persediaan (${opts.month ? BULAN_NAMES[opts.month-1] : ''} 2026)`;
     placeholder = "Contoh format yang akan diparse:\n\nKODE      NAMA BARANG                       SATUAN   AWAL QTY   AWAL NILAI   MASUK QTY   MASUK NILAI   KELUAR QTY   KELUAR NILAI   AKHIR QTY   AKHIR NILAI\nA00002    ALKOHOL                           Ltr      157,25     6.374.998    200          8.108.108     166,25      6.739.863     191         7.743.242\nA00010    BENZOAT RRC / SODIUM BENZOAT     Kg       59         1.771.112    1.100        38.162.500    1.076,5     37.260.308    82,5        2.673.303\n\nAtau format sederhana (Daftar Nilai Persediaan):\n\nKODE      NAMA BARANG                       SATUAN   QTY        NILAI\nA00002    ALKOHOL                           Ltr      191         7.743.242\nA00010    BENZOAT RRC / SODIUM BENZOAT     Kg       82,5        2.673.303";
-    tips = "Format Persediaan: tabular dengan header row. Parser auto-detect kolom (case-insensitive). Jika hanya ada AKHIR QTY + NILAI (snapshot), akan dianggap saldo akhir → set masuk=akhir, awal=0, keluar=0 (akhir komputasi = akhir input).";
+    tips = "Format Persediaan: tabular per item — KODE, NAMA BARANG, SATUAN, lalu pasangan angka QTY+NILAI untuk Saldo Awal / Masuk / Keluar / Akhir. Parser auto-detect header & format Indonesia (koma=desimal, titik=ribuan). Snapshot yang hanya punya QTY+NILAI dianggap saldo akhir (masuk=akhir). Mode Append menggabungkan berdasarkan KODE: item lama di-update, item baru ditambahkan. Nama item yang wrap ke baris kedua otomatis digabung.";
     formatUmum = "tabular dengan header row (KODE, NAMA BARANG, SATUAN, QTY, NILAI, dll). Pisah kolom otomatis deteksi dari spasi 2+. Parser otomatis deteksi format Indonesia (koma=desimal, titik=ribuan).";
   } else {
     reportName = isJual ? "Rincian Penjualan per Barang" : "Rincian Pembelian per Barang";
@@ -2577,7 +2567,7 @@ function showPasteAccurateDialog(type, opts = {}) {
             <button id="btnParse" class="inline-flex items-center gap-1.5 rounded-md border border-sky-300 bg-sky-50 px-3 py-1.5 text-xs font-medium text-sky-700 hover:bg-sky-100">⚙ Parse &amp; Preview</button>
             <button id="btnSavePaste" class="inline-flex items-center gap-1.5 rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700 ml-auto">💾 Simpan</button>
             <select id="pasteMode" class="border border-slate-300 rounded px-2 py-1.5 text-xs">
-              <option value="append">Append (tambah ke data lama)</option>
+              <option value="append">${isPers ? "Append (gabung per KODE)" : "Append (tambah ke data lama)"}</option>
               <option value="replace">Replace (ganti semua data)</option>
             </select>
           </div>
@@ -2671,10 +2661,18 @@ function showPasteAccurateDialog(type, opts = {}) {
       const month = opts.month || persMonth;
       const existing = getPersediaanData(month);
       let newData;
-      if (mode === "replace") newData = parsedTxs.slice();
-      else newData = existing.concat(parsedTxs);
+      if (mode === "replace") {
+        newData = parsedTxs.slice();
+      } else {
+        // Append dengan merge by KODE: item yang sudah ada di-update, item baru ditambahkan
+        newData = existing.slice();
+        parsedTxs.forEach(p => {
+          const idx = newData.findIndex(e => e.kode === p.kode);
+          if (idx >= 0) newData[idx] = p;
+          else newData.push(p);
+        });
+      }
       savePersediaanData(month, newData);
-      const totalNilai = parsedTxs.reduce((s, r) => s + (r.masukNilai || 0) - (r.keluarNilai || 0), 0);
       close();
       render();
       showToast(`✓ ${parsedTxs.length} item persediaan ${BULAN_NAMES[month-1]} 2026 di-${mode === "replace" ? "replace" : "append"}`);
