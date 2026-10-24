@@ -53,6 +53,10 @@
   table.dash-table td.num { font-variant-numeric: tabular-nums; }
   table.dash-table td.neg { color: #dc2626; }
   table.dash-table tr.active-row { background: #fef3c7; }
+  table.dash-table td.input { background-color: #fef9c3; cursor: text; }
+  table.dash-table td.input:hover { background-color: #fde047; }
+  table.dash-table td input.cell-input { width: 100%; background: transparent; border: 0; outline: 0; padding: 0; font: inherit; color: inherit; text-align: right; }
+  table.dash-table tr.total-row td { background: #fef3c7; font-weight: 700; }
   .toggle-btn { padding: 0.5rem 1rem; border-radius: 0.375rem; font-size: 0.8rem; font-weight: 600; border: 1px solid #cbd5e1; background: #fff; color: #475569; cursor: pointer; transition: all .15s; }
   .toggle-btn.active { background: #0ea5e9; color: #fff; border-color: #0284c7; }
   .toggle-btn:hover:not(.active) { background: #f1f5f9; }
@@ -159,7 +163,8 @@ const SIDEBAR_ITEMS = [
   { key: "rincian-penjualan", label: "Penjualan",          desc: "Transaksi penjualan",        icon: "🛒", custom: "rincianPenjualan" },
   { key: "rincian-pembelian", label: "Pembelian",          desc: "Transaksi pembelian",        icon: "📦", custom: "rincianPembelian" },
   { key: "persediaan",        label: "Persediaan",         desc: "Per bulan, editable",         icon: "📊", custom: "persediaan" },
-  { key: "piutang-utang",     label: "Piutang & Utang",    desc: "+ faktur belum lunas",       icon: "💰", custom: "piutangUtang" },
+  { key: "piutang",           label: "Piutang",            desc: "Piutang usaha + tunai/kredit", icon: "💰", custom: "piutang" },
+  { key: "hutang",            label: "Hutang",             desc: "Hutang usaha + faktur",      icon: "💸", custom: "hutang" },
   { key: "Neraca",            label: "Neraca",             desc: "Aktiva, Kewajiban, Ekuitas", icon: "⚖️", excel: true },
   { key: "master-data",       label: "Master Data",        desc: "Barang, supplier, pelanggan",icon: "🗃️", custom: "masterData" },
 ];
@@ -266,7 +271,7 @@ function render() {
   document.getElementById("sheetSubtitle").textContent = item.desc || "";
   // Hide toolbar buttons for custom views (Dashboard, Master Data)
   const isCustom = !!item.custom;
-  const hideToolbar = isCustom && item.custom !== "piutangUtang";
+  const hideToolbar = isCustom;
   document.getElementById("btnExport").style.display = hideToolbar ? "none" : "";
   document.getElementById("btnReset").style.display = hideToolbar ? "none" : "";
   document.getElementById("fileImport").parentElement.style.display = hideToolbar ? "none" : "";
@@ -283,7 +288,8 @@ function render() {
       case "rincianPenjualan": return renderRincian("penjualan");
       case "rincianPembelian": return renderRincian("pembelian");
       case "persediaan": return renderPersediaan();
-      case "piutangUtang": return renderPiutangUtang();
+      case "piutang": return renderPiutang();
+      case "hutang": return renderHutang();
       case "masterData": return renderMasterData();
     }
   } else if (item.excel) {
@@ -1460,108 +1466,305 @@ function renderPersediaanBulan() {
 }
 
 // ============================================================
-// 12. PIUTANG & UTANG — with embedded Faktur Belum Lunas
+// 12. PIUTANG — menu sendiri (saldo bulanan + tunai vs kredit)
 // ============================================================
-function renderPiutangUtang() {
+// Sumber data: sheet Excel "Piutang & Utang" (Piutang: baris 8-19, Tunai vs Kredit: baris 23-34).
+// Edit sel tersimpan di localStorage (userEdits.extras.piutangBulan), bisa di-reset ke data Excel asli.
+const PIUTANG_FIELDS = ["saldoAwal","penjualan","pembayaran","penyesuaian"];
+const UTANG_FIELDS = ["saldoAwal","penyesuaianAwal","pembelian","pembayaran"];
+
+function getPiutangRows() {
+  const ov = (userEdits.extras && userEdits.extras.piutangBulan) || {};
+  const rows = [];
+  for (let m = 1; m <= 12; m++) {
+    const pRow = 7 + m;
+    // PIUTANG: C=saldoAwal, D=penjualan, E=pembayaran, F=penyesuaian
+    const r = Object.assign({
+      saldoAwal: Number(hfGet("Piutang & Utang",`C${pRow}`)) || 0,
+      penjualan: Number(hfGet("Piutang & Utang",`D${pRow}`)) || 0,
+      pembayaran: Number(hfGet("Piutang & Utang",`E${pRow}`)) || 0,
+      penyesuaian: Number(hfGet("Piutang & Utang",`F${pRow}`)) || 0,
+    }, ov[String(m)] || {});
+    r.bulan = BULAN_NAMES[m-1];
+    // Saldo Akhir = Saldo Awal + Penjualan - Pembayaran.
+    // Kolom Penyesuaian TIDAK ditambahkan lagi karena sudah termasuk dalam Saldo Awal
+    // (terbukti dari data Excel: C11 = G10 + F11, C40 = G39 + D40) — sama dengan Excel asli.
+    r.saldoAkhir = r.saldoAwal + r.penjualan - r.pembayaran;
+    rows.push(r);
+  }
+  return rows;
+}
+
+function savePiutangBulan(rows) {
+  if (!userEdits.extras) userEdits.extras = {};
+  userEdits.extras.piutangBulan = {};
+  rows.forEach((r, i) => {
+    const o = {};
+    PIUTANG_FIELDS.forEach(f => { o[f] = Number(r[f]) || 0; });
+    userEdits.extras.piutangBulan[String(i+1)] = o;
+  });
+  saveEdits(userEdits);
+}
+
+// Tunai (NOTA KECIL) vs Kredit (NOTA BESAR) per bulan.
+// Prioritas: dihitung LIVE dari data transaksi Penjualan (hasil import/paste Accurate) bila bulan tsb ada transaksi;
+// kalau tidak ada, pakai nilai statis dari sheet Excel "Piutang & Utang" (baris 23-34).
+function getTunaiKreditRows() {
+  const tx = getTxData("penjualan") || [];
+  const byMonth = {};
+  tx.forEach(t => {
+    if (!t || !t.tanggal) return;
+    const m = parseInt(String(t.tanggal).slice(5,7), 10);
+    if (!m || m < 1 || m > 12) return;
+    if (!byMonth[m]) byMonth[m] = { tunai: 0, kredit: 0 };
+    const amt = (Number(t.kuantitas)||0) * (Number(t.hargaSatuan)||0);
+    if (t.kategori === "NOTA BESAR") byMonth[m].kredit += amt;
+    else byMonth[m].tunai += amt;
+  });
+  const rows = [];
+  for (let m = 1; m <= 12; m++) {
+    const tRow = 22 + m;
+    const exTunai = Number(hfGet("Piutang & Utang",`C${tRow}`)) || 0;
+    const exKredit = Number(hfGet("Piutang & Utang",`D${tRow}`)) || 0;
+    const live = byMonth[m];
+    const useLive = !!live && (live.tunai > 0 || live.kredit > 0);
+    rows.push({
+      bulan: BULAN_NAMES[m-1],
+      tunai: useLive ? live.tunai : exTunai,
+      kredit: useLive ? live.kredit : exKredit,
+      fromTx: useLive,
+    });
+  }
+  return rows;
+}
+
+// Edit sel angka bulanan (klik sel kuning → input → Enter/blur = simpan).
+// Pakai data-val (angka mentah) supaya nilai desimal tidak rusak oleh format tampilan.
+function attachMonthCellEdit(tbody, rows, onSaved, rerender, label) {
+  tbody.querySelectorAll("td.input[data-f]").forEach(td => {
+    td.onclick = () => {
+      if (td.querySelector("input")) return;
+      const inp = document.createElement("input");
+      inp.className = "cell-input";
+      inp.value = td.dataset.val !== undefined ? td.dataset.val : td.textContent.replace(/[Rp ().,]/g,"").trim();
+      inp.type = "text";
+      inp.inputMode = "decimal";
+      td.textContent = "";
+      td.appendChild(inp);
+      inp.focus(); inp.select();
+      const save = () => {
+        const raw = inp.value.trim();
+        let v = 0;
+        if (raw !== "") {
+          const cleaned = raw.replace(/\./g,"").replace(",",".");
+          if (!isNaN(Number(cleaned)) && /^[\d.,\-]+$/.test(raw)) v = Number(cleaned);
+        }
+        const m = parseInt(td.dataset.m,10);
+        const f = td.dataset.f;
+        rows[m][f] = v;
+        onSaved(rows);
+        rerender();
+        showToast(`✓ ${BULAN_NAMES[m]} (${label}) diupdate`);
+      };
+      inp.onblur = save;
+      inp.onkeydown = (e) => { if (e.key === "Enter") inp.blur(); };
+    };
+  });
+}
+
+function renderPiutang() {
   const c = document.getElementById("sheetContainer");
   c.classList.add("p-4","sm:p-6");
   c.style.background = "#fff";
 
-  // Read Piutang & Utang from Excel
-  // Piutang: headers at Excel row 6 (BULAN, SALDO AWAL, PENJUALAN, PEMBAYARAN, PENYESUAIAN, SALDO AKHIR)
-  // Data: Januari at row 8, ..., Desember at row 19. So row = 7 + month.
-  // Utang: headers at Excel row 38 (BULAN, SALDO AWAL, PENYESUAIAN AWAL, PEMBELIAN, PEMBAYARAN, SALDO AKHIR)
-  // Data: Januari at row 40, ..., Desember at row 51. So row = 39 + month.
-  const piutangRows = [];
-  const utangRows = [];
-  for (let m = 1; m <= 12; m++) {
-    const bulan = BULAN_NAMES[m-1];
-    // PIUTANG: C=saldoAwal, D=penjualan, E=pembayaran, F=penyesuaian, G=saldoAkhir
-    const pRow = 7 + m;
-    const pSaldoAwal = Number(hfGet("Piutang & Utang",`C${pRow}`)) || 0;
-    const pPenjualan = Number(hfGet("Piutang & Utang",`D${pRow}`)) || 0;
-    const pPembayaran = Number(hfGet("Piutang & Utang",`E${pRow}`)) || 0;
-    const pPenyesuaian = Number(hfGet("Piutang & Utang",`F${pRow}`)) || 0;
-    piutangRows.push({bulan, saldoAwal:pSaldoAwal, penjualan:pPenjualan, pembayaran:pPembayaran, penyesuaian:pPenyesuaian, saldoAkhir:pSaldoAwal+pPenjualan-pPembayaran+pPenyesuaian});
-
-    // UTANG: C=saldoAwal, D=penyesuaianAwal, E=pembelian, F=pembayaran, G=saldoAkhir
-    const uRow = 39 + m;
-    const uSaldoAwal = Number(hfGet("Piutang & Utang",`C${uRow}`)) || 0;
-    const uPenyesuaian = Number(hfGet("Piutang & Utang",`D${uRow}`)) || 0;
-    const uPembelian = Number(hfGet("Piutang & Utang",`E${uRow}`)) || 0;
-    const uPembayaran = Number(hfGet("Piutang & Utang",`F${uRow}`)) || 0;
-    utangRows.push({bulan, saldoAwal:uSaldoAwal, penyesuaianAwal:uPenyesuaian, pembelian:uPembelian, pembayaran:uPembayaran, saldoAkhir:uSaldoAwal+uPenyesuaian+uPembelian-uPembayaran});
-  }
-  const totalPiutangAkhir = piutangRows[piutangRows.length-1].saldoAkhir;
-  const totalUtangAkhir = utangRows[utangRows.length-1].saldoAkhir;
-  const faktur = EXTRAS.fakturBelumLunas;
-  const totalFaktur = faktur.reduce((s,r)=>s+r.nilai,0);
-  const terlewat = faktur.filter(f=>f.status==="TERLEWAT").length;
+  const rows = getPiutangRows();
+  const tkRows = getTunaiKreditRows();
+  const saldoAkhirDes = rows[11].saldoAkhir;
+  const totJual = rows.reduce((s,r)=>s+r.penjualan,0);
+  const totBayar = rows.reduce((s,r)=>s+r.pembayaran,0);
+  const totTunai = tkRows.reduce((s,r)=>s+r.tunai,0);
+  const totKredit = tkRows.reduce((s,r)=>s+r.kredit,0);
+  const totPenjualan = totTunai + totKredit;
+  const pctTunai = totPenjualan > 0 ? totTunai/totPenjualan : 0;
+  const hasEdit = !!(userEdits.extras && userEdits.extras.piutangBulan);
 
   c.innerHTML = `
     <div class="space-y-4">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 class="text-lg font-bold text-slate-800">Piutang & Utang Usaha — 2026</h2>
-          <p class="text-xs text-slate-500">Saldo bulanan + faktur belum lunas (sebelumnya sheet terpisah, sekarang tergabung di sini)</p>
+          <h2 class="text-lg font-bold text-slate-800">Piutang Usaha — 2026</h2>
+          <p class="text-xs text-slate-500">Saldo piutang bulanan (penjualan kredit / Nota Besar) + breakdown Tunai vs Kredit</p>
+        </div>
+        <div class="flex gap-2">
+          ${hasEdit ? '<button id="btnResetPiu" class="inline-flex items-center gap-1.5 rounded-md border border-rose-300 bg-rose-50 px-3 py-1.5 text-xs font-medium text-rose-700 hover:bg-rose-100">↺ Reset Edit</button>' : ''}
         </div>
       </div>
 
       <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div class="kpi-card"><div class="label">Saldo Piutang Akhir</div><div class="value">Rp ${fmtRupiah(totalPiutangAkhir)}</div><div class="sub">Per Desember 2026</div></div>
-        <div class="kpi-card danger"><div class="label">Saldo Utang Akhir</div><div class="value">Rp ${fmtRupiah(totalUtangAkhir)}</div><div class="sub">Per Desember 2026</div></div>
-        <div class="kpi-card primary"><div class="label">Total Faktur Belum Lunas</div><div class="value">Rp ${fmtRupiah(totalFaktur)}</div><div class="sub">${faktur.length} faktur</div></div>
-        <div class="kpi-card ${terlewat>0?'danger':''}"><div class="label">Faktur Jatuh Tempo Terlewat</div><div class="value">${terlewat}</div><div class="sub">dari ${faktur.length} faktur</div></div>
+        <div class="kpi-card"><div class="label">Saldo Piutang Akhir</div><div class="value">Rp ${fmtRupiah(saldoAkhirDes)}</div><div class="sub">Per Desember 2026</div></div>
+        <div class="kpi-card primary"><div class="label">Penjualan Kredit YTD</div><div class="value">Rp ${fmtRupiah(totJual)}</div><div class="sub">Total penjualan Nota Besar</div></div>
+        <div class="kpi-card success"><div class="label">Pembayaran Piutang YTD</div><div class="value">Rp ${fmtRupiah(totBayar)}</div><div class="sub">Pelunasan pelanggan</div></div>
+        <div class="kpi-card"><div class="label">% Penjualan Tunai YTD</div><div class="value">${(pctTunai*100).toFixed(1)}%</div><div class="sub">Tunai Rp ${fmtRupiah(totTunai)} / Total Rp ${fmtRupiah(totPenjualan)}</div></div>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <!-- PIUTANG -->
-        <div class="bg-white border border-slate-200 rounded-lg p-4">
-          <h3 class="text-sm font-bold text-slate-700 mb-2">Piutang Usaha per Bulan</h3>
-          <p class="text-xs text-slate-500 mb-2">Saldo Akhir = Saldo Awal + Penjualan − Pembayaran + Penyesuaian (auto)</p>
-          <table class="dash-table">
-            <thead><tr><th>BULAN</th><th>SALDO AWAL</th><th>JUAL</th><th>BAYAR</th><th>PENYESUAIAN</th><th>SALDO AKHIR</th></tr></thead>
-            <tbody>
-              ${piutangRows.map(r=>`<tr><td class="label">${r.bulan}</td><td class="num">Rp ${fmtRupiah(r.saldoAwal)}</td><td class="num">Rp ${fmtRupiah(r.penjualan)}</td><td class="num">Rp ${fmtRupiah(r.pembayaran)}</td><td class="num">Rp ${fmtRupiah(r.penyesuaian)}</td><td class="num">Rp ${fmtRupiah(r.saldoAkhir)}</td></tr>`).join("")}
-            </tbody>
-          </table>
-        </div>
-
-        <!-- UTANG -->
-        <div class="bg-white border border-slate-200 rounded-lg p-4">
-          <h3 class="text-sm font-bold text-slate-700 mb-2">Utang Usaha per Bulan</h3>
-          <p class="text-xs text-slate-500 mb-2">Saldo Akhir = Saldo Awal + Penyesuaian + Pembelian − Pembayaran (auto)</p>
-          <table class="dash-table">
-            <thead><tr><th>BULAN</th><th>SALDO AWAL</th><th>PENYESUAIAN</th><th>BELI</th><th>BAYAR</th><th>SALDO AKHIR</th></tr></thead>
-            <tbody>
-              ${utangRows.map(r=>`<tr><td class="label">${r.bulan}</td><td class="num">Rp ${fmtRupiah(r.saldoAwal)}</td><td class="num">Rp ${fmtRupiah(r.penyesuaianAwal)}</td><td class="num">Rp ${fmtRupiah(r.pembelian)}</td><td class="num">Rp ${fmtRupiah(r.pembayaran)}</td><td class="num">Rp ${fmtRupiah(r.saldoAkhir)}</td></tr>`).join("")}
-            </tbody>
-          </table>
-        </div>
+      <div class="bg-white border border-slate-200 rounded-lg overflow-auto scrollbar-thin">
+        <h3 class="text-sm font-bold text-slate-700 m-4 mb-1">Piutang Usaha per Bulan</h3>
+        <p class="text-xs text-slate-500 mx-4 mt-0 mb-2">Saldo Akhir = Saldo Awal + Penjualan − Pembayaran (auto). Kolom Penyesuaian sudah termasuk dalam Saldo Awal (sama dengan Excel). Klik sel angka (kuning) untuk edit.</p>
+        <table class="dash-table">
+          <thead><tr><th>BULAN</th><th>SALDO AWAL</th><th>PENJUALAN (KREDIT)</th><th>PEMBAYARAN</th><th>PENYESUAIAN</th><th>SALDO AKHIR</th></tr></thead>
+          <tbody id="piuTbody">
+            ${rows.map((r,i)=>`<tr><td class="label">${r.bulan}</td><td class="num input" data-m="${i}" data-f="saldoAwal" data-val="${r.saldoAwal}">Rp ${fmtRupiah(r.saldoAwal)}</td><td class="num input" data-m="${i}" data-f="penjualan" data-val="${r.penjualan}">Rp ${fmtRupiah(r.penjualan)}</td><td class="num input" data-m="${i}" data-f="pembayaran" data-val="${r.pembayaran}">Rp ${fmtRupiah(r.pembayaran)}</td><td class="num input" data-m="${i}" data-f="penyesuaian" data-val="${r.penyesuaian}">Rp ${fmtRupiah(r.penyesuaian)}</td><td class="num">Rp ${fmtRupiah(r.saldoAkhir)}</td></tr>`).join("")}
+          </tbody>
+        </table>
       </div>
 
-      <!-- FAKTUR BELUM LUNAS (embedded) -->
-      <div class="bg-white border border-slate-200 rounded-lg p-4">
-        <h3 class="text-sm font-bold text-slate-700 mb-2">Rincian Faktur Belum Lunas (per 30 Sep 2026)</h3>
-        <p class="text-xs text-slate-500 mb-2">Status TERLEWAT/BERJALAN dihitung dari tanggal jatuh tempo vs hari ini</p>
-        <div class="overflow-auto scrollbar-thin">
-          <table class="tx-table">
-            <thead>
-              <tr><th>SUPPLIER</th><th>NO. FAKTUR</th><th>TANGGAL</th><th>JATUH TEMPO</th><th>UMUR (HR)</th><th>NILAI</th><th>STATUS</th></tr>
-            </thead>
-            <tbody>
-              ${faktur.map(f=>`<tr><td>${escapeHtml(f.supplier)}</td><td>${escapeHtml(f.noFaktur)}</td><td class="center">${f.tanggal||"-"}</td><td class="center">${f.jatuhTempo||"-"}</td><td class="num">${f.umur}</td><td class="num">Rp ${fmtRupiah(f.nilai)}</td><td class="center"><span class="px-1.5 py-0.5 rounded text-[10px] font-medium ${f.status==='TERLEWAT'?'bg-rose-100 text-rose-700':'bg-amber-100 text-amber-700'}">${f.status}</span></td></tr>`).join("")}
-            </tbody>
-            <tfoot>
-              <tr class="total-row"><td colspan="5" style="text-align:right">TOTAL (${faktur.length} faktur)</td><td class="num">Rp ${fmtRupiah(totalFaktur)}</td><td></td></tr>
-            </tfoot>
-          </table>
-        </div>
+      <div class="bg-white border border-slate-200 rounded-lg overflow-auto scrollbar-thin">
+        <h3 class="text-sm font-bold text-slate-700 m-4 mb-1">Penjualan: Tunai (Nota Kecil) vs Kredit (Nota Besar)</h3>
+        <p class="text-xs text-slate-500 mx-4 mt-0 mb-2">Bulan bertanda "⚡ dari transaksi" dihitung otomatis dari data menu Penjualan (hasil paste Accurate). Bulan lain memakai data Excel.</p>
+        <table class="dash-table">
+          <thead><tr><th>BULAN</th><th>NOTA KECIL (TUNAI)</th><th>NOTA BESAR (KREDIT)</th><th>TOTAL</th><th>% TUNAI</th><th>SUMBER</th></tr></thead>
+          <tbody>
+            ${tkRows.map(r=>{ const tot = r.tunai + r.kredit; const pct = tot>0 ? r.tunai/tot : null; return `<tr><td class="label">${r.bulan}</td><td class="num">Rp ${fmtRupiah(r.tunai)}</td><td class="num">Rp ${fmtRupiah(r.kredit)}</td><td class="num">Rp ${fmtRupiah(tot)}</td><td class="num">${pct===null?"-":(pct*100).toFixed(1)+"%"}</td><td class="center text-[10px] ${r.fromTx?'text-emerald-600 font-medium':'text-slate-400'}">${r.fromTx?"⚡ dari transaksi":"Excel"}</td></tr>`; }).join("")}
+          </tbody>
+          <tfoot>
+            <tr class="total-row"><td style="text-align:left;font-weight:700">TOTAL</td><td class="num">Rp ${fmtRupiah(totTunai)}</td><td class="num">Rp ${fmtRupiah(totKredit)}</td><td class="num">Rp ${fmtRupiah(totPenjualan)}</td><td class="num">${totPenjualan>0?(pctTunai*100).toFixed(1)+"%":"-"}</td><td></td></tr>
+          </tfoot>
+        </table>
       </div>
 
-      <p class="text-xs text-slate-500">Untuk edit saldo bulanan, buka sheet Excel "Piutang & Utang" (asli). Saldo akhir auto-hitung di tabel di atas.</p>
+      <p class="text-xs text-slate-500">Sumber data: sheet Excel "Piutang & Utang" + data transaksi Penjualan. Edit tersimpan otomatis di browser (localStorage); gunakan "Reset Edit" untuk kembali ke data Excel asli.</p>
     </div>`;
-  document.getElementById("statusBar").textContent = `Piutang Akhir: Rp ${fmtRupiah(totalPiutangAkhir)} · Utang Akhir: Rp ${fmtRupiah(totalUtangAkhir)} · Faktur Belum Lunas: Rp ${fmtRupiah(totalFaktur)} (${faktur.length} faktur, ${terlewat} terlewat).`;
+
+  if (hasEdit) {
+    document.getElementById("btnResetPiu").onclick = () => {
+      if (!confirm("Reset semua edit Piutang ke data Excel asli?")) return;
+      delete userEdits.extras.piutangBulan;
+      saveEdits(userEdits);
+      renderPiutang();
+      showToast("✓ Edit Piutang direset");
+    };
+  }
+  attachMonthCellEdit(document.getElementById("piuTbody"), rows, savePiutangBulan, renderPiutang, "Piutang");
+
+  document.getElementById("statusBar").textContent = `Piutang Akhir (Des): Rp ${fmtRupiah(saldoAkhirDes)} · Penjualan Kredit YTD: Rp ${fmtRupiah(totJual)} · Pembayaran YTD: Rp ${fmtRupiah(totBayar)}`;
+}
+
+// ============================================================
+// 12b. HUTANG — menu sendiri (saldo bulanan + faktur belum lunas)
+// ============================================================
+function getUtangRows() {
+  const ov = (userEdits.extras && userEdits.extras.utangBulan) || {};
+  const rows = [];
+  for (let m = 1; m <= 12; m++) {
+    const uRow = 39 + m;
+    // UTANG: C=saldoAwal, D=penyesuaianAwal, E=pembelian, F=pembayaran
+    const r = Object.assign({
+      saldoAwal: Number(hfGet("Piutang & Utang",`C${uRow}`)) || 0,
+      penyesuaianAwal: Number(hfGet("Piutang & Utang",`D${uRow}`)) || 0,
+      pembelian: Number(hfGet("Piutang & Utang",`E${uRow}`)) || 0,
+      pembayaran: Number(hfGet("Piutang & Utang",`F${uRow}`)) || 0,
+    }, ov[String(m)] || {});
+    r.bulan = BULAN_NAMES[m-1];
+    // Saldo Akhir = Saldo Awal + Pembelian - Pembayaran.
+    // Kolom Penyesuaian Awal TIDAK ditambahkan lagi karena sudah termasuk dalam Saldo Awal
+    // (terbukti dari data Excel: C40 = G39 + D40) — kode lama double-count (Jan tampil 144,86jt vs Excel 143,12jt).
+    r.saldoAkhir = r.saldoAwal + r.pembelian - r.pembayaran;
+    rows.push(r);
+  }
+  return rows;
+}
+
+function saveUtangBulan(rows) {
+  if (!userEdits.extras) userEdits.extras = {};
+  userEdits.extras.utangBulan = {};
+  rows.forEach((r, i) => {
+    const o = {};
+    UTANG_FIELDS.forEach(f => { o[f] = Number(r[f]) || 0; });
+    userEdits.extras.utangBulan[String(i+1)] = o;
+  });
+  saveEdits(userEdits);
+}
+
+function getFakturBelumLunas() {
+  if (userEdits.extras && userEdits.extras.fakturBelumLunas) return userEdits.extras.fakturBelumLunas;
+  return EXTRAS.fakturBelumLunas || [];
+}
+
+function renderHutang() {
+  const c = document.getElementById("sheetContainer");
+  c.classList.add("p-4","sm:p-6");
+  c.style.background = "#fff";
+
+  const rows = getUtangRows();
+  const saldoAkhirDes = rows[11].saldoAkhir;
+  const totBeli = rows.reduce((s,r)=>s+r.pembelian,0);
+  const totBayar = rows.reduce((s,r)=>s+r.pembayaran,0);
+  const faktur = getFakturBelumLunas();
+  const totalFaktur = faktur.reduce((s,r)=>s+r.nilai,0);
+  const terlewat = faktur.filter(f=>f.status==="TERLEWAT").length;
+  const hasEdit = !!(userEdits.extras && userEdits.extras.utangBulan);
+
+  c.innerHTML = `
+    <div class="space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 class="text-lg font-bold text-slate-800">Hutang Usaha — 2026</h2>
+          <p class="text-xs text-slate-500">Saldo hutang bulanan (pembelian kredit ke supplier) + faktur belum lunas</p>
+        </div>
+        <div class="flex gap-2">
+          ${hasEdit ? '<button id="btnResetHut" class="inline-flex items-center gap-1.5 rounded-md border border-rose-300 bg-rose-50 px-3 py-1.5 text-xs font-medium text-rose-700 hover:bg-rose-100">↺ Reset Edit</button>' : ''}
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div class="kpi-card danger"><div class="label">Saldo Hutang Akhir</div><div class="value">Rp ${fmtRupiah(saldoAkhirDes)}</div><div class="sub">Per Desember 2026</div></div>
+        <div class="kpi-card primary"><div class="label">Pembelian Kredit YTD</div><div class="value">Rp ${fmtRupiah(totBeli)}</div><div class="sub">Total pembelian kredit</div></div>
+        <div class="kpi-card success"><div class="label">Pembayaran Hutang YTD</div><div class="value">Rp ${fmtRupiah(totBayar)}</div><div class="sub">Pelunasan ke supplier</div></div>
+        <div class="kpi-card"><div class="label">Faktur Belum Lunas</div><div class="value">Rp ${fmtRupiah(totalFaktur)}</div><div class="sub">${faktur.length} faktur · ${terlewat} jatuh tempo terlewat</div></div>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-lg overflow-auto scrollbar-thin">
+        <h3 class="text-sm font-bold text-slate-700 m-4 mb-1">Hutang Usaha per Bulan</h3>
+        <p class="text-xs text-slate-500 mx-4 mt-0 mb-2">Saldo Akhir = Saldo Awal + Pembelian − Pembayaran (auto). Kolom Penyesuaian Awal sudah termasuk dalam Saldo Awal (sama dengan Excel). Klik sel angka (kuning) untuk edit.</p>
+        <table class="dash-table">
+          <thead><tr><th>BULAN</th><th>SALDO AWAL</th><th>PENYESUAIAN AWAL</th><th>PEMBELIAN</th><th>PEMBAYARAN</th><th>SALDO AKHIR</th></tr></thead>
+          <tbody id="hutTbody">
+            ${rows.map((r,i)=>`<tr><td class="label">${r.bulan}</td><td class="num input" data-m="${i}" data-f="saldoAwal" data-val="${r.saldoAwal}">Rp ${fmtRupiah(r.saldoAwal)}</td><td class="num input" data-m="${i}" data-f="penyesuaianAwal" data-val="${r.penyesuaianAwal}">Rp ${fmtRupiah(r.penyesuaianAwal)}</td><td class="num input" data-m="${i}" data-f="pembelian" data-val="${r.pembelian}">Rp ${fmtRupiah(r.pembelian)}</td><td class="num input" data-m="${i}" data-f="pembayaran" data-val="${r.pembayaran}">Rp ${fmtRupiah(r.pembayaran)}</td><td class="num">Rp ${fmtRupiah(r.saldoAkhir)}</td></tr>`).join("")}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-lg overflow-auto scrollbar-thin">
+        <h3 class="text-sm font-bold text-slate-700 m-4 mb-1">Rincian Faktur Belum Lunas (per 30 Sep 2026)</h3>
+        <p class="text-xs text-slate-500 mx-4 mt-0 mb-2">Status TERLEWAT/BERJALAN dihitung dari tanggal jatuh tempo vs hari ini</p>
+        <table class="tx-table">
+          <thead>
+            <tr><th>SUPPLIER</th><th>NO. FAKTUR</th><th>TANGGAL</th><th>JATUH TEMPO</th><th>UMUR (HR)</th><th>NILAI</th><th>STATUS</th></tr>
+          </thead>
+          <tbody>
+            ${faktur.map(f=>`<tr><td>${escapeHtml(f.supplier)}</td><td>${escapeHtml(f.noFaktur)}</td><td class="center">${f.tanggal||"-"}</td><td class="center">${f.jatuhTempo||"-"}</td><td class="num">${f.umur}</td><td class="num">Rp ${fmtRupiah(f.nilai)}</td><td class="center"><span class="px-1.5 py-0.5 rounded text-[10px] font-medium ${f.status==='TERLEWAT'?'bg-rose-100 text-rose-700':'bg-amber-100 text-amber-700'}">${f.status}</span></td></tr>`).join("")}
+          </tbody>
+          <tfoot>
+            <tr class="total-row"><td colspan="5" style="text-align:right">TOTAL (${faktur.length} faktur)</td><td class="num">Rp ${fmtRupiah(totalFaktur)}</td><td></td></tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <p class="text-xs text-slate-500">Sumber data: sheet Excel "Piutang & Utang" (bagian Hutang) + Faktur Belum Lunas. Edit tersimpan otomatis di browser (localStorage); gunakan "Reset Edit" untuk kembali ke data Excel asli.</p>
+    </div>`;
+
+  if (hasEdit) {
+    document.getElementById("btnResetHut").onclick = () => {
+      if (!confirm("Reset semua edit Hutang ke data Excel asli?")) return;
+      delete userEdits.extras.utangBulan;
+      saveEdits(userEdits);
+      renderHutang();
+      showToast("✓ Edit Hutang direset");
+    };
+  }
+  attachMonthCellEdit(document.getElementById("hutTbody"), rows, saveUtangBulan, renderHutang, "Hutang");
+
+  document.getElementById("statusBar").textContent = `Hutang Akhir (Des): Rp ${fmtRupiah(saldoAkhirDes)} · Pembelian Kredit YTD: Rp ${fmtRupiah(totBeli)} · Faktur Belum Lunas: Rp ${fmtRupiah(totalFaktur)} (${faktur.length} faktur, ${terlewat} terlewat).`;
 }
 
 // ============================================================

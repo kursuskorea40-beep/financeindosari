@@ -109,14 +109,20 @@ if (transactions.length >= 6) {
   console.log(`  isLunas: ${transactions[1].isLunas}`);
   console.log(`  catatan: "${transactions[1].catatan}"`);
 
-  console.log('\nTX3 (PI.2026.09.000150 - has Tempo dd Mmm yyyy):');
+  console.log('\nTX2b (00161260921 - no keterangan, tunai):');
   console.log(`  noFaktur: ${transactions[2].noFaktur}`);
-  console.log(`  isLunas: ${transactions[2].isLunas} (expected false - has Tempo)`);
-  console.log(`  jatuhTempo: ${transactions[2].jatuhTempo} (expected 2026-10-09)`);
+  console.log(`  isLunas: ${transactions[2].isLunas} (expected true - keterangan kosong)`);
+
+  console.log('\nTX3 (PI.2026.09.000150 - has Tempo dd Mmm yyyy):');
+  console.log(`  noFaktur: ${transactions[3].noFaktur}`);
+  console.log(`  isLunas: ${transactions[3].isLunas} (expected false - has Tempo)`);
+  console.log(`  jatuhTempo: ${transactions[3].jatuhTempo} (expected 2026-10-09)`);
 
   console.log('\nTX4 (PI.2026.09.000151 - has JT dd/mm/yyyy):');
-  console.log(`  jatuhTempo: ${transactions[3].jatuhTempo} (expected 2026-10-25)`);
+  console.log(`  noFaktur: ${transactions[4].noFaktur}`);
+  console.log(`  jatuhTempo: ${transactions[4].jatuhTempo} (expected 2026-10-25)`);
 
   console.log('\nTX5 (PI.2026.09.000152 - has "Lunas"):');
-  console.log(`  isLunas: ${transactions[4].isLunas} (expected true)`);
+  console.log(`  noFaktur: ${transactions[5].noFaktur}`);
+  console.log(`  isLunas: ${transactions[5].isLunas} (expected true)`);
 }
