@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DashboardView } from "@/components/views/dashboard-view";
 import { MasterDataView } from "@/components/views/master-data-view";
 import { PlaceholderView } from "@/components/views/placeholder-view";
+import { TransactionView } from "@/components/views/transaction-view";
 import { toast } from "sonner";
 
 type ModuleKey =
@@ -108,7 +109,9 @@ export default function Home() {
         <div className="p-6">
           {activeModule === "dashboard" && <DashboardView />}
           {activeModule === "master-data" && <MasterDataView />}
-          {["laba-rugi", "penjualan", "pembelian", "persediaan", "piutang", "hutang", "neraca"].includes(activeModule) && (
+          {activeModule === "penjualan" && <TransactionView moduleType="penjualan" />}
+          {activeModule === "pembelian" && <TransactionView moduleType="pembelian" />}
+          {["laba-rugi", "persediaan", "piutang", "hutang", "neraca"].includes(activeModule) && (
             <PlaceholderView moduleKey={activeModule} />
           )}
         </div>

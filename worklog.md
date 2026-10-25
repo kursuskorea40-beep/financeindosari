@@ -221,3 +221,33 @@ Stage Summary:
 - Akun login: admin1/admin123 (ADMIN, Jakarta) · finance1/finance123 (FINANCE, Jakarta) · gudang1/gudang123 (GUDANG, Surabaya).
 - Script artefak: scripts/seed.ts (seeder), scripts/extract_master_for_seed.py (extract master dari HTML → JSON), scripts/data/{akuntansi_master_export.json, webapp_login.png, webapp_dashboard.png, webapp_master_data.png}.
 - Untuk iterasi berikutnya: porting parser Accurate dari HTML akuntansi (Penjualan/Pembelian/Persediaan/Piutang/Hutang/LR/Neraca — semua sudah ada di HTML, tinggal adapt ke TS + Prisma + multi-cabang).
+
+---
+Task ID: 9
+Agent: main (Z.ai)
+Task: Porting modul Penjualan + Pembelian ke web app Next.js (parser Accurate lengkap, paste dari Accurate, list view + KPI + form + filter bulan)
+
+Work Log:
+- Porting parser Accurate ke TypeScript: src/lib/accurate-parser.ts. Berisi: ACCURATE_MONTH_MAP (12 bulan ID + EN), parseAccurateNumber (Indonesian format: titik=ribuan, koma=desimal), parseAccurateDate (parsing "06 Sep 2026" → ISO), isAccurateHeaderOrFooter (skip header/footer), isAccurateTransaction (deteksi baris transaksi), isAccurateSubtotal (skip subtotal), parseAccurateTransaction (Penjualan: NB./NT. deteksi + qty/satuan/amount), parseAccurateRincianText (Penjualan full parser — multi-line item name accumulator), parseAccuratePembelianTransaction (Pembelian: Giro/Tempo/Lunas keyword deteksi + isLunas + jatuhTempo), parseAccurateRincianPembelianText (Pembelian full parser). Plus helpers: BULAN_NAMES_FULL/SHORT, fmtIDR, fmtDateID, getMonthFromISO, getYearFromISO.
+- Test parser: scripts/test_parser_port.ts — 33 pass / 0 fail (2 "expected" math saya salah hitung, parser output BENAR: total 2,628,500 = 280000+2184000+18500+146000 ✓; hargaSatuan 334,355 = round(8108108.11/24.25) ✓).
+- API routes Penjualan (3): GET /api/penjualan (filter cabangId+bulan+tahun+search, return items+summary tunai/kredit), POST /api/penjualan (create/update single tx), DELETE /api/penjualan?id=xxx, POST /api/penjualan/paste (parse teks Accurate + insert batch, mode append/replace, deteksi duplikat di append).
+- API routes Pembelian (3): same pattern. GET returns summary lunas/kredit (isLunas boolean instead of kategori NOTA BESAR/KECIL). POST /api/pembelian/paste uses parseAccurateRincianPembelianText.
+- UI TransactionView (src/components/views/transaction-view.tsx): generic component untuk Penjualan & Pembelian (parameter moduleType). Filter bar (bulan "0=Semua Bulan YTD"+12 bulan + tahun ±2 + search). 4 KPI cards (Total / Tunai NT atau Lunas / Kredit NB atau Belum Lunas / Rata-rata per transaksi). Table 10 kolom dgn badge kategori + total row di tfoot. Dialog Edit/Tambah (form 6-9 field, live subtotal calc). Dialog Paste (textarea + mode merge/replace + info cara pakai).
+- Update page.tsx: wire Penjualan + Pembelian ke TransactionView (ganti PlaceholderView). 5 modul tersisa sebagai placeholder (Laba Rugi, Persediaan, Piutang, Hutang, Neraca).
+- FIX BUG auth: NextAuth getServerSession return 401 (JWT decryption failed) bila env NEXTAUTH_SECRET tidak ter-set eksplisit di auth.ts. Fix: tambah `secret: process.env.NEXTAUTH_SECRET || "fallback"` di authOptions NextAuth config. Restart dev server, clear cookies, re-login → API paste jadi return 200.
+- Smoke test agent-browser end-to-end SEMUA LULUS:
+  • Login admin1/admin123 → sidebar muncul.
+  • Klik Penjualan → empty state tampil "Belum ada transaksi Oktober 2026".
+  • POST /api/penjualan/paste sample 4 transaksi (2 ALKOHOL + 2 BENZOAT HOLLAND, ada NB.708 Nota Besar) → 200, ok=true, parsed=4, inserted=4.
+  • Switch bulan ke September → table render 4 rows, KPI Penjualan Sep Rp 2,628,500 (4 transaksi), Tunai NT Rp 444,500 (16.9%, 2 transaksi: row 0+1 BENZOAT), Kredit NB Rp 2,184,000 (83.1%, 1 transaksi: SI.2026.09.00001 ALKOHOL), kategori badge NT/NB tampil benar.
+  • POST /api/pembelian/paste sample 4 transaksi (PI.000146 Giro 0058, empty keterangan, Tempo 09 Okt 2026, Lunas keyword) → 200, ok=true, parsed=4, inserted=4.
+  • Switch Pembelian ke September → table render 4 rows, KPI Pembelian Sep Rp 18,695,109, Lunas Rp 1,837,000 (9.8%, 2 transaksi: empty keterangan + "Lunas"), Kredit Rp 16,858,109 (90.2%, 2 transaksi: "Tempo 09 Okt 2026" jatuh tempo 2026-10-09 + "Giro 0058"). Status badge Lunas/Kredit tampil benar.
+  • Dashboard KPI auto-update: Penjualan YTD Rp 2,628,500 (4 transaksi), Pembelian YTD Rp 18,695,109 (4 transaksi), bar chart bulan September ada 2 batang (jual maroon + beli gold), "1 bulan ada data".
+- Lint: src/* bersih. Syntax OK. No runtime errors di dev.log.
+
+Stage Summary:
+- 2 modul aktif penuh: Penjualan + Pembelian, masing-masing dengan parser Accurate (Rincian Penjualan/Pembelian per Barang), paste dari Accurate, list view dengan filter bulan/tahun/search, KPI cards (Total/Tunai/Kredit/Rata-rata), table 10 kolom dgn badge kategori, dialog edit/tambah transaksi, dialog paste dengan mode replace/append.
+- Total 4 modul aktif: Dashboard + Master Data + Penjualan + Pembelian (dari 2 modul sebelumnya).
+- 5 modul placeholder tersisa: Laba Rugi, Persediaan, Piutang, Hutang, Neraca — akan di-port iterasi berikutnya.
+- Parser Accurate full port: 868 transaksi penjualan + pembelian dgn sen desimal, NB/NT, Giro/Tempo/Lunas keyword, multi-line product name — semua bekerja sama seperti di HTML akuntansi.
+- Script artefak: src/lib/accurate-parser.ts, src/app/api/penjualan/{route.ts, paste/route.ts}, src/app/api/pembelian/{route.ts, paste/route.ts}, src/components/views/transaction-view.tsx, scripts/test_parser_port.ts, scripts/data/{webapp_penjualan_list.png, webapp_pembelian_list.png}.

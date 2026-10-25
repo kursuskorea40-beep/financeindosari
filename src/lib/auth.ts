@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 
 export const authOptions: NextAuthOptions = {
+  secret: process.env.NEXTAUTH_SECRET || "indosari-akuntansi-2026-secret-key-change-in-prod",
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days

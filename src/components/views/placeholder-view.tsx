@@ -7,8 +7,6 @@ interface Props { moduleKey: string; }
 
 const MODULE_INFO: Record<string, { title: string; icon: string; status: string; desc: string }> = {
   "laba-rugi": { title: "Laba Rugi", icon: "📈", status: "Coming Soon", desc: "Format Accurate Standar per bulan, dengan Paste dari Accurate, editable. Akan di-port dari HTML akuntansi." },
-  "penjualan": { title: "Penjualan", icon: "💵", status: "Coming Soon", desc: "Transaksi penjualan per bulan, dengan Paste dari Accurate (Rincian Penjualan per Barang), import Excel/CSV, tambah manual." },
-  "pembelian": { title: "Pembelian", icon: "🛒", status: "Coming Soon", desc: "Transaksi pembelian per bulan, dengan Paste dari Accurate (Rincian Pembelian per Barang), import Excel/CSV." },
   "persediaan": { title: "Persediaan", icon: "📦", status: "Coming Soon", desc: "Kartu stok per bulan, dengan Paste dari Accurate (Daftar Nilai Persediaan), import Excel/CSV." },
   "piutang": { title: "Piutang", icon: "💰", status: "Coming Soon", desc: "Saldo piutang per bulan (editable) + Faktur Piutang Belum Lunas dari Paste 'Daftar Piutang Usaha'." },
   "hutang": { title: "Hutang", icon: "💸", status: "Coming Soon", desc: "Saldo hutang per bulan (editable) + Faktur Hutang Belum Lunas dari Paste 'Daftar Utang Usaha'." },
