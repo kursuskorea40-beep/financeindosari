@@ -1,0 +1,325 @@
+// Prisma schema for INDOSARI Akuntansi 2026 — web app version
+// Database: SQLite (dev). For Vercel production, switch `provider` to "postgresql"
+// and update DATABASE_URL to point to Vercel Postgres / Neon / Supabase.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// AUTH & MULTI-CABANG
+// ============================================================
+
+model Cabang {
+  id        String   @id @default(cuid())
+  kode      String   @unique
+  nama      String
+  alamat    String?
+  telp      String?
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations (Prisma sqlite menggunakan cascade biasa)
+  users             User[]
+  masterBarang       MasterBarang[]
+  masterSupplier     MasterSupplier[]
+  masterPelanggan    MasterPelanggan[]
+  transaksiPenjualan TransaksiPenjualan[]
+  transaksiPembelian TransaksiPembelian[]
+  persediaanBulan    PersediaanBulan[]
+  piutangBulan       PiutangBulan[]
+  utangBulan         UtangBulan[]
+  fakturPiutang      FakturPiutang[]
+  fakturHutang       FakturHutang[]
+  labaRugiBulan      LabaRugiBulan[]
+  neracaBulan        NeracaBulan[]
+}
+
+model User {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String
+  name         String?
+  role         String   @default("USER") // ADMIN | FINANCE | PURCHASING | GUDANG | USER
+  cabangId     String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  cabang               Cabang?                @relation(fields: [cabangId], references: [id])
+  transaksiPenjualan   TransaksiPenjualan[]
+  transaksiPembelian   TransaksiPembelian[]
+}
+
+// ============================================================
+// MASTER DATA
+// ============================================================
+
+model MasterBarang {
+  id        String   @id @default(cuid())
+  kode      String
+  nama      String
+  satuan    String?
+  cabangId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cabang  Cabang  @relation(fields: [cabangId], references: [id])
+
+  @@unique([cabangId, kode])
+}
+
+model MasterSupplier {
+  id        String   @id @default(cuid())
+  nama      String
+  alamat    String?
+  telp      String?
+  cabangId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cabang Cabang @relation(fields: [cabangId], references: [id])
+  fakturHutang FakturHutang[]
+
+  @@unique([cabangId, nama])
+}
+
+model MasterPelanggan {
+  id        String   @id @default(cuid())
+  nama      String
+  alamat    String?
+  telp      String?
+  cabangId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cabang Cabang @relation(fields: [cabangId], references: [id])
+  fakturPiutang FakturPiutang[]
+
+  @@unique([cabangId, nama])
+}
+
+// ============================================================
+// TRANSAKSI PENJUALAN & PEMBELIAN (per line item, dari paste Accurate)
+// ============================================================
+
+model TransaksiPenjualan {
+  id          String   @id @default(cuid())
+  cabangId    String
+  bulan       Int      // 1-12
+  tahun       Int      // 2026
+  tanggal     String   // ISO YYYY-MM-DD
+  noNota      String?
+  namaBarang  String
+  satuan      String?
+  kuantitas   Float
+  hargaSatuan Float
+  kategori    String   @default("NOTA KECIL") // NOTA BESAR | NOTA KECIL
+  isLunas     Boolean  @default(true)
+  jatuhTempo  String?
+  keterangan  String?
+  userId      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  cabang Cabang @relation(fields: [cabangId], references: [id])
+  user   User?  @relation(fields: [userId], references: [id])
+
+  @@index([cabangId, tahun, bulan])
+  @@index([cabangId, tanggal])
+}
+
+model TransaksiPembelian {
+  id          String   @id @default(cuid())
+  cabangId    String
+  bulan       Int      // 1-12
+  tahun       Int      // 2026
+  tanggal     String   // ISO YYYY-MM-DD
+  noNota      String?
+  namaBarang  String
+  satuan      String?
+  kuantitas   Float
+  hargaSatuan Float
+  isLunas     Boolean  @default(false)
+  jatuhTempo  String?
+  keterangan  String?
+  userId      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  cabang Cabang @relation(fields: [cabangId], references: [id])
+  user   User?  @relation(fields: [userId], references: [id])
+
+  @@index([cabangId, tahun, bulan])
+  @@index([cabangId, tanggal])
+}
+
+// ============================================================
+// PERSEDIAAN BULANAN (per item per bulan, dari paste Accurate)
+// ============================================================
+
+model PersediaanBulan {
+  id           String   @id @default(cuid())
+  cabangId     String
+  bulan        Int      // 1-12
+  tahun        Int      // 2026
+  kode         String
+  nama         String
+  satuan       String?
+  awalQty      Float    @default(0)
+  awalNilai    Float    @default(0)
+  masukQty     Float    @default(0)
+  masukNilai   Float    @default(0)
+  keluarQty    Float    @default(0)
+  keluarNilai  Float    @default(0)
+  // akhirQty & akhirNilai computed (awal + masuk - keluar)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  cabang Cabang @relation(fields: [cabangId], references: [id])
+
+  @@unique([cabangId, tahun, bulan, kode])
+}
+
+// ============================================================
+// PIUTANG & HUTANG — saldo bulanan editable
+// ============================================================
+
+model PiutangBulan {
+  id           String   @id @default(cuid())
+  cabangId     String
+  bulan        Int      // 1-12
+  tahun        Int      // 2026
+  saldoAwal    Float    @default(0)
+  penjualan    Float    @default(0)
+  pembayaran   Float    @default(0)
+  penyesuaian  Float    @default(0)
+  // saldoAkhir computed (saldoAwal + penjualan - pembayaran)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  cabang Cabang @relation(fields: [cabangId], references: [id])
+
+  @@unique([cabangId, tahun, bulan])
+}
+
+model UtangBulan {
+  id              String   @id @default(cuid())
+  cabangId        String
+  bulan           Int      // 1-12
+  tahun           Int      // 2026
+  saldoAwal       Float    @default(0)
+  penyesuaianAwal Float    @default(0)
+  pembelian       Float    @default(0)
+  pembayaran      Float    @default(0)
+  // saldoAkhir computed
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  cabang Cabang @relation(fields: [cabangId], references: [id])
+
+  @@unique([cabangId, tahun, bulan])
+}
+
+// ============================================================
+// FAKTUR PIUTANG & HUTANG BELUM LUNAS (per faktur)
+// ============================================================
+
+model FakturPiutang {
+  id          String   @id @default(cuid())
+  cabangId    String
+  pelangganId String?
+  pelanggan   String
+  noFaktur    String
+  tanggal     String?
+  jatuhTempo  String?
+  nilai       Float    @default(0)
+  jumlah      Float    @default(0)
+  dibayar     Float    @default(0)
+  sumber      String   @default("manual") // "manual" | "paste_accurate"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  cabang    Cabang          @relation(fields: [cabangId], references: [id])
+  pelangganRef MasterPelanggan? @relation(fields: [pelangganId], references: [id])
+
+  @@unique([cabangId, noFaktur])
+  @@index([cabangId, jatuhTempo])
+}
+
+model FakturHutang {
+  id          String   @id @default(cuid())
+  cabangId    String
+  supplierId  String?
+  supplier    String
+  noFaktur    String
+  tanggal     String?
+  jatuhTempo  String?
+  nilai       Float    @default(0)
+  jumlah      Float    @default(0)
+  dibayar     Float    @default(0)
+  sumber      String   @default("manual")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  cabang    Cabang        @relation(fields: [cabangId], references: [id])
+  supplierRef MasterSupplier? @relation(fields: [supplierId], references: [id])
+
+  @@unique([cabangId, noFaktur])
+  @@index([cabangId, jatuhTempo])
+}
+
+// ============================================================
+// LABA RUGI & NERACA BULANAN (per akun per bulan, dari paste Accurate)
+// ============================================================
+
+model LabaRugiBulan {
+  id        String   @id @default(cuid())
+  cabangId  String
+  bulan     Int      // 0 = YTD; 1-12 = specific month
+  tahun     Int      // 2026
+  akun      String   // Nama akun: "Pendapatan Operasional", "Beban Gaji", dst.
+  nilai     Float    @default(0)
+  kategori  String?  // "PENDAPATAN" | "BPP" | "BEBAN OPERASIONAL" | dst.
+  isCustom  Boolean  @default(false) // akun tambahan otomatis (bukan template)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cabang Cabang @relation(fields: [cabangId], references: [id])
+
+  @@unique([cabangId, tahun, bulan, akun])
+}
+
+model NeracaBulan {
+  id        String   @id @default(cuid())
+  cabangId  String
+  bulan     Int      // 0 = YTD; 1-12 = specific month
+  tahun     Int      // 2026
+  akun      String   // "Kas & Bank", "Piutang Usaha", dst.
+  nilai     Float    @default(0)
+  kategori  String?  // "ASET LANCAR" | "ASET TIDAK LANCAR" | "LIABILITAS" | "EKUITAS"
+  isCustom  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cabang Cabang @relation(fields: [cabangId], references: [id])
+
+  @@unique([cabangId, tahun, bulan, akun])
+}
+
+// ============================================================
+// SETTINGS — key/value untuk identitas perusahaan
+// ============================================================
+
+model Setting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+}

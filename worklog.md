@@ -292,3 +292,51 @@ Stage Summary:
 - File struktur baru: src/lib/accurate-{persediaan,piutang-hutang,fr}.ts + src/app/api/{persediaan,persediaan/paste,piutang,hutang,laba-rugi,neraca}/route.ts + src/components/views/{persediaan-view,piutang-hutang-view,fr-view}.tsx.
 - Akun login: admin1/admin123 (Admin JKT) · finance1/finance123 (FINANCE JKT) · gudang1/gudang123 (GUDANG SBY).
 - Script artefak: scripts/data/{webapp_persediaan.png, webapp_piutang.png, webapp_neraca.png}.
+
+---
+Task ID: 11
+Agent: main (Z.ai)
+Task: Siapkan untuk deploy ke Vercel — schema postgres, env vars, README, build scripts
+
+Work Log:
+- Buat `prisma/schema.postgres.prisma` (copy schema.prisma dgn `provider = "postgresql"`). Local dev tetap pakai schema.prisma (sqlite), Vercel pakai schema.postgres.prisma via flag `--schema` di vercel-build.
+- Update `package.json`:
+  • Tambah `postinstall: "prisma generate"` (Vercel butuh ini agar Prisma client ter-generate setelah `bun install`)
+  • Tambah `vercel-build: "prisma generate --schema=prisma/schema.postgres.prisma && next build"` (override default Vercel build, generate client dgn schema postgres, lalu next build)
+  • Tambah `db:push-prod: "prisma db push --schema=prisma/schema.postgres.prisma --accept-data-loss"` (push schema ke DB production)
+  • Tambah `db:seed-prod: "bun run scripts/seed-prod.ts"` (seed production)
+- Buat `.env.example` (committed, bukan .env): template DATABASE_URL (sqlite local + postgres Neon example), NEXTAUTH_SECRET (placeholder + link generator), NEXTAUTH_URL (localhost + production URL).
+- Update `.gitignore`:
+  • `!.env.example` (allow commit .env.example, tetap exclude .env)
+  • Tambah `/db/`, `*.db`, `*.db-journal` (exclude SQLite local file dari git)
+- Update `eslint.config.mjs` ignores: tambah `scripts/`, `download/`, `upload/`, `tool-results/`, `mini-services/` (skip legacy helper scripts yang pakai require() — bukan bagian Next.js app). Lint sekarang bersih (0 errors).
+- Buat `vercel.json`: framework=nextjs, buildCommand="bun run vercel-build", installCommand="bun install".
+- Buat `scripts/seed-prod.ts`: versi seed untuk production — auto-generate NEXTAUTH_SECRET hint bila belum set (via `crypto.randomBytes(32).toString("base64")`), seed 3 user + 2 cabang + 4 settings. Skip import master data (kosong di production, user import manual lewat UI Master Data → Import dari File Akuntansi HTML).
+- Buat `README.md` lengkap (10 KB):
+  • Stack overview (Next.js 16 + TS 5 + Prisma 6 + NextAuth v4 + Tailwind v4 + shadcn/ui)
+  • 9 modul aktif listed
+  • Akun demo (3 user × 2 cabang)
+  • Quick start local dev (5 langkah: install → env → db push → seed → dev)
+  • Deploy ke Vercel (6 langkah): setup PostgreSQL (3 opsi: Vercel Postgres/Neon/Supabase), set env vars, push ke GitHub, import ke Vercel, first-time DB setup, update NEXTAUTH_URL
+  • Postgres schema note (2 file schema, otomatis switch via --schema flag)
+  • Project structure tree
+  • Common issues & troubleshooting (login 401, DB connection error, Prisma client error, build fail)
+  • Development notes (dev server, lint, reset DB)
+- Verifikasi:
+  • `bun run lint` — 0 errors di src/ (legacy scripts/ sekarang di-ignore)
+  • `bunx prisma validate --schema=prisma/schema.prisma` — ✓ valid (sqlite)
+  • `bunx prisma generate --schema=prisma/schema.postgres.prisma` dgn DATABASE_URL=test postgres URL — ✓ generate sukses (schema postgres valid, butuh DATABASE_URL postgres saat runtime)
+  • Restart dev server, login admin1/admin123 — Dashboard tetap render dgn semua data (Penjualan Rp 2.628.500, Pembelian Rp 18.695.109, Piutang Rp 37.500.000, Hutang Rp 16.766.216, Master 265/17/4). Neraca Sep tetap "✓ Seimbang" dgn Aset Rp 921.597.914,6.
+  • Semua data persisted dari iterasi sebelumnya (SQLite file db/custom.db intact).
+
+Stage Summary:
+- Web app INDOSARI Akuntansi 2026 SIAP DEPLOY ke Vercel. Yang perlu user lakukan:
+  1. Push project ke GitHub
+  2. Daftar Neon free (atau Vercel Postgres) → dapat connection string postgresql://
+  3. Import repo ke Vercel → auto-build via vercel-build script (prisma generate dgn schema postgres + next build)
+  4. Set env vars di Vercel: DATABASE_URL (postgres), NEXTAUTH_SECRET (random 32-byte base64), NEXTAUTH_URL (URL production)
+  5. Run db:push-prod + db:seed-prod (via Vercel CLI `vercel env pull` lalu run locally, atau lewat Vercel dashboard console)
+  6. Login admin1/admin123 di URL production → import master JSON dari file HTML akuntansi → paste data Accurate
+- File deploy baru: .env.example, README.md, vercel.json, prisma/schema.postgres.prisma, scripts/seed-prod.ts
+- File update: package.json (postinstall + vercel-build + db:push-prod + db:seed-prod scripts), .gitignore (allow .env.example + exclude db/), eslint.config.mjs (ignore scripts/).
+- Local dev tetap berfungsi penuh dgn SQLite. Vercel akan auto-switch ke PostgreSQL saat build via flag --schema di vercel-build.
