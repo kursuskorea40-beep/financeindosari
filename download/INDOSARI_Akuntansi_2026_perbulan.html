@@ -27,7 +27,11 @@
   table.sheet-table td.header-row { background-color: #8A1A38; color: #fff; font-weight: 600; text-align: center; }
   table.sheet-table td input.cell-input { width: 100%; background: transparent; border: 0; outline: 0; padding: 0; font: inherit; color: inherit; text-align: inherit; }
   table.sheet-table td input.cell-input:focus { background: #fff; box-shadow: inset 0 0 0 2px #6D0F2B; border-radius: 2px; }
+  .sidebar-item { color: #EAE2DB; }
+  .sidebar-item:hover { color: #fff; }
   .sidebar-item.active { background: #6D0F2B; color: #fff; }
+  .sidebar-item.active .icon-wrap { background: #D4A72C; color: #fff; }
+  .sidebar-item .icon-wrap { transition: background .15s, color .15s; }
   .sidebar-item.active .icon-wrap { background: #D4A72C; color: #fff; }
   /* Dashboard styles */
   .kpi-card { background: #fff; border: 1px solid #EAE2DB; border-radius: 0.5rem; padding: 1rem 1.25rem; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
@@ -1440,6 +1444,10 @@ function showAddTxDialog(type, prefillMonth) {
 let persMonth = 9; // September default (data available)
 let persediaanMode = "tahun"; // "tahun" | "bulan"
 
+// Piutang & Hutang: 0 = Semua Bulan (YTD), 1-12 = bulan spesifik
+let piutangMonth = 0;
+let hutangMonth = 0;
+
 function getPersediaanData(month) {
   const key = String(month);
   if (userEdits.extras && userEdits.extras.persediaanPerBulan && userEdits.extras.persediaanPerBulan[key]) {
@@ -1957,44 +1965,75 @@ function renderPiutang() {
   const totPuSisa = puFaktur.reduce((s,f)=>s+(Number(f.nilai)||0),0);
   const puTerlewat = puSt.filter(x=>x.status==="TERLEWAT").length;
 
+  // Per-bulan: filter faktur by jatuhTempo in selected month (bila piutangMonth != 0)
+  const m = piutangMonth; // 0 = semua bulan (YTD)
+  const isPerMonth = m > 0;
+  const puFakturFiltered = isPerMonth ? puFaktur.filter(f => {
+    if (!f.jatuhTempo) return false;
+    const mm = f.jatuhTempo.match(/^(\d{4})-(\d{2})-/);
+    return mm && parseInt(mm[2], 10) === m;
+  }) : puFaktur;
+  const puStFiltered = puFakturFiltered.map(f => hitungUmurStatus(f));
+  const totPuSisaFiltered = puFakturFiltered.reduce((s,f)=>s+(Number(f.nilai)||0),0);
+  const puTerlewatFiltered = puStFiltered.filter(x=>x.status==="TERLEWAT").length;
+
+  // Per-month KPIs
+  const monthOpts = `<option value="0" ${m===0?'selected':''}>📊 Semua Bulan (YTD)</option>` +
+    BULAN_NAMES.map((b,i)=>`<option value="${i+1}" ${m===i+1?'selected':''}>${b} 2026</option>`).join("");
+  const kpiLabel = isPerMonth ? `${BULAN_NAMES[m-1]} 2026` : 'YTD 2026';
+  const kpiSaldoAwal = isPerMonth ? rows[m-1].saldoAwal : rows[0].saldoAwal;
+  const kpiSaldoAkhir = isPerMonth ? rows[m-1].saldoAkhir : saldoAkhirDes;
+  const kpiJual = isPerMonth ? rows[m-1].penjualan : totJual;
+  const kpiBayar = isPerMonth ? rows[m-1].pembayaran : totBayar;
+  // Per-month Tunai vs Kredit
+  const tkFiltered = isPerMonth ? tkRows[m-1] : null;
+  const kpiTunai = isPerMonth ? (tkFiltered ? tkFiltered.tunai : 0) : totTunai;
+  const kpiKredit = isPerMonth ? (tkFiltered ? tkFiltered.kredit : 0) : totKredit;
+  const kpiTotPenjualan = kpiTunai + kpiKredit;
+  const kpiPctTunai = kpiTotPenjualan > 0 ? kpiTunai/kpiTotPenjualan : 0;
+
   c.innerHTML = `
     <div class="space-y-4">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 class="text-lg font-bold text-slate-stone-800">Piutang Usaha — 2026</h2>
-          <p class="text-xs text-slate-stone-500">Saldo piutang bulanan (penjualan kredit / Nota Besar) + breakdown Tunai vs Kredit</p>
+          <h2 class="text-lg font-bold text-slate-stone-800">Piutang Usaha — ${isPerMonth ? BULAN_NAMES[m-1] + ' 2026' : '2026 (YTD)'}</h2>
+          <p class="text-xs text-slate-stone-500">Saldo piutang ${isPerMonth ? 'bulan ' + BULAN_NAMES[m-1] : 'semua bulan'} (penjualan kredit / Nota Besar) + breakdown Tunai vs Kredit</p>
         </div>
-        <div class="flex gap-2">
+        <div class="flex flex-wrap gap-2 items-center">
+          <div class="flex items-center gap-2">
+            <label class="text-xs font-medium text-slate-stone-700">Bulan:</label>
+            <select id="piutangMonthSel" class="select-input">${monthOpts}</select>
+          </div>
           <button id="btnPastePiu" class="inline-flex items-center gap-1.5 rounded-md border border-[#E0AEBB] bg-[#FBE9EE] px-3 py-1.5 text-xs font-medium text-[#8A1A38] hover:bg-[#F5D9E0]">📋 Paste dari Accurate</button>
           ${hasEdit ? '<button id="btnResetPiu" class="inline-flex items-center gap-1.5 rounded-md border border-rose-300 bg-rose-50 px-3 py-1.5 text-xs font-medium text-rose-700 hover:bg-rose-100">↺ Reset Edit</button>' : ''}
         </div>
       </div>
 
       <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div class="kpi-card"><div class="label">Saldo Piutang Akhir</div><div class="value">Rp ${fmtRupiah(saldoAkhirDes)}</div><div class="sub">Per Desember 2026</div></div>
-        <div class="kpi-card primary"><div class="label">Penjualan Kredit YTD</div><div class="value">Rp ${fmtRupiah(totJual)}</div><div class="sub">Total penjualan Nota Besar</div></div>
-        <div class="kpi-card success"><div class="label">Pembayaran Piutang YTD</div><div class="value">Rp ${fmtRupiah(totBayar)}</div><div class="sub">Pelunasan pelanggan</div></div>
-        <div class="kpi-card"><div class="label">% Penjualan Tunai YTD</div><div class="value">${(pctTunai*100).toFixed(1)}%</div><div class="sub">Tunai Rp ${fmtRupiah(totTunai)} / Total Rp ${fmtRupiah(totPenjualan)}</div></div>
+        <div class="kpi-card"><div class="label">Saldo Awal ${kpiLabel}</div><div class="value">Rp ${fmtRupiah(kpiSaldoAwal)}</div><div class="sub">${isPerMonth ? 'Awal bulan ' + BULAN_NAMES[m-1] : 'Awal Januari 2026'}</div></div>
+        <div class="kpi-card primary"><div class="label">Penjualan Kredit ${kpiLabel}</div><div class="value">Rp ${fmtRupiah(kpiJual)}</div><div class="sub">${isPerMonth ? 'Nota Besar bulan ini' : 'Total penjualan Nota Besar'}</div></div>
+        <div class="kpi-card success"><div class="label">Pembayaran ${kpiLabel}</div><div class="value">Rp ${fmtRupiah(kpiBayar)}</div><div class="sub">${isPerMonth ? 'Pelunasan bulan ini' : 'Pelunasan pelanggan YTD'}</div></div>
+        <div class="kpi-card"><div class="label">Saldo Akhir ${kpiLabel}</div><div class="value">Rp ${fmtRupiah(kpiSaldoAkhir)}</div><div class="sub">${isPerMonth ? 'Akhir bulan ' + BULAN_NAMES[m-1] : 'Per Desember 2026'}</div></div>
       </div>
 
       <div class="bg-white border border-slate-stone-200 rounded-lg overflow-auto scrollbar-thin">
-        <h3 class="text-sm font-bold text-slate-stone-700 m-4 mb-1">Piutang Usaha per Bulan</h3>
+        <h3 class="text-sm font-bold text-slate-stone-700 m-4 mb-1">Piutang Usaha per Bulan ${isPerMonth ? `<span class="text-[#6D0F2B] text-xs font-medium">· bulan ${BULAN_NAMES[m-1]} disorot</span>` : ''}</h3>
         <p class="text-xs text-slate-stone-500 mx-4 mt-0 mb-2">Saldo Akhir = Saldo Awal + Penjualan − Pembayaran (auto). Kolom Penyesuaian sudah termasuk dalam Saldo Awal (sama dengan Excel). Klik sel angka (kuning) untuk edit.</p>
         <table class="dash-table">
           <thead><tr><th>BULAN</th><th>SALDO AWAL</th><th>PENJUALAN (KREDIT)</th><th>PEMBAYARAN</th><th>PENYESUAIAN</th><th>SALDO AKHIR</th></tr></thead>
           <tbody id="piuTbody">
-            ${rows.map((r,i)=>`<tr><td class="label">${r.bulan}</td><td class="num input" data-m="${i}" data-f="saldoAwal" data-val="${r.saldoAwal}">Rp ${fmtRupiah(r.saldoAwal)}</td><td class="num input" data-m="${i}" data-f="penjualan" data-val="${r.penjualan}">Rp ${fmtRupiah(r.penjualan)}</td><td class="num input" data-m="${i}" data-f="pembayaran" data-val="${r.pembayaran}">Rp ${fmtRupiah(r.pembayaran)}</td><td class="num input" data-m="${i}" data-f="penyesuaian" data-val="${r.penyesuaian}">Rp ${fmtRupiah(r.penyesuaian)}</td><td class="num">Rp ${fmtRupiah(r.saldoAkhir)}</td></tr>`).join("")}
+            ${rows.map((r,i)=>`<tr class="${isPerMonth && i===m-1?'active-row':''}"><td class="label">${r.bulan}</td><td class="num input" data-m="${i}" data-f="saldoAwal" data-val="${r.saldoAwal}">Rp ${fmtRupiah(r.saldoAwal)}</td><td class="num input" data-m="${i}" data-f="penjualan" data-val="${r.penjualan}">Rp ${fmtRupiah(r.penjualan)}</td><td class="num input" data-m="${i}" data-f="pembayaran" data-val="${r.pembayaran}">Rp ${fmtRupiah(r.pembayaran)}</td><td class="num input" data-m="${i}" data-f="penyesuaian" data-val="${r.penyesuaian}">Rp ${fmtRupiah(r.penyesuaian)}</td><td class="num">Rp ${fmtRupiah(r.saldoAkhir)}</td></tr>`).join("")}
           </tbody>
         </table>
       </div>
 
       <div class="bg-white border border-slate-stone-200 rounded-lg overflow-auto scrollbar-thin">
-        <h3 class="text-sm font-bold text-slate-stone-700 m-4 mb-1">Penjualan: Tunai (Nota Kecil) vs Kredit (Nota Besar)</h3>
+        <h3 class="text-sm font-bold text-slate-stone-700 m-4 mb-1">Penjualan: Tunai (Nota Kecil) vs Kredit (Nota Besar) ${isPerMonth ? `<span class="text-[#6D0F2B] text-xs font-medium">· bulan ${BULAN_NAMES[m-1]} disorot</span>` : ''}</h3>
         <p class="text-xs text-slate-stone-500 mx-4 mt-0 mb-2">Bulan bertanda "⚡ dari transaksi" dihitung otomatis dari data menu Penjualan (hasil paste Accurate). Bulan lain memakai data Excel.</p>
         <table class="dash-table">
           <thead><tr><th>BULAN</th><th>NOTA KECIL (TUNAI)</th><th>NOTA BESAR (KREDIT)</th><th>TOTAL</th><th>% TUNAI</th><th>SUMBER</th></tr></thead>
           <tbody>
-            ${tkRows.map(r=>{ const tot = r.tunai + r.kredit; const pct = tot>0 ? r.tunai/tot : null; return `<tr><td class="label">${r.bulan}</td><td class="num">Rp ${fmtRupiah(r.tunai)}</td><td class="num">Rp ${fmtRupiah(r.kredit)}</td><td class="num">Rp ${fmtRupiah(tot)}</td><td class="num">${pct===null?"-":(pct*100).toFixed(1)+"%"}</td><td class="center text-[10px] ${r.fromTx?'text-[#8A6A12] font-medium':'text-slate-stone-400'}">${r.fromTx?"⚡ dari transaksi":"Excel"}</td></tr>`; }).join("")}
+            ${tkRows.map((r,idx)=>{ const tot = r.tunai + r.kredit; const pct = tot>0 ? r.tunai/tot : null; return `<tr class="${isPerMonth && idx===m-1?'active-row':''}"><td class="label">${r.bulan}</td><td class="num">Rp ${fmtRupiah(r.tunai)}</td><td class="num">Rp ${fmtRupiah(r.kredit)}</td><td class="num">Rp ${fmtRupiah(tot)}</td><td class="num">${pct===null?"-":(pct*100).toFixed(1)+"%"}</td><td class="center text-[10px] ${r.fromTx?'text-[#8A6A12] font-medium':'text-slate-stone-400'}">${r.fromTx?"⚡ dari transaksi":"Excel"}</td></tr>`; }).join("")}
           </tbody>
           <tfoot>
             <tr class="total-row"><td style="text-align:left;font-weight:700">TOTAL</td><td class="num">Rp ${fmtRupiah(totTunai)}</td><td class="num">Rp ${fmtRupiah(totKredit)}</td><td class="num">Rp ${fmtRupiah(totPenjualan)}</td><td class="num">${totPenjualan>0?(pctTunai*100).toFixed(1)+"%":"-"}</td><td></td></tr>
@@ -2004,25 +2043,32 @@ function renderPiutang() {
 
       <div class="bg-white border border-slate-stone-200 rounded-lg overflow-auto scrollbar-thin">
         <div class="flex flex-wrap items-center justify-between gap-2 m-4 mb-1">
-          <h3 class="text-sm font-bold text-slate-stone-700">Faktur Piutang Belum Lunas (per pelanggan)</h3>
+          <h3 class="text-sm font-bold text-slate-stone-700">Faktur Piutang Belum Lunas ${isPerMonth ? `<span class="text-[#6D0F2B] text-xs font-medium">· jatuh tempo di ${BULAN_NAMES[m-1]} 2026</span>` : '(per pelanggan)'}</h3>
           ${puFaktur.length ? '<button id="btnHapusPiuFaktur" class="text-xs font-medium text-rose-600 hover:text-rose-800">✕ Hapus data paste</button>' : ''}
         </div>
-        ${puFaktur.length ? `
-        <p class="text-xs text-slate-stone-500 mx-4 mt-0 mb-2">Sumber: paste "Daftar Piutang Usaha" Accurate. NILAI = sisa yang belum dibayar. Umur & status dihitung otomatis dari jatuh tempo vs hari ini.</p>
+        ${puFakturFiltered.length ? `
+        <p class="text-xs text-slate-stone-500 mx-4 mt-0 mb-2">Sumber: paste "Daftar Piutang Usaha" Accurate. NILAI = sisa yang belum dibayar. Umur & status dihitung otomatis dari jatuh tempo vs hari ini.${isPerMonth ? ` difilter: hanya faktur dgn jatuh tempo di bulan ${BULAN_NAMES[m-1]} 2026.` : ''}</p>
         <table class="tx-table">
           <thead><tr><th>PELANGGAN</th><th>NO. FAKTUR</th><th>TANGGAL</th><th>JATUH TEMPO</th><th>UMUR (HR)</th><th>NILAI</th><th>STATUS</th></tr></thead>
           <tbody>
-            ${puFaktur.map((f,i)=>{ const st=puSt[i]; return `<tr><td>${escapeHtml(f.pelanggan||"-")}</td><td>${escapeHtml(f.noFaktur)}</td><td class="center">${f.tanggal||"-"}</td><td class="center">${f.jatuhTempo||"-"}</td><td class="num">${st.umur}</td><td class="num">Rp ${fmtRupiah(f.nilai)}</td><td class="center"><span class="px-1.5 py-0.5 rounded text-[10px] font-medium ${st.status==='TERLEWAT'?'bg-rose-100 text-rose-700':'bg-amber-100 text-amber-700'}">${st.status}</span></td></tr>`; }).join("")}
+            ${puFakturFiltered.map((f,i)=>{ const st=puStFiltered[i]; return `<tr><td>${escapeHtml(f.pelanggan||"-")}</td><td>${escapeHtml(f.noFaktur)}</td><td class="center">${f.tanggal||"-"}</td><td class="center">${f.jatuhTempo||"-"}</td><td class="num">${st.umur}</td><td class="num">Rp ${fmtRupiah(f.nilai)}</td><td class="center"><span class="px-1.5 py-0.5 rounded text-[10px] font-medium ${st.status==='TERLEWAT'?'bg-rose-100 text-rose-700':'bg-amber-100 text-amber-700'}">${st.status}</span></td></tr>`; }).join("")}
           </tbody>
           <tfoot>
-            <tr class="total-row"><td colspan="5" style="text-align:right">TOTAL (${puFaktur.length} faktur${puTerlewat?` · ${puTerlewat} terlewat`:""})</td><td class="num">Rp ${fmtRupiah(totPuSisa)}</td><td></td></tr>
+            <tr class="total-row"><td colspan="5" style="text-align:right">TOTAL (${puFakturFiltered.length} faktur${puTerlewatFiltered?` · ${puTerlewatFiltered} terlewat`:""})</td><td class="num">Rp ${fmtRupiah(totPuSisaFiltered)}</td><td></td></tr>
           </tfoot>
-        </table>` : `
-        <p class="text-xs text-slate-stone-400 mx-4 mb-4 mt-1">Belum ada data faktur piutang. Klik <b>📋 Paste dari Accurate</b> lalu paste laporan <b>"Daftar Piutang Usaha"</b> untuk mengisi daftar faktur pelanggan yang belum lunas.</p>`}
+        </table>` : (puFaktur.length ? `
+        <p class="text-xs text-amber-700 mx-4 mt-1 mb-4">⚠ Tidak ada faktur dengan jatuh tempo di bulan <b>${BULAN_NAMES[m-1]} 2026</b>. ${puFaktur.length} faktur lain ada di bulan berbeda. Ubah filter bulan ke "Semua Bulan (YTD)" untuk melihat semua.</p>` : `
+        <p class="text-xs text-slate-stone-400 mx-4 mb-4 mt-1">Belum ada data faktur piutang. Klik <b>📋 Paste dari Accurate</b> lalu paste laporan <b>"Daftar Piutang Usaha"</b> untuk mengisi daftar faktur pelanggan yang belum lunas.</p>`)}
       </div>
 
-      <p class="text-xs text-slate-stone-500">Sumber data: sheet Excel "Piutang & Utang" + data transaksi Penjualan + faktur piutang hasil paste "Daftar Piutang Usaha" Accurate. Edit tersimpan otomatis di browser (localStorage); gunakan "Reset Edit" untuk kembali ke data Excel asli.</p>
+      <p class="text-xs text-slate-stone-500">Sumber data: sheet Excel "Piutang & Utang" + data transaksi Penjualan + faktur piutang hasil paste "Daftar Piutang Usaha" Accurate. Edit tersimpan otomatis di browser (localStorage); gunakan "Reset Edit" untuk kembali ke data Excel asli.${isPerMonth ? ' Pilih "Semua Bulan (YTD)" di filter untuk lihat semua data.' : ''}</p>
     </div>`;
+
+  // Wire month selector
+  document.getElementById("piutangMonthSel").onchange = (e) => {
+    piutangMonth = parseInt(e.target.value, 10);
+    renderPiutang();
+  };
 
   if (hasEdit) {
     document.getElementById("btnResetPiu").onclick = () => {
@@ -2047,7 +2093,10 @@ function renderPiutang() {
     showToast("✓ Faktur piutang hasil paste dihapus");
   };
 
-  document.getElementById("statusBar").textContent = `Piutang Akhir (Des): Rp ${fmtRupiah(saldoAkhirDes)} · Penjualan Kredit YTD: Rp ${fmtRupiah(totJual)} · Pembayaran YTD: Rp ${fmtRupiah(totBayar)}${puFaktur.length ? ` · Faktur Piutang Belum Lunas: Rp ${fmtRupiah(totPuSisa)} (${puFaktur.length} faktur, ${puTerlewat} terlewat)` : ""}`;
+  const statusTxt = isPerMonth
+    ? `Piutang ${BULAN_NAMES[m-1]} 2026: Saldo Awal Rp ${fmtRupiah(kpiSaldoAwal)} → Saldo Akhir Rp ${fmtRupiah(kpiSaldoAkhir)} · Penjualan Kredit Rp ${fmtRupiah(kpiJual)} · Pembayaran Rp ${fmtRupiah(kpiBayar)}${puFakturFiltered.length ? ` · Faktur jatuh tempo bulan ini: Rp ${fmtRupiah(totPuSisaFiltered)} (${puFakturFiltered.length} faktur, ${puTerlewatFiltered} terlewat)` : " · Tidak ada faktur jatuh tempo bulan ini"}`
+    : `Piutang Akhir (Des): Rp ${fmtRupiah(saldoAkhirDes)} · Penjualan Kredit YTD: Rp ${fmtRupiah(totJual)} · Pembayaran YTD: Rp ${fmtRupiah(totBayar)}${puFaktur.length ? ` · Faktur Piutang Belum Lunas: Rp ${fmtRupiah(totPuSisa)} (${puFaktur.length} faktur, ${puTerlewat} terlewat)` : ""}`;
+  document.getElementById("statusBar").textContent = statusTxt;
 }
 
 // ============================================================
@@ -2107,55 +2156,91 @@ function renderHutang() {
   const hasEdit = !!(userEdits.extras && (userEdits.extras.utangBulan || userEdits.extras.fakturBelumLunas));
   const fakturFromPaste = !!(userEdits.extras && userEdits.extras.fakturBelumLunas);
 
+  // Per-bulan: filter faktur by jatuhTempo in selected month (bila hutangMonth != 0)
+  const m = hutangMonth;
+  const isPerMonth = m > 0;
+  const fakturFiltered = isPerMonth ? faktur.filter(f => {
+    if (!f.jatuhTempo) return false;
+    const mm = f.jatuhTempo.match(/^(\d{4})-(\d{2})-/);
+    return mm && parseInt(mm[2], 10) === m;
+  }) : faktur;
+  const fakturStFiltered = fakturFiltered.map(f => hitungUmurStatus(f));
+  const totalFakturFiltered = fakturFiltered.reduce((s,r)=>s+r.nilai,0);
+  const terlewatFiltered = fakturStFiltered.filter(x=>x.status==="TERLEWAT").length;
+
+  const monthOpts = `<option value="0" ${m===0?'selected':''}>📊 Semua Bulan (YTD)</option>` +
+    BULAN_NAMES.map((b,i)=>`<option value="${i+1}" ${m===i+1?'selected':''}>${b} 2026</option>`).join("");
+  const kpiLabel = isPerMonth ? `${BULAN_NAMES[m-1]} 2026` : 'YTD 2026';
+  const kpiSaldoAwal = isPerMonth ? rows[m-1].saldoAwal : rows[0].saldoAwal;
+  const kpiSaldoAkhir = isPerMonth ? rows[m-1].saldoAkhir : saldoAkhirDes;
+  const kpiBeli = isPerMonth ? rows[m-1].pembelian : totBeli;
+  const kpiBayar = isPerMonth ? rows[m-1].pembayaran : totBayar;
+  const kpiFaktur = isPerMonth ? totalFakturFiltered : totalFaktur;
+  const kpiFakturCount = isPerMonth ? fakturFiltered.length : faktur.length;
+  const kpiTerlewat = isPerMonth ? terlewatFiltered : terlewat;
+
   c.innerHTML = `
     <div class="space-y-4">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 class="text-lg font-bold text-slate-stone-800">Hutang Usaha — 2026</h2>
-          <p class="text-xs text-slate-stone-500">Saldo hutang bulanan (pembelian kredit ke supplier) + faktur belum lunas</p>
+          <h2 class="text-lg font-bold text-slate-stone-800">Hutang Usaha — ${isPerMonth ? BULAN_NAMES[m-1] + ' 2026' : '2026 (YTD)'}</h2>
+          <p class="text-xs text-slate-stone-500">Saldo hutang ${isPerMonth ? 'bulan ' + BULAN_NAMES[m-1] : 'semua bulan'} (pembelian kredit ke supplier) + faktur belum lunas</p>
         </div>
-        <div class="flex gap-2">
+        <div class="flex flex-wrap gap-2 items-center">
+          <div class="flex items-center gap-2">
+            <label class="text-xs font-medium text-slate-stone-700">Bulan:</label>
+            <select id="hutangMonthSel" class="select-input">${monthOpts}</select>
+          </div>
           <button id="btnPasteHut" class="inline-flex items-center gap-1.5 rounded-md border border-[#E0AEBB] bg-[#FBE9EE] px-3 py-1.5 text-xs font-medium text-[#8A1A38] hover:bg-[#F5D9E0]">📋 Paste dari Accurate</button>
           ${hasEdit ? '<button id="btnResetHut" class="inline-flex items-center gap-1.5 rounded-md border border-rose-300 bg-rose-50 px-3 py-1.5 text-xs font-medium text-rose-700 hover:bg-rose-100">↺ Reset Edit</button>' : ''}
         </div>
       </div>
 
       <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div class="kpi-card danger"><div class="label">Saldo Hutang Akhir</div><div class="value">Rp ${fmtRupiah(saldoAkhirDes)}</div><div class="sub">Per Desember 2026</div></div>
-        <div class="kpi-card primary"><div class="label">Pembelian Kredit YTD</div><div class="value">Rp ${fmtRupiah(totBeli)}</div><div class="sub">Total pembelian kredit</div></div>
-        <div class="kpi-card success"><div class="label">Pembayaran Hutang YTD</div><div class="value">Rp ${fmtRupiah(totBayar)}</div><div class="sub">Pelunasan ke supplier</div></div>
-        <div class="kpi-card"><div class="label">Faktur Belum Lunas</div><div class="value">Rp ${fmtRupiah(totalFaktur)}</div><div class="sub">${faktur.length} faktur · ${terlewat} jatuh tempo terlewat</div></div>
+        <div class="kpi-card danger"><div class="label">Saldo Awal ${kpiLabel}</div><div class="value">Rp ${fmtRupiah(kpiSaldoAwal)}</div><div class="sub">${isPerMonth ? 'Awal bulan ' + BULAN_NAMES[m-1] : 'Awal Januari 2026'}</div></div>
+        <div class="kpi-card primary"><div class="label">Pembelian Kredit ${kpiLabel}</div><div class="value">Rp ${fmtRupiah(kpiBeli)}</div><div class="sub">${isPerMonth ? 'Beli kredit bulan ini' : 'Total pembelian kredit'}</div></div>
+        <div class="kpi-card success"><div class="label">Pembayaran ${kpiLabel}</div><div class="value">Rp ${fmtRupiah(kpiBayar)}</div><div class="sub">${isPerMonth ? 'Pelunasan ke supplier bulan ini' : 'Pelunasan ke supplier YTD'}</div></div>
+        <div class="kpi-card"><div class="label">Saldo Akhir ${kpiLabel}</div><div class="value">Rp ${fmtRupiah(kpiSaldoAkhir)}</div><div class="sub">${isPerMonth ? 'Akhir bulan ' + BULAN_NAMES[m-1] : 'Per Desember 2026'}</div></div>
       </div>
 
       <div class="bg-white border border-slate-stone-200 rounded-lg overflow-auto scrollbar-thin">
-        <h3 class="text-sm font-bold text-slate-stone-700 m-4 mb-1">Hutang Usaha per Bulan</h3>
+        <h3 class="text-sm font-bold text-slate-stone-700 m-4 mb-1">Hutang Usaha per Bulan ${isPerMonth ? `<span class="text-[#6D0F2B] text-xs font-medium">· bulan ${BULAN_NAMES[m-1]} disorot</span>` : ''}</h3>
         <p class="text-xs text-slate-stone-500 mx-4 mt-0 mb-2">Saldo Akhir = Saldo Awal + Pembelian − Pembayaran (auto). Kolom Penyesuaian Awal sudah termasuk dalam Saldo Awal (sama dengan Excel). Klik sel angka (kuning) untuk edit.</p>
         <table class="dash-table">
           <thead><tr><th>BULAN</th><th>SALDO AWAL</th><th>PENYESUAIAN AWAL</th><th>PEMBELIAN</th><th>PEMBAYARAN</th><th>SALDO AKHIR</th></tr></thead>
           <tbody id="hutTbody">
-            ${rows.map((r,i)=>`<tr><td class="label">${r.bulan}</td><td class="num input" data-m="${i}" data-f="saldoAwal" data-val="${r.saldoAwal}">Rp ${fmtRupiah(r.saldoAwal)}</td><td class="num input" data-m="${i}" data-f="penyesuaianAwal" data-val="${r.penyesuaianAwal}">Rp ${fmtRupiah(r.penyesuaianAwal)}</td><td class="num input" data-m="${i}" data-f="pembelian" data-val="${r.pembelian}">Rp ${fmtRupiah(r.pembelian)}</td><td class="num input" data-m="${i}" data-f="pembayaran" data-val="${r.pembayaran}">Rp ${fmtRupiah(r.pembayaran)}</td><td class="num">Rp ${fmtRupiah(r.saldoAkhir)}</td></tr>`).join("")}
+            ${rows.map((r,i)=>`<tr class="${isPerMonth && i===m-1?'active-row':''}"><td class="label">${r.bulan}</td><td class="num input" data-m="${i}" data-f="saldoAwal" data-val="${r.saldoAwal}">Rp ${fmtRupiah(r.saldoAwal)}</td><td class="num input" data-m="${i}" data-f="penyesuaianAwal" data-val="${r.penyesuaianAwal}">Rp ${fmtRupiah(r.penyesuaianAwal)}</td><td class="num input" data-m="${i}" data-f="pembelian" data-val="${r.pembelian}">Rp ${fmtRupiah(r.pembelian)}</td><td class="num input" data-m="${i}" data-f="pembayaran" data-val="${r.pembayaran}">Rp ${fmtRupiah(r.pembayaran)}</td><td class="num">Rp ${fmtRupiah(r.saldoAkhir)}</td></tr>`).join("")}
           </tbody>
         </table>
       </div>
 
       <div class="bg-white border border-slate-stone-200 rounded-lg overflow-auto scrollbar-thin">
-        <h3 class="text-sm font-bold text-slate-stone-700 m-4 mb-1">Rincian Faktur Belum Lunas${fakturFromPaste ? " (hasil paste Accurate)" : " (per 30 Sep 2026)"}</h3>
-        <p class="text-xs text-slate-stone-500 mx-4 mt-0 mb-2">Umur & status TERLEWAT/BERJALAN dihitung otomatis dari tanggal jatuh tempo vs hari ini</p>
+        <h3 class="text-sm font-bold text-slate-stone-700 m-4 mb-1">Rincian Faktur Belum Lunas${fakturFromPaste ? " (hasil paste Accurate)" : " (per 30 Sep 2026)"}${isPerMonth ? ` <span class="text-[#6D0F2B] text-xs font-medium">· jatuh tempo di ${BULAN_NAMES[m-1]} 2026</span>` : ''}</h3>
+        <p class="text-xs text-slate-stone-500 mx-4 mt-0 mb-2">Umur & status TERLEWAT/BERJALAN dihitung otomatis dari tanggal jatuh tempo vs hari ini${isPerMonth ? ` · difilter: hanya faktur dgn jatuh tempo di bulan ${BULAN_NAMES[m-1]} 2026` : ''}</p>
+        ${fakturFiltered.length ? `
         <table class="tx-table">
           <thead>
             <tr><th>SUPPLIER</th><th>NO. FAKTUR</th><th>TANGGAL</th><th>JATUH TEMPO</th><th>UMUR (HR)</th><th>NILAI</th><th>STATUS</th></tr>
           </thead>
           <tbody>
-            ${faktur.map((f,i)=>{ const st=fakturSt[i]; return `<tr><td>${escapeHtml(f.supplier)}</td><td>${escapeHtml(f.noFaktur)}</td><td class="center">${f.tanggal||"-"}</td><td class="center">${f.jatuhTempo||"-"}</td><td class="num">${st.umur}</td><td class="num">Rp ${fmtRupiah(f.nilai)}</td><td class="center"><span class="px-1.5 py-0.5 rounded text-[10px] font-medium ${st.status==='TERLEWAT'?'bg-rose-100 text-rose-700':'bg-amber-100 text-amber-700'}">${st.status}</span></td></tr>`; }).join("")}
+            ${fakturFiltered.map((f,i)=>{ const st=fakturStFiltered[i]; return `<tr><td>${escapeHtml(f.supplier)}</td><td>${escapeHtml(f.noFaktur)}</td><td class="center">${f.tanggal||"-"}</td><td class="center">${f.jatuhTempo||"-"}</td><td class="num">${st.umur}</td><td class="num">Rp ${fmtRupiah(f.nilai)}</td><td class="center"><span class="px-1.5 py-0.5 rounded text-[10px] font-medium ${st.status==='TERLEWAT'?'bg-rose-100 text-rose-700':'bg-amber-100 text-amber-700'}">${st.status}</span></td></tr>`; }).join("")}
           </tbody>
           <tfoot>
-            <tr class="total-row"><td colspan="5" style="text-align:right">TOTAL (${faktur.length} faktur)</td><td class="num">Rp ${fmtRupiah(totalFaktur)}</td><td></td></tr>
+            <tr class="total-row"><td colspan="5" style="text-align:right">TOTAL (${fakturFiltered.length} faktur${terlewatFiltered?` · ${terlewatFiltered} terlewat`:""})</td><td class="num">Rp ${fmtRupiah(totalFakturFiltered)}</td><td></td></tr>
           </tfoot>
-        </table>
+        </table>` : (faktur.length ? `
+        <p class="text-xs text-amber-700 mx-4 mt-1 mb-4">⚠ Tidak ada faktur dengan jatuh tempo di bulan <b>${BULAN_NAMES[m-1]} 2026</b>. ${faktur.length} faktur lain ada di bulan berbeda. Ubah filter bulan ke "Semua Bulan (YTD)" untuk melihat semua.</p>` : `
+        <p class="text-xs text-slate-stone-400 mx-4 mt-1 mb-4">Belum ada data faktur hutang. Klik <b>📋 Paste dari Accurate</b> lalu paste laporan <b>"Daftar Utang Usaha"</b> untuk mengisi daftar faktur supplier yang belum lunas.</p>`)}
       </div>
 
-      <p class="text-xs text-slate-stone-500">Sumber data: sheet Excel "Piutang & Utang" (bagian Hutang) + faktur supplier bawaan/hasil paste "Daftar Utang Usaha" Accurate. Edit tersimpan otomatis di browser (localStorage); gunakan "Reset Edit" untuk kembali ke data Excel asli.</p>
+      <p class="text-xs text-slate-stone-500">Sumber data: sheet Excel "Piutang & Utang" (bagian Hutang) + faktur supplier bawaan/hasil paste "Daftar Utang Usaha" Accurate. Edit tersimpan otomatis di browser (localStorage); gunakan "Reset Edit" untuk kembali ke data Excel asli.${isPerMonth ? ' Pilih "Semua Bulan (YTD)" di filter untuk lihat semua data.' : ''}</p>
     </div>`;
+
+  // Wire month selector
+  document.getElementById("hutangMonthSel").onchange = (e) => {
+    hutangMonth = parseInt(e.target.value, 10);
+    renderHutang();
+  };
 
   if (hasEdit) {
     document.getElementById("btnResetHut").onclick = () => {
@@ -2172,7 +2257,10 @@ function renderHutang() {
   const btnPasteHut = document.getElementById("btnPasteHut");
   if (btnPasteHut) btnPasteHut.onclick = () => showPasteAccurateDialog("hutang");
 
-  document.getElementById("statusBar").textContent = `Hutang Akhir (Des): Rp ${fmtRupiah(saldoAkhirDes)} · Pembelian Kredit YTD: Rp ${fmtRupiah(totBeli)} · Faktur Belum Lunas: Rp ${fmtRupiah(totalFaktur)} (${faktur.length} faktur, ${terlewat} terlewat).`;
+  const statusTxt = isPerMonth
+    ? `Hutang ${BULAN_NAMES[m-1]} 2026: Saldo Awal Rp ${fmtRupiah(kpiSaldoAwal)} → Saldo Akhir Rp ${fmtRupiah(kpiSaldoAkhir)} · Pembelian Kredit Rp ${fmtRupiah(kpiBeli)} · Pembayaran Rp ${fmtRupiah(kpiBayar)}${fakturFiltered.length ? ` · Faktur jatuh tempo bulan ini: Rp ${fmtRupiah(totalFakturFiltered)} (${fakturFiltered.length} faktur, ${terlewatFiltered} terlewat)` : " · Tidak ada faktur jatuh tempo bulan ini"}`
+    : `Hutang Akhir (Des): Rp ${fmtRupiah(saldoAkhirDes)} · Pembelian Kredit YTD: Rp ${fmtRupiah(totBeli)} · Faktur Belum Lunas: Rp ${fmtRupiah(totalFaktur)} (${faktur.length} faktur, ${terlewat} terlewat).`;
+  document.getElementById("statusBar").textContent = statusTxt;
 }
 
 // ============================================================
@@ -2192,6 +2280,123 @@ function saveMasterData(type, data) {
   if (!userEdits.extras) userEdits.extras = {};
   userEdits.extras[key] = data;
   saveEdits(userEdits);
+}
+
+// ============================================================
+// Export Master sebagai JSON — untuk di-paste/import ke file INDOSARI_Operasional.html
+// ============================================================
+function buildMasterExportJson() {
+  // Kumpulkan masterBarang / masterSupplier / masterPelanggan dalam format
+  // yang siap di-import oleh file operasional:
+  //   masterBarang:    [{ kode, nama, satuan }]
+  //   masterSupplier:  [{ id, nama, alamat, telp }]
+  //   masterPelanggan: [{ id, nama, alamat, telp }]
+  const masterBarang = getMasterData("barang").map(b => ({
+    kode: b.kode || "",
+    nama: b.nama || "",
+    satuan: b.satuan || "",
+  }));
+  const masterSupplier = getMasterData("supplier").map((s, i) => ({
+    id: s.id || `sup-${String(i + 1).padStart(3, "0")}`,
+    nama: s.nama || "",
+    alamat: s.alamat || s.address || "",
+    telp: s.telp || s.phone || s.telepon || "",
+  }));
+  const masterPelanggan = getMasterData("pelanggan").map((p, i) => ({
+    id: p.id || `pel-${String(i + 1).padStart(3, "0")}`,
+    nama: p.nama || "",
+    alamat: p.alamat || p.address || "",
+    telp: p.telp || p.phone || p.telepon || "",
+  }));
+  return { masterBarang, masterSupplier, masterPelanggan };
+}
+
+function showExportMasterJsonDialog() {
+  const data = buildMasterExportJson();
+  const jsonStr = JSON.stringify(data, null, 2);
+  const sizes = {
+    barang: data.masterBarang.length,
+    supplier: data.masterSupplier.length,
+    pelanggan: data.masterPelanggan.length,
+  };
+  const totalChars = jsonStr.length;
+  // Tutup overlay lama bila ada
+  document.getElementById("exportMasterOverlay")?.remove();
+  const html = `
+    <div class="fixed inset-0 bg-black/40 z-40 flex items-center justify-center p-4" id="exportMasterOverlay">
+      <div class="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-auto">
+        <div class="px-5 py-3 border-b border-slate-stone-200 flex items-center justify-between">
+          <h3 class="font-bold text-slate-stone-800">⬇ Export Master Data (JSON)</h3>
+          <button id="closeExportMaster" class="text-slate-stone-400 hover:text-slate-stone-700">✕</button>
+        </div>
+        <div class="p-5 space-y-4 text-sm">
+          <div class="bg-[#FBE9EE] border border-[#F0CDD6] rounded-lg p-3 text-xs text-[#6D0F2B]">
+            <p class="font-medium mb-1">Cara pakai:</p>
+            <ol class="list-decimal ml-5 space-y-0.5">
+              <li>Klik <b>Copy ke Clipboard</b> (atau pilih teks di bawah + Ctrl+C).</li>
+              <li>Buka file <b>INDOSARI_Operasional.html</b> di browser.</li>
+              <li>Klik menu <b>Master Data</b> di sidebar.</li>
+              <li>Klik <b>📥 Import dari File Akuntansi</b>.</li>
+              <li>Paste ke textarea <b>"Paste JSON master dari file akuntansi"</b>.</li>
+              <li>Pilih mode <b>Merge</b> (gabung, tak double kode) atau <b>Replace</b> (ganti semua).</li>
+              <li>Klik <b>Import JSON</b>. Selesai.</li>
+            </ol>
+            <p class="mt-2 text-amber-700"><b>Alternatif:</b> tombol <b>Download .json</b> untuk simpan file backup master di flashdisk/cloud. Bila perlu, upload file tsb di dialog import (tombol "Upload Excel" menerima .xlsx saja — untuk JSON gunakan paste).</p>
+          </div>
+          <div class="grid grid-cols-3 gap-3 text-center">
+            <div class="bg-[#F8F3EE] border border-[#EAE2DB] rounded-lg p-3">
+              <div class="text-xs text-slate-stone-500 uppercase tracking-wider">Barang</div>
+              <div class="text-2xl font-bold text-[#6D0F2B]">${sizes.barang}</div>
+            </div>
+            <div class="bg-[#F8F3EE] border border-[#EAE2DB] rounded-lg p-3">
+              <div class="text-xs text-slate-stone-500 uppercase tracking-wider">Supplier</div>
+              <div class="text-2xl font-bold text-[#6D0F2B]">${sizes.supplier}</div>
+            </div>
+            <div class="bg-[#F8F3EE] border border-[#EAE2DB] rounded-lg p-3">
+              <div class="text-xs text-slate-stone-500 uppercase tracking-wider">Pelanggan</div>
+              <div class="text-2xl font-bold text-[#6D0F2B]">${sizes.pelanggan}</div>
+            </div>
+          </div>
+          <div class="text-xs text-slate-stone-500">Ukuran JSON: ${(totalChars / 1024).toFixed(1)} KB · ${totalChars.toLocaleString('id-ID')} karakter</div>
+          <div>
+            <label class="block text-xs font-medium text-slate-stone-600 mb-1">JSON master (siap paste ke operasional.html):</label>
+            <textarea id="exportMasterArea" rows="10" class="w-full border border-slate-stone-300 rounded px-3 py-2 text-xs font-mono" readonly>${escapeHtml(jsonStr)}</textarea>
+          </div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <button id="btnCopyExportMaster" class="inline-flex items-center gap-1.5 rounded-md bg-[#6D0F2B] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#8A1A38]">📋 Copy ke Clipboard</button>
+            <button id="btnDownloadExportMaster" class="inline-flex items-center gap-1.5 rounded-md border border-[#E0AEBB] bg-[#FBE9EE] px-3 py-1.5 text-xs font-medium text-[#8A1A38] hover:bg-[#F5D9E0]">💾 Download .json</button>
+            <span id="exportMasterStatus" class="text-xs text-slate-stone-500"></span>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  document.body.insertAdjacentHTML("beforeend", html);
+  const close = () => document.getElementById("exportMasterOverlay").remove();
+  document.getElementById("closeExportMaster").onclick = close;
+  document.getElementById("btnCopyExportMaster").onclick = async () => {
+    try {
+      await navigator.clipboard.writeText(jsonStr);
+      document.getElementById("exportMasterStatus").innerHTML = '<span class="text-green-600">✓ Tersalin ke clipboard!</span>';
+    } catch (e) {
+      // Fallback: pilih teks manual
+      const ta = document.getElementById("exportMasterArea");
+      ta.focus(); ta.select();
+      try { document.execCommand("copy"); document.getElementById("exportMasterStatus").innerHTML = '<span class="text-green-600">✓ Tersalin (fallback)!</span>'; }
+      catch (e2) { document.getElementById("exportMasterStatus").innerHTML = '<span class="text-rose-600">Gagal copy otomatis — pilih teks manual lalu Ctrl+C.</span>'; }
+    }
+  };
+  document.getElementById("btnDownloadExportMaster").onclick = () => {
+    const blob = new Blob([jsonStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    const today = new Date();
+    const iso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+    a.download = `INDOSARI_master_${iso}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    document.getElementById("exportMasterStatus").innerHTML = '<span class="text-green-600">✓ File terdownload!</span>';
+  };
 }
 
 function renderMasterData() {
@@ -2231,6 +2436,7 @@ function renderMasterData() {
             <button class="tab-btn ${masterTab==='pelanggan'?'active':''}" data-tab="pelanggan">👥 Pelanggan</button>
           </div>
           <button id="btnImportMaster" class="inline-flex items-center gap-1.5 rounded-md border border-[#E5D5A3] bg-[#FBF3DC] px-3 py-1.5 text-xs font-medium text-[#8A6A12] hover:bg-[#F3E7BC]">⬆ Import</button>
+          <button id="btnExportMasterJson" class="inline-flex items-center gap-1.5 rounded-md border border-[#E0AEBB] bg-[#FBE9EE] px-3 py-1.5 text-xs font-medium text-[#8A1A38] hover:bg-[#F5D9E0]" title="Export master sebagai JSON untuk di-import ke file INDOSARI_Operasional.html">⬇ Export JSON</button>
           <button id="btnTambahMaster" class="inline-flex items-center gap-1.5 rounded-md bg-[#6D0F2B] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#8A1A38]">+ Tambah ${totalLabel}</button>
         </div>
       </div>
@@ -2271,6 +2477,7 @@ function renderMasterData() {
       : "master-pelanggan";
     showImportDialog(importType, {});
   };
+  document.getElementById("btnExportMasterJson").onclick = () => showExportMasterJsonDialog();
 
   const tbody = document.getElementById("masterTbody");
   filtered.forEach((r, idx) => {

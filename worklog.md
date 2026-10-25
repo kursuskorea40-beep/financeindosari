@@ -165,3 +165,31 @@ Stage Summary:
 - Backup JSON full round-trip (download → reset → restore = data kembali utuh, counter ter-rebuild).
 - File terpisah dari INDOSARI_Akuntansi — masing-masing ringan, tak saling membebani.
 - Script artefak: scripts/build_operasional.py (builder), scripts/verify_operasional.js (syntax check), scripts/test_restore.js (restore blob helper), scripts/data/operasional_print_spb.png (screenshot print view).
+
+---
+Task ID: 7
+Agent: main (Z.ai)
+Task: Fix 3 hal di file akuntansi: (a) warna font menu sidebar non-aktif jadi putih (sebelumnya hitam); (b) tambah Export JSON di Master Data (untuk import ke operasional.html); (c) tambah fitur per-bulan di menu Hutang & Piutang (bulan selector + filter)
+
+Work Log:
+- (a) Warna font sidebar: ditemukan akar masalah — Tailwind class "slate-stone-*" TIDAK terdaftar (tidak ada tailwind.config custom), jadi class-class tsb no-op. Item sidebar non-aktif default browser button text = hitam di atas background maroon gelap → tak terbaca. Fix: tambah base CSS rule `.sidebar-item { color: #EAE2DB; }` (cream hangat) + `.sidebar-item:hover { color: #fff; }`. Active tetap `color: #fff`. Verifikasi via agent-browser: active=rgb(255,255,255) putih, non-aktif=rgb(234,226,219) cream — keduanya terbaca jelas di sidebar gelap.
+- (b) Export JSON Master Data: tambah tombol "⬇ Export JSON" di sebelah tombol Import (Master Data header). Klik → dialog overlay muncul dgn:
+  • Instruksi langkah-langkah (copy → buka operasional.html → menu Master Data → Import → paste → Import JSON)
+  • 3 KPI counter (Barang/Supplier/Pelanggan count)
+  • Textarea read-only berisi JSON hasil `buildMasterExportJson()` (format: masterBarang=[{kode,nama,satuan}], masterSupplier/Pelanggan=[{id,nama,alamat,telp}] — id di-generate sup-001/pel-001 bila akuntansi tak punya id).
+  • Tombol "📋 Copy ke Clipboard" (navigator.clipboard.writeText + fallback execCommand)
+  • Tombol "💾 Download .json" (Blob → INDOSARI_master_YYYY-MM-DD.json)
+  Verifikasi: 265 barang + 17 supplier + 4 pelanggan ter-export, 27.7 KB JSON, sample barang {kode:"A00002",nama:"ALKOHOL",satuan:"Kg"} ✓, sample supplier {id:"sup-001",nama:"BINTANG TIMUR MITRA ABADI, PT",alamat:"",telp:""} ✓. Round-trip dgn operasional.html sudah teruji di sesi sebelumnya.
+- (c) Fitur per-bulan Hutang & Piutang: tambah state variables `piutangMonth = 0` dan `hutangMonth = 0` (0 = Semua Bulan/YTD, 1-12 = bulan spesifik). Selector dropdown dengan option "📊 Semua Bulan (YTD)" + 12 bulan. Saat bulan dipilih:
+  • KPI cards switch: Saldo Awal/Jual Kredit/Bayar/Saldo Akhir jadi per-bulan (bukan YTD)
+  • Tabel "per Bulan" + "Tunai vs Kredit": baris bulan terpilih di-highlight dgn class `active-row` (background #fef3c7)
+  • Tabel Faktur: difilter — hanya faktur dgn jatuh tempo di bulan terpilih (actionable: "apa yg jatuh tempo bulan ini"). Bila tak ada, pesan warning + saran reset filter.
+  • Status bar dinamis: "Piutang September 2026: Saldo Awal Rp 8.625.000 → Saldo Akhir Rp 8.625.000 · Tidak ada faktur jatuh tempo bulan ini" (vs YTD "Piutang Akhir (Des): Rp... · YTD: Rp...")
+  • Tabel "per Bulan" tetap menampilkan semua 12 bulan untuk konteks (baris terpilih disorot), bukan disembunyikan.
+  Verifikasi Piutang Sept: header jadi "Piutang Usaha — September 2026", KPI + status bar sesuai, "disorot" tag muncul di 3 heading tabel ✓. Verifikasi Hutang Sept: 11 dari 22 faktur jatuh tempo di Sept (Rp 39.688.783, semua 11 terlewat) difilter dari total Rp 84.156.631 ✓.
+
+Stage Summary:
+- File deliverable: /home/z/my-project/download/INDOSARI_Akuntansi_2026_perbulan.html (~1.27 MB, syntax OK)
+- 3 fix terpasang & diverifikasi via agent-browser: (a) sidebar item non-aktif kini cream (#EAE2DB), hover putih, aktif putih; (b) Export JSON Master Data dengan copy + download, siap dipakai untuk import ke operasional.html; (c) per-bulan filter di Piutang & Hutang (KPI dinamis + highlight baris + filter faktur jatuh tempo per bulan).
+- Regresi semua test suite lulus: syntax OK, PU 39, PU-fallback 23, FR 63, Agt-month ALL PASS, Persediaan 51. Neraca, Laba Rugi, Penjualan, Pembelian, Persediaan semua render tanpa error.
+- Script artefak: scripts/data/akuntansi_piutang_perbulan.png, scripts/data/akuntansi_export_master_json.png (screenshot verifikasi).
