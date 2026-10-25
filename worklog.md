@@ -105,3 +105,29 @@ Stage Summary:
 - Parser Piutang/Hutang kini jauh lebih lenient: menerima format faktur dengan spasi, kolom leading, prefix nomor urut+IDR, dsb. Tanpa breaking format lama.
 - Pesan error kini membantu user self-diagnose: tampilkan baris mana yang diproses vs dilewati, sehingga user bisa kirim sample spesifik bila masih 0 hasil.
 - Script artefak: scripts/test_pu_fallback.js
+
+---
+Task ID: 5
+Agent: main (Z.ai)
+Task: Fix "file tidak ditemukan / tidak sinkron" saat user upload Excel/PDF Penjualan Agustus
+
+Work Log:
+- User attach: penjualan indosari agustus.xlsx (PDF-converted-to-Excel) + rincian_penjualan_per_barang_indosari_261025105008.pdf (PDF asli 41 halaman).
+- Diagnosis PDF: PDF pakai singkatan bulan "Agt" (06 Agt 2026), tapi ACCURATE_MONTH_MAP hanya punya `agu:8, aug:8` — `agt` TIDAK ada → parseAccurateDate("06 Agt 2026") return null → semua transaksi gagal → "Tidak ada data terparse".
+- Diagnosis Excel: file adalah PDF→Excel konversi. Struktur rusak: kolom "hargaSatuan" tidak ada (cuma "Penjualan"=total); "Nama Barang" hanya terisi baris pertama per grup (merged cell); ada baris subtotal & page-break "dari 41" terselip. Excel importer butuh kolom required (tanggal/namaBarang/kuantitas/hargaSatuan) yang tidak terpenuhi. Excel konversi-PDF TIDAK bisa dipakai import Excel biasa — user harus pakai "Paste dari Accurate" dengan teks PDF.
+- FIX: tambah `agt:8` ke ACCURATE_MONTH_MAP. (Indonesia standar: Agu dan Agt dua-duanya dipakai oleh Accurate tergantung versi bahasa; sekarang keduanya dikenali.)
+- Test: scripts/test_agt_month.js BARU — sample 12 transaksi Agustus (ALKOHOL+AMONIAK+BENZOAT+WARNA EGG, ada NB. nota besar, ada multi-line product name) → ALL PASS:
+  • parseAccurateDate("06 Agt 2026") → "2026-08-06" ✓
+  • parseAccurateDate("01 Agu 2026") → "2026-08-01" ✓ (regression intact)
+  • parseAccurateDate("01 Okt 2026") → "2026-10-01" ✓
+  • 12 transaksi parse, total Rp 27.484.000 = expected ✓
+  • All tanggal terformat "2026-08-xx" ✓
+  • NOTA BESAR (SI.2026.08.00001 dst) kategori='NOTA BESAR', catatan='NB.708' ✓
+  • Multi-line nama "AMONIAK RRC / AMONIUM BICARBONATE (AMONIA KUE)" & "WARNA TIMBANG / SUNSEA @25 KG (EGG YELLOW 2115 - KUNING TELUR)" tergabung utuh ✓
+- Regresi: PU 39, PU-fallback 23, Persediaan 51, FR 63, Pembelian exit 0, verify_syntax OK.
+
+Stage Summary:
+- File deliverable: /home/z/my-project/download/INDOSARI_Akuntansi_2026_perbulan.html (~1,26 MB, syntax OK)
+- Bug bulan "Agt" teratasi: PDF Penjualan Agustus (dan bulan-bulan lain yg mungkin pakai varian singkatan) sekarang bisa di-parse.
+- Saran ke user: jangan upload Excel hasil konversi PDF. Pakai "Paste dari Accurate": buka PDF di Acrobat/Edge → Ctrl+A → Ctrl+C → paste ke dialog. Untuk Agustus setelah fix ini, parse akan berhasil tanpa notif "tidak ada data".
+- Script artefak: scripts/test_agt_month.js
