@@ -1,0 +1,1365 @@
+#!/usr/bin/env python3
+"""
+Builder untuk INDOSARI_Operasional.html
+File: single-file HTML app untuk dokumen operasional (SPB, LPB, PO, Invoice, Kwitansi)
+- Penomoran bulanan: SPB-2026-10-001 dst (reset tiap bulan)
+- Kop sederhana (nama + alamat + telp), ttd 3 kolom
+- Master data: import dari file akuntansi (JSON paste atau Excel upload)
+- Backup: JSON export/import
+- Tema: maroon (#6D0F2B) senada dgn file akuntansi
+"""
+from pathlib import Path
+
+OUT = Path("/home/z/my-project/download/INDOSARI_Operasional.html")
+
+# ============================================================
+# CSS — tema maroon konsisten dgn file akuntansi
+# ============================================================
+CSS = r"""
+:root {
+  --maroon: #6D0F2B;
+  --maroon-dark: #470A1D;
+  --maroon-light: #FBE9EE;
+  --maroon-border: #E0AEBB;
+  --maroon-hover: #8A1A38;
+  --gold: #D4A72C;
+  --gold-dark: #B8912C;
+  --cream: #F6F1E9;
+  --stone-50: #FAFAF9;
+  --stone-100: #F5F5F4;
+  --stone-200: #E7E5E4;
+  --stone-300: #D6D3D1;
+  --stone-400: #A8A29E;
+  --stone-500: #78716C;
+  --stone-600: #57534E;
+  --stone-700: #44403C;
+  --stone-800: #292524;
+  --stone-900: #1C1917;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; font-family: 'Inter', system-ui, -apple-system, sans-serif; background: var(--cream); color: var(--stone-800); }
+body { font-size: 14px; line-height: 1.5; }
+
+/* === Layout === */
+.app { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+.sidebar { background: linear-gradient(180deg, var(--maroon-dark) 0%, var(--maroon) 100%); color: #fff; padding: 1rem 0; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+.sidebar-logo { padding: 0.5rem 1.25rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.15); margin-bottom: 0.5rem; }
+.sidebar-logo h1 { font-size: 18px; font-weight: 700; margin: 0; letter-spacing: 0.5px; }
+.sidebar-logo .sub { font-size: 10px; color: rgba(255,255,255,0.7); margin-top: 2px; }
+.sidebar-section { padding: 0.5rem 0.75rem; font-size: 10px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+.sidebar-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1.25rem; color: rgba(255,255,255,0.85); cursor: pointer; font-size: 13px; transition: background 0.15s; }
+.sidebar-item:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.sidebar-item.active { background: rgba(255,255,255,0.18); color: #fff; border-left: 3px solid var(--gold); padding-left: calc(1.25rem - 3px); }
+.sidebar-item .ico { width: 16px; text-align: center; }
+
+.main { padding: 1.5rem 2rem; }
+.topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+.topbar h2 { font-size: 20px; font-weight: 700; color: var(--maroon-dark); margin: 0; }
+.topbar .actions { display: flex; gap: 0.5rem; align-items: center; }
+
+/* === Buttons === */
+.btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.45rem 0.9rem; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid transparent; transition: all 0.15s; }
+.btn-primary { background: var(--maroon); color: #fff; border-color: var(--maroon); }
+.btn-primary:hover { background: var(--maroon-hover); }
+.btn-gold { background: var(--gold); color: #fff; border-color: var(--gold); }
+.btn-gold:hover { background: var(--gold-dark); }
+.btn-ghost { background: #fff; color: var(--maroon); border-color: var(--maroon-border); }
+.btn-ghost:hover { background: var(--maroon-light); }
+.btn-sm { padding: 0.3rem 0.6rem; font-size: 12px; }
+
+/* === Cards & tables === */
+.card { background: #fff; border: 1px solid var(--stone-200); border-radius: 8px; padding: 1rem 1.25rem; box-shadow: 0 1px 2px rgba(0,0,0,0.03); }
+.card-title { font-size: 14px; font-weight: 600; color: var(--maroon-dark); margin: 0 0 0.75rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--stone-200); }
+table.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.data-table th { background: var(--maroon-light); color: var(--maroon-dark); padding: 0.5rem 0.75rem; text-align: left; font-weight: 600; border-bottom: 1px solid var(--maroon-border); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+table.data-table td { padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--stone-200); vertical-align: top; }
+table.data-table tr:hover td { background: var(--maroon-light); }
+.num-cell { text-align: right; font-variant-numeric: tabular-nums; }
+.center-cell { text-align: center; }
+.row-action { color: var(--maroon); cursor: pointer; padding: 2px 4px; border-radius: 3px; }
+.row-action:hover { background: var(--maroon-light); }
+
+/* === Form === */
+.form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem 1rem; }
+.form-grid .full { grid-column: 1 / -1; }
+.form-field { display: flex; flex-direction: column; gap: 0.25rem; }
+.form-field label { font-size: 12px; font-weight: 600; color: var(--stone-600); }
+.form-field input, .form-field select, .form-field textarea {
+  padding: 0.4rem 0.6rem; border: 1px solid var(--stone-300); border-radius: 5px; font-size: 13px; font-family: inherit; background: #fff;
+}
+.form-field input:focus, .form-field select:focus, .form-field textarea:focus {
+  outline: none; border-color: var(--maroon); box-shadow: 0 0 0 2px rgba(109,15,43,0.15);
+}
+.form-field .hint { font-size: 11px; color: var(--stone-500); }
+
+/* === Items table (form) === */
+table.items-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 0.5rem; }
+table.items-table th { background: var(--maroon-light); color: var(--maroon-dark); padding: 0.4rem 0.5rem; font-size: 11px; text-align: left; font-weight: 600; text-transform: uppercase; }
+table.items-table td { padding: 0.3rem 0.5rem; border-bottom: 1px solid var(--stone-200); }
+table.items-table input, table.items-table select {
+  width: 100%; padding: 0.25rem 0.4rem; border: 1px solid var(--stone-300); border-radius: 4px; font-size: 13px; background: #fff;
+}
+table.items-table input:focus, table.items-table select:focus {
+  outline: none; border-color: var(--maroon);
+}
+.items-table .col-no { width: 32px; text-align: center; }
+.items-table .col-act { width: 32px; text-align: center; }
+.totals-row { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 0.75rem; padding-top: 0.5rem; border-top: 1px solid var(--stone-200); }
+.totals-row .total-box { font-size: 14px; font-weight: 600; color: var(--maroon-dark); }
+.totals-row .total-box .label { color: var(--stone-600); font-weight: 500; margin-right: 0.5rem; }
+
+/* === Filters bar === */
+.filters { display: flex; gap: 0.5rem; align-items: end; flex-wrap: wrap; margin-bottom: 1rem; }
+.filters .form-field { min-width: 130px; }
+.filters .search { flex: 1; min-width: 200px; }
+
+/* === KPI strip === */
+.kpi-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.75rem; margin-bottom: 1rem; }
+.kpi { background: linear-gradient(135deg, var(--maroon) 0%, var(--maroon-dark) 100%); color: #fff; padding: 0.75rem 1rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.08); }
+.kpi .label { font-size: 11px; color: rgba(255,255,255,0.8); text-transform: uppercase; letter-spacing: 0.5px; }
+.kpi .value { font-size: 18px; font-weight: 700; margin-top: 2px; }
+.kpi.gold { background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%); }
+
+/* === Print layout === */
+@media print {
+  .app { grid-template-columns: 1fr; }
+  .sidebar, .topbar, .filters, .no-print, .actions { display: none !important; }
+  .main { padding: 0; }
+  .print-page { display: block !important; }
+  body { background: #fff; font-size: 12px; }
+  @page { margin: 1.5cm; }
+}
+.print-page { display: none; padding: 1.5cm; background: #fff; }
+.print-kop { text-align: center; border-bottom: 3px double var(--maroon); padding-bottom: 0.75rem; margin-bottom: 1.5rem; }
+.print-kop .company-name { font-size: 22px; font-weight: 700; color: var(--maroon-dark); letter-spacing: 1px; }
+.print-kop .company-meta { font-size: 12px; color: var(--stone-600); margin-top: 4px; }
+.print-title { text-align: center; font-size: 16px; font-weight: 700; text-transform: uppercase; margin: 1.5rem 0 1rem; letter-spacing: 1px; }
+.print-title .nomor { font-size: 12px; font-weight: 400; color: var(--stone-600); margin-top: 4px; }
+.print-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 0.25rem 1rem; margin-bottom: 1rem; font-size: 13px; }
+.print-meta .label { color: var(--stone-500); display: inline-block; min-width: 100px; }
+.print-meta .value { font-weight: 500; }
+table.print-items { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 0.5rem; }
+table.print-items th, table.print-items td { border: 1px solid var(--stone-400); padding: 6px 8px; text-align: left; }
+table.print-items th { background: var(--maroon-light); color: var(--maroon-dark); font-weight: 600; text-align: center; font-size: 11px; text-transform: uppercase; }
+table.print-items td.num { text-align: right; font-variant-numeric: tabular-nums; }
+table.print-items td.center { text-align: center; }
+.print-totals { margin-top: 0.75rem; margin-left: auto; width: 280px; font-size: 13px; }
+.print-totals .row { display: flex; justify-content: space-between; padding: 4px 0; }
+.print-totals .row.total { border-top: 2px solid var(--maroon); margin-top: 4px; padding-top: 6px; font-weight: 700; color: var(--maroon-dark); font-size: 14px; }
+.print-terbilang { margin-top: 1rem; font-size: 12px; font-style: italic; color: var(--stone-600); }
+.print-catatan { margin-top: 1rem; font-size: 12px; padding: 8px; background: var(--cream); border-radius: 4px; }
+.print-ttd { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin-top: 3rem; text-align: center; font-size: 12px; }
+.print-ttd .role { color: var(--stone-600); }
+.print-ttd .name { margin-top: 4.5rem; font-weight: 600; border-top: 1px solid var(--stone-400); padding-top: 4px; }
+
+/* === Misc === */
+.empty-state { text-align: center; padding: 3rem 1rem; color: var(--stone-500); }
+.empty-state .ico { font-size: 32px; opacity: 0.5; }
+.empty-state .msg { margin-top: 0.5rem; font-size: 14px; }
+.toast { position: fixed; bottom: 1.5rem; right: 1.5rem; background: var(--maroon-dark); color: #fff; padding: 0.75rem 1rem; border-radius: 6px; font-size: 13px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 100; opacity: 0; transition: opacity 0.2s; pointer-events: none; }
+.toast.show { opacity: 1; }
+.toast.success { background: #15803d; }
+.toast.error { background: #b91c1c; }
+.badge { display: inline-block; padding: 1px 6px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+.badge.gold { background: var(--gold); color: #fff; }
+.badge.maroon { background: var(--maroon-light); color: var(--maroon-dark); }
+.badge.gray { background: var(--stone-200); color: var(--stone-700); }
+"""
+
+# ============================================================
+# JS — application logic
+# ============================================================
+JS = r"""
+'use strict';
+
+// ============================================================
+// DATA LAYER (localStorage)
+// ============================================================
+const STORE_KEY = 'indosari_operasional_v1';
+
+function loadStore() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (!raw) return defaultStore();
+    const s = JSON.parse(raw);
+    // merge defaults
+    return Object.assign(defaultStore(), s);
+  } catch (e) {
+    console.error('loadStore error', e);
+    return defaultStore();
+  }
+}
+function defaultStore() {
+  return {
+    settings: {
+      companyName: 'INDOSARI',
+      companyAddress: 'Jl. Industri No. 1, Jakarta',
+      companyPhone: '(021) 1234567',
+      companyNPWP: '',
+    },
+    masterBarang: [],
+    masterSupplier: [],
+    masterPelanggan: [],
+    docs: [], // semua dokumen semua modul
+    counters: { spb:{}, lpb:{}, po:{}, invoice:{}, kwitansi:{} }, // per-bulan counter
+  };
+}
+let store = loadStore();
+function saveStore() {
+  localStorage.setItem(STORE_KEY, JSON.stringify(store));
+}
+
+// ============================================================
+// MODULE CONFIG
+// ============================================================
+const MODULES = {
+  spb:       { code:'SPB',  label:'SPB',       fullName:'Surat Permintaan Barang', icon:'📝', partnerType:'internal',  hasTotal:false, fields:[
+    {key:'dimintaOleh', label:'Diminta Oleh', type:'text', placeholder:'Nama yg meminta'},
+    {key:'ditujukanKe', label:'Ditujukan Ke',  type:'text', placeholder:'Bagian Purchasing/Gudang'},
+    {key:'tanggalButuh', label:'Tgl Butuh',    type:'date'},
+  ]},
+  lpb:       { code:'LPB',  label:'LPB',       fullName:'Laporan Penerimaan Barang', icon:'📥', partnerType:'supplier', hasTotal:true,  fields:[
+    {key:'tanggalTerima', label:'Tgl Terima',   type:'date'},
+    {key:'noSuratJalan',  label:'No. Surat Jalan Supplier', type:'text'},
+    {key:'penerima',      label:'Penerima', type:'text', placeholder:'Nama penerima barang'},
+    {key:'kendaraan',     label:'No. Kendaraan', type:'text'},
+  ]},
+  po:        { code:'PO',   label:'PO',        fullName:'Purchase Order', icon:'🛒', partnerType:'supplier', hasTotal:true, fields:[
+    {key:'tanggalKirim', label:'Tgl Kirim',    type:'date'},
+    {key:'termsPembayaran', label:'Terms Bayar', type:'text', placeholder:'Tempo 30 hari / COD / dst'},
+    {key:'pengirim',     label:'Pengirim', type:'text', placeholder:'Nama/ekspedisi'},
+    {key:'topAlamat',    label:'Alamat Kirim', type:'text'},
+  ]},
+  invoice:   { code:'INV',  label:'Invoice',   fullName:'Invoice Penjualan', icon:'🧾', partnerType:'pelanggan', hasTotal:true, fields:[
+    {key:'jatuhTempo',  label:'Jatuh Tempo',  type:'date'},
+    {key:'ppnPct',      label:'PPN (%)',       type:'number', default:'11', step:'0.01'},
+  ]},
+  kwitansi:  { code:'KWI',  label:'Kwitansi',  fullName:'Kwitansi', icon:'💰', partnerType:'pelanggan', hasTotal:true, fields:[
+    {key:'diterimaDari', label:'Diterima Dari', type:'text', placeholder:'Nama pembayar'},
+    {key:'untukPembayaran', label:'Untuk Pembayaran', type:'text', placeholder:'Pelunasan Invoice / dsb'},
+  ]},
+};
+const MODULE_KEYS = ['spb','lpb','po','invoice','kwitansi'];
+
+// ============================================================
+// HELPERS
+// ============================================================
+function fmtIDR(n) {
+  if (n === null || n === undefined || isNaN(n)) n = 0;
+  return new Intl.NumberFormat('id-ID', { style:'decimal', minimumFractionDigits:0, maximumFractionDigits:2 }).format(n);
+}
+function fmtDateID(iso) {
+  if (!iso) return '';
+  const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return iso;
+  const bln = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agt','Sep','Okt','Nov','Des'];
+  return `${parseInt(m[3])} ${bln[parseInt(m[2])-1]} ${m[1]}`;
+}
+function todayISO() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function currentMonthYear() {
+  const d = new Date();
+  return { month: String(d.getMonth()+1).padStart(2,'0'), year: d.getFullYear() };
+}
+function uid() { return 'doc-' + Date.now() + '-' + Math.floor(Math.random()*10000); }
+function escapeHtml(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function showToast(msg, type='info') {
+  let el = document.getElementById('toast');
+  if (!el) { el = document.createElement('div'); el.id='toast'; el.className='toast'; document.body.appendChild(el); }
+  el.textContent = msg; el.className = 'toast ' + type + ' show';
+  setTimeout(() => { el.className = 'toast ' + type; }, 2200);
+}
+
+// ============================================================
+// NUMBERING (per bulan, format SPB-2026-10-001)
+// ============================================================
+function genNomor(moduleKey) {
+  const cfg = MODULES[moduleKey];
+  const { month, year } = currentMonthYear();
+  const key = `${year}-${month}`;
+  if (!store.counters[moduleKey][key]) store.counters[moduleKey][key] = 0;
+  store.counters[moduleKey][key]++;
+  const seq = String(store.counters[moduleKey][key]).padStart(3, '0');
+  saveStore();
+  return `${cfg.code}-${year}-${month}-${seq}`;
+}
+// Cari nomor urut tertinggi yang sudah ada di store (untuk init counter setelah restore import)
+function rebuildCounters() {
+  const fresh = { spb:{}, lpb:{}, po:{}, invoice:{}, kwitansi:{} };
+  for (const d of store.docs) {
+    const m = (d.nomor || '').match(new RegExp('^' + MODULES[d.module].code + '-(\\d{4})-(\\d{2})-(\\d+)$'));
+    if (!m) continue;
+    const key = `${m[1]}-${m[2]}`;
+    const seq = parseInt(m[3], 10);
+    if (!fresh[d.module][key] || fresh[d.module][key] < seq) fresh[d.module][key] = seq;
+  }
+  store.counters = fresh;
+  saveStore();
+}
+
+// ============================================================
+// STATE
+// ============================================================
+let currentModule = 'spb';
+let currentView = 'list'; // list | form | print
+let editingDoc = null;   // null = baru
+let filterMonth = currentMonthYear().month;
+let filterYear = String(currentMonthYear().year);
+let filterSearch = '';
+
+// ============================================================
+// ROUTER
+// ============================================================
+function navigate(moduleKey) {
+  currentModule = moduleKey;
+  currentView = 'list';
+  editingDoc = null;
+  render();
+}
+function render() {
+  document.querySelectorAll('.sidebar-item[data-module]').forEach(el => {
+    el.classList.toggle('active', el.dataset.module === currentModule);
+  });
+  const main = document.getElementById('main');
+  if (currentModule === 'master') { renderMaster(main); return; }
+  if (currentModule === 'backup') { renderBackup(main); return; }
+  if (currentModule === 'settings') { renderSettings(main); return; }
+  // doc modules
+  if (currentView === 'list') renderListView(main);
+  else if (currentView === 'form') renderFormView(main);
+  else if (currentView === 'print') renderPrintView(main);
+}
+
+// ============================================================
+// LIST VIEW
+// ============================================================
+function renderListView(main) {
+  const cfg = MODULES[currentModule];
+  const { month, year } = currentMonthYear();
+  // Build filter dropdowns (12 bulan + tahun -2..+2)
+  const blnNames = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agt','Sep','Okt','Nov','Des'];
+  const yrs = [year-2, year-1, year, year+1, year+2];
+  // Filter docs
+  const filtered = store.docs.filter(d => {
+    if (d.module !== currentModule) return false;
+    if (!d.tanggal) return false;
+    const m = d.tanggal.match(/^(\d{4})-(\d{2})-/);
+    if (!m) return false;
+    if (m[1] !== filterYear) return false;
+    if (m[2] !== filterMonth) return false;
+    if (filterSearch) {
+      const q = filterSearch.toLowerCase();
+      if (!(d.nomor||'').toLowerCase().includes(q) &&
+          !(d.partnerNama||'').toLowerCase().includes(q) &&
+          !(d.catatan||'').toLowerCase().includes(q)) return false;
+    }
+    return true;
+  }).sort((a,b) => (a.nomor||'').localeCompare(b.nomor||''));
+
+  const totalModule = filtered.reduce((s,d) => s + (d.total||0), 0);
+  const countModule = filtered.length;
+
+  main.innerHTML = `
+    <div class="topbar">
+      <h2>${cfg.icon} ${cfg.label} — ${cfg.fullName}</h2>
+      <div class="actions">
+        <button class="btn btn-gold" onclick="startNew()">+ Buat ${cfg.label} Baru</button>
+      </div>
+    </div>
+    <div class="kpi-strip">
+      <div class="kpi"><div class="label">Jumlah dokumen bulan ini</div><div class="value">${countModule}</div></div>
+      ${cfg.hasTotal ? `<div class="kpi gold"><div class="label">Total nilai</div><div class="value">Rp ${fmtIDR(totalModule)}</div></div>` : ''}
+      <div class="kpi"><div class="label">Bulan filter</div><div class="value">${blnNames[parseInt(filterMonth)-1]} ${filterYear}</div></div>
+    </div>
+    <div class="card">
+      <div class="filters">
+        <div class="form-field">
+          <label>Bulan</label>
+          <select onchange="filterMonth=this.value; render()">
+            ${blnNames.map((n,i)=>`<option value="${String(i+1).padStart(2,'0')}" ${String(i+1).padStart(2,'0')===filterMonth?'selected':''}>${n}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Tahun</label>
+          <select onchange="filterYear=this.value; render()">
+            ${yrs.map(y=>`<option value="${y}" ${String(y)===filterYear?'selected':''}>${y}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-field search">
+          <label>Cari</label>
+          <input type="text" placeholder="Cari nomor / partner / catatan..." value="${escapeHtml(filterSearch)}" oninput="filterSearch=this.value; renderListViewOnly()">
+        </div>
+      </div>
+      ${filtered.length === 0 ? `
+        <div class="empty-state">
+          <div class="ico">${cfg.icon}</div>
+          <div class="msg">Belum ada ${cfg.label} untuk ${blnNames[parseInt(filterMonth)-1]} ${filterYear}.<br>Klik tombol <b>+ Buat ${cfg.label} Baru</b> di kanan atas.</div>
+        </div>
+      ` : `
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Nomor</th><th>Tanggal</th><th>${cfg.partnerType==='supplier'?'Supplier':(cfg.partnerType==='pelanggan'?'Pelanggan':'Tujuan')}</th>
+              ${cfg.hasTotal?'<th>Total</th>':''}
+              <th>Status</th><th class="center-cell">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${filtered.map(d => `
+              <tr>
+                <td><b>${escapeHtml(d.nomor)}</b></td>
+                <td>${fmtDateID(d.tanggal)}</td>
+                <td>${escapeHtml(d.partnerNama || '-')}</td>
+                ${cfg.hasTotal?`<td class="num-cell">Rp ${fmtIDR(d.total||0)}</td>`:''}
+                <td><span class="badge ${d.status==='selesai'?'gold':(d.status==='batal'?'gray':'maroon')}">${(d.status||'draft').toUpperCase()}</span></td>
+                <td class="center-cell">
+                  <span class="row-action" onclick="editDoc('${d.id}')" title="Edit">✏️</span>
+                  <span class="row-action" onclick="printDoc('${d.id}')" title="Cetak">🖨️</span>
+                  <span class="row-action" onclick="duplicateDoc('${d.id}')" title="Duplikat">⧉</span>
+                  <span class="row-action" onclick="deleteDoc('${d.id}')" title="Hapus">🗑️</span>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `}
+    </div>
+  `;
+}
+function renderListViewOnly() { renderListView(document.getElementById('main')); }
+
+function startNew() {
+  editingDoc = null;
+  currentView = 'form';
+  render();
+}
+function editDoc(id) {
+  const d = store.docs.find(x => x.id === id);
+  if (!d) { showToast('Dokumen tidak ditemukan','error'); return; }
+  editingDoc = JSON.parse(JSON.stringify(d));
+  currentView = 'form';
+  render();
+}
+function duplicateDoc(id) {
+  const d = store.docs.find(x => x.id === id);
+  if (!d) return;
+  const dup = JSON.parse(JSON.stringify(d));
+  dup.id = uid();
+  dup.nomor = genNomor(d.module);
+  dup.tanggal = todayISO();
+  dup.status = 'draft';
+  dup.createdAt = new Date().toISOString();
+  store.docs.push(dup);
+  saveStore();
+  showToast(`Duplikat berhasil: ${dup.nomor}`, 'success');
+  render();
+}
+function deleteDoc(id) {
+  const d = store.docs.find(x => x.id === id);
+  if (!d) return;
+  if (!confirm(`Hapus ${d.nomor}? Tidak bisa dibatalkan.`)) return;
+  store.docs = store.docs.filter(x => x.id !== id);
+  saveStore();
+  showToast(`Dihapus: ${d.nomor}`, 'success');
+  render();
+}
+function printDoc(id) {
+  const d = store.docs.find(x => x.id === id);
+  if (!d) return;
+  editingDoc = d;
+  currentView = 'print';
+  render();
+}
+
+// ============================================================
+// FORM VIEW
+// ============================================================
+function renderFormView(main) {
+  const cfg = MODULES[currentModule];
+  const d = editingDoc || {
+    id: null,
+    module: currentModule,
+    nomor: '',
+    tanggal: todayISO(),
+    partnerId: '',
+    partnerNama: '',
+    partnerAlamat: '',
+    catatan: '',
+    extra: {},
+    items: [ { no:1, kode:'', nama:'', qty:1, satuan:'', harga:0, subtotal:0, catatan:'' } ],
+    total: 0,
+    status: 'draft',
+  };
+  // pre-fill nomor (tampil saja, finalized saat save)
+  if (!d.nomor) d.nomor = `<otomatis: ${cfg.code}-${currentMonthYear().year}-${currentMonthYear().month}-??? (urut terakhir+1)>`;
+
+  // Partner options
+  const partnerList = cfg.partnerType === 'supplier' ? store.masterSupplier
+                    : cfg.partnerType === 'pelanggan' ? store.masterPelanggan
+                    : [];
+  const isInternal = cfg.partnerType === 'internal';
+
+  main.innerHTML = `
+    <div class="topbar">
+      <h2>${cfg.icon} ${editingDoc ? 'Edit' : 'Buat'} ${cfg.label}</h2>
+      <div class="actions">
+        <button class="btn btn-ghost" onclick="cancelForm()">← Batal</button>
+        <button class="btn btn-gold" onclick="saveForm()">💾 Simpan</button>
+        ${editingDoc && editingDoc.id ? `<button class="btn btn-primary" onclick="saveAndPrint()">💾→🖨️ Simpan & Cetak</button>`:''}
+      </div>
+    </div>
+    <div class="card">
+      <h3 class="card-title">Header Dokumen</h3>
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Nomor</label>
+          <input type="text" id="f-nomor" value="${escapeHtml(d.nomor)}" placeholder="Otomatis saat simpan">
+          <div class="hint">Kosongkan untuk auto-generate. Timpa bila perlu.</div>
+        </div>
+        <div class="form-field">
+          <label>Tanggal</label>
+          <input type="date" id="f-tanggal" value="${d.tanggal || ''}">
+        </div>
+        ${isInternal ? `
+          <div class="form-field">
+            <label>Tujuan / Bagian</label>
+            <input type="text" id="f-partnerNama" value="${escapeHtml(d.partnerNama||'')}" placeholder="Bagian gudang / purchasing / dst">
+          </div>
+          <div class="form-field">
+            <label>Alamat Tujuan</label>
+            <input type="text" id="f-partnerAlamat" value="${escapeHtml(d.partnerAlamat||'')}">
+          </div>
+        ` : `
+          <div class="form-field">
+            <label>${cfg.partnerType==='supplier'?'Supplier':'Pelanggan'}</label>
+            <select id="f-partnerId" onchange="onPartnerChange(this.value)">
+              <option value="">-- pilih --</option>
+              ${partnerList.map(p => `<option value="${escapeHtml(p.id)}" ${p.id===d.partnerId?'selected':''}>${escapeHtml(p.nama)}${p.alamat?' - '+escapeHtml(p.alamat):''}</option>`).join('')}
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Nama ${cfg.partnerType==='supplier'?'Supplier':'Pelanggan'} (manual)</label>
+            <input type="text" id="f-partnerNama" value="${escapeHtml(d.partnerNama||'')}" placeholder="atau ketik manual">
+          </div>
+          <div class="form-field full">
+            <label>Alamat</label>
+            <input type="text" id="f-partnerAlamat" value="${escapeHtml(d.partnerAlamat||'')}">
+          </div>
+        `}
+        ${cfg.fields.map(f => {
+          const val = d.extra ? d.extra[f.key] : '';
+          const def = f.default || '';
+          return `<div class="form-field">
+            <label>${f.label}</label>
+            <input type="${f.type}" id="f-extra-${f.key}" value="${escapeHtml(val !== '' ? val : def)}" ${f.step?`step="${f.step}"`:''} ${f.placeholder?`placeholder="${escapeHtml(f.placeholder)}"`:''}>
+          </div>`;
+        }).join('')}
+        <div class="form-field full">
+          <label>Catatan</label>
+          <textarea id="f-catatan" rows="2">${escapeHtml(d.catatan||'')}</textarea>
+        </div>
+        <div class="form-field">
+          <label>Status</label>
+          <select id="f-status">
+            <option value="draft" ${d.status==='draft'?'selected':''}>DRAFT</option>
+            <option value="selesai" ${d.status==='selesai'?'selected':''}>SELESAI</option>
+            <option value="batal" ${d.status==='batal'?'selected':''}>BATAL</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    ${cfg.hasTotal !== false || cfg.hasTotal === true ? `
+    <div class="card" style="margin-top:1rem;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+        <h3 class="card-title" style="margin:0; border:0; padding:0;">Item Barang</h3>
+        <button class="btn btn-ghost btn-sm" onclick="addItemRow()">+ Tambah baris</button>
+      </div>
+      <table class="items-table">
+        <thead>
+          <tr>
+            <th class="col-no">No</th>
+            <th>Kode</th>
+            <th>Nama Barang</th>
+            <th style="width:80px">Qty</th>
+            <th style="width:80px">Satuan</th>
+            <th style="width:130px">Harga</th>
+            <th style="width:130px">Subtotal</th>
+            <th class="col-act">✕</th>
+          </tr>
+        </thead>
+        <tbody id="items-body">
+          ${d.items.map((it,i) => itemRowHtml(it,i)).join('')}
+        </tbody>
+      </table>
+      <div class="totals-row">
+        <div class="total-box"><span class="label">Total</span>Rp <span id="total-display">${fmtIDR(d.total||0)}</span></div>
+      </div>
+      ${currentModule === 'invoice' ? `
+        <div class="form-grid" style="margin-top:1rem; grid-template-columns:1fr 1fr 1fr;">
+          <div class="form-field">
+            <label>Subtotal (otomatis)</label>
+            <input type="text" id="f-subtotalInv" value="Rp ${fmtIDR(d.total||0)}" readonly>
+          </div>
+          <div class="form-field">
+            <label>PPN %</label>
+            <input type="number" id="f-ppn" step="0.01" value="${d.extra && d.extra.ppnPct !== undefined ? d.extra.ppnPct : 11}" oninput="recalcInvoiceTotals()">
+          </div>
+          <div class="form-field">
+            <label>Total + PPN</label>
+            <input type="text" id="f-totalInv" readonly>
+          </div>
+        </div>
+      ` : ''}
+    </div>
+    ` : `
+    <div class="card" style="margin-top:1rem;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+        <h3 class="card-title" style="margin:0; border:0; padding:0;">Item Diminta</h3>
+        <button class="btn btn-ghost btn-sm" onclick="addItemRow()">+ Tambah baris</button>
+      </div>
+      <table class="items-table">
+        <thead>
+          <tr>
+            <th class="col-no">No</th><th>Kode</th><th>Nama Barang</th>
+            <th style="width:80px">Qty</th><th style="width:80px">Satuan</th>
+            <th>Catatan</th><th class="col-act">✕</th>
+          </tr>
+        </thead>
+        <tbody id="items-body">
+          ${d.items.map((it,i) => itemRowHtml(it,i)).join('')}
+        </tbody>
+      </table>
+    </div>
+    `}
+  `;
+  // attach listeners untuk recalc
+  if (cfg.hasTotal) recalcTotals();
+  if (currentModule === 'invoice') recalcInvoiceTotals();
+}
+
+function itemRowHtml(it, i) {
+  const barang = store.masterBarang || [];
+  return `<tr data-row="${i}">
+    <td class="center-cell">${i+1}</td>
+    <td style="width:120px">
+      <input type="text" list="dl-barang" value="${escapeHtml(it.kode||'')}" oninput="onItemKodeInput(this, ${i})" placeholder="ketik / pilih">
+    </td>
+    <td><input type="text" value="${escapeHtml(it.nama||'')}" oninput="updateItemField(${i},'nama',this.value)"></td>
+    <td><input type="number" step="0.001" value="${it.qty||1}" oninput="updateItemField(${i},'qty',parseFloat(this.value)||0); recalcTotals()"></td>
+    <td><input type="text" value="${escapeHtml(it.satuan||'')}" oninput="updateItemField(${i},'satuan',this.value)" style="width:70px"></td>
+    ${MODULES[currentModule].hasTotal ? `
+      <td><input type="number" step="0.01" value="${it.harga||0}" oninput="updateItemField(${i},'harga',parseFloat(this.value)||0); recalcTotals()"></td>
+      <td class="num-cell"><input type="text" value="Rp ${fmtIDR(it.subtotal||0)}" readonly style="text-align:right;background:var(--cream)"></td>
+    ` : `<td><input type="text" value="${escapeHtml(it.catatan||'')}" oninput="updateItemField(${i},'catatan',this.value)"></td>`}
+    <td class="center-cell"><span class="row-action" onclick="removeItemRow(${i})">✕</span></td>
+  </tr>`;
+}
+function onItemKodeInput(input, i) {
+  const kode = input.value.trim();
+  if (!kode) { updateItemField(i,'kode',''); return; }
+  const found = store.masterBarang.find(b => b.kode === kode);
+  if (found) {
+    updateItemField(i,'kode',kode);
+    updateItemField(i,'nama',found.nama);
+    updateItemField(i,'satuan',found.satuan||'');
+    renderFormItemsOnly();
+  } else {
+    updateItemField(i,'kode',kode);
+  }
+}
+function updateItemField(i, field, val) {
+  if (!editingDoc) {
+    // re-construct minimal doc to hold items
+    editingDoc = { module: currentModule, items: [ { no:1, kode:'', nama:'', qty:1, satuan:'', harga:0, subtotal:0, catatan:'' } ], extra:{}, total:0 };
+  }
+  if (!editingDoc.items[i]) editingDoc.items[i] = { no:i+1, kode:'', nama:'', qty:1, satuan:'', harga:0, subtotal:0, catatan:'' };
+  editingDoc.items[i][field] = val;
+  // recalc subtotal
+  if (MODULES[currentModule].hasTotal && (field === 'qty' || field === 'harga')) {
+    editingDoc.items[i].subtotal = (editingDoc.items[i].qty||0) * (editingDoc.items[i].harga||0);
+  }
+}
+function recalcTotals() {
+  if (!editingDoc || !MODULES[currentModule].hasTotal) return;
+  let total = 0;
+  for (const it of editingDoc.items) {
+    it.subtotal = (it.qty||0) * (it.harga||0);
+    total += it.subtotal;
+  }
+  editingDoc.total = total;
+  const disp = document.getElementById('total-display');
+  if (disp) disp.textContent = fmtIDR(total);
+  // refresh subtotal column for each row
+  const tbody = document.getElementById('items-body');
+  if (tbody) {
+    Array.from(tbody.querySelectorAll('tr')).forEach((tr,i) => {
+      const subInput = tr.querySelectorAll('input')[tr.querySelectorAll('input').length-1];
+      if (subInput && subInput.readOnly) subInput.value = 'Rp ' + fmtIDR(editingDoc.items[i]?.subtotal || 0);
+    });
+  }
+}
+function recalcInvoiceTotals() {
+  if (currentModule !== 'invoice' || !editingDoc) return;
+  recalcTotals();
+  const subtotal = editingDoc.total || 0;
+  const ppnPct = parseFloat(document.getElementById('f-ppn')?.value || 0) || 0;
+  const ppn = subtotal * ppnPct / 100;
+  const grand = subtotal + ppn;
+  editingDoc.extra = editingDoc.extra || {};
+  editingDoc.extra.ppnPct = ppnPct;
+  editingDoc.extra.ppnAmt = ppn;
+  editingDoc.extra.grandTotal = grand;
+  const fTot = document.getElementById('f-totalInv');
+  if (fTot) fTot.value = 'Rp ' + fmtIDR(grand);
+  const fSub = document.getElementById('f-subtotalInv');
+  if (fSub) fSub.value = 'Rp ' + fmtIDR(subtotal);
+}
+function onPartnerChange(partnerId) {
+  const cfg = MODULES[currentModule];
+  const list = cfg.partnerType === 'supplier' ? store.masterSupplier : store.masterPelanggan;
+  const p = list.find(x => x.id === partnerId);
+  if (p) {
+    document.getElementById('f-partnerNama').value = p.nama || '';
+    document.getElementById('f-partnerAlamat').value = p.alamat || '';
+  }
+}
+function addItemRow() {
+  if (!editingDoc) editingDoc = { module: currentModule, items: [], extra:{}, total:0 };
+  editingDoc.items.push({ no: editingDoc.items.length+1, kode:'', nama:'', qty:1, satuan:'', harga:0, subtotal:0, catatan:'' });
+  renderFormItemsOnly();
+}
+function removeItemRow(i) {
+  if (!editingDoc || !editingDoc.items) return;
+  if (editingDoc.items.length === 1) { showToast('Minimal 1 baris','error'); return; }
+  editingDoc.items.splice(i,1);
+  editingDoc.items.forEach((it,idx) => it.no = idx+1);
+  renderFormItemsOnly();
+  recalcTotals();
+}
+function renderFormItemsOnly() {
+  // Re-render just items table body
+  const tbody = document.getElementById('items-body');
+  if (!tbody || !editingDoc) return;
+  tbody.innerHTML = editingDoc.items.map((it,i)=>itemRowHtml(it,i)).join('');
+}
+function cancelForm() {
+  editingDoc = null;
+  currentView = 'list';
+  render();
+}
+function collectForm() {
+  if (!editingDoc) editingDoc = { module: currentModule, items:[], extra:{}, total:0 };
+  editingDoc.tanggal = document.getElementById('f-tanggal')?.value || todayISO();
+  editingDoc.partnerId = document.getElementById('f-partnerId')?.value || '';
+  editingDoc.partnerNama = document.getElementById('f-partnerNama')?.value || '';
+  editingDoc.partnerAlamat = document.getElementById('f-partnerAlamat')?.value || '';
+  editingDoc.catatan = document.getElementById('f-catatan')?.value || '';
+  editingDoc.status = document.getElementById('f-status')?.value || 'draft';
+  const cfg = MODULES[currentModule];
+  editingDoc.extra = editingDoc.extra || {};
+  for (const f of cfg.fields) {
+    const el = document.getElementById('f-extra-' + f.key);
+    if (el) editingDoc.extra[f.key] = el.value;
+  }
+  // nomor: hanya simpan input user, JANGAN auto-generate di sini.
+  // genNomor() dipanggil di saveForm() SETELAH semua validasi lolos — mencegah
+  // counter ter-increment bila saveForm gagal (cth: item kosong di-filter habis).
+  let nomorInput = (document.getElementById('f-nomor')?.value || '').trim();
+  if (nomorInput && !nomorInput.startsWith('<otomatis')) {
+    editingDoc.nomor = nomorInput;
+  } else {
+    editingDoc.nomor = ''; // tandai perlu di-generate saat save
+  }
+  // recalc totals
+  if (currentModule === 'invoice') {
+    recalcInvoiceTotals();
+  } else if (cfg.hasTotal) {
+    recalcTotals();
+  }
+  return editingDoc;
+}
+function assignNomorIfNew(doc) {
+  // Dipanggil SETELAH semua validasi lolos, sebelum push ke store.docs
+  if (doc.nomor) {
+    // nomor manual: update counter bila nomor manual > counter sekarang
+    const m = doc.nomor.match(new RegExp('^' + MODULES[doc.module].code + '-(\\d{4})-(\\d{2})-(\\d+)$'));
+    if (m) {
+      const key = `${m[1]}-${m[2]}`;
+      const seq = parseInt(m[3],10);
+      if (!store.counters[doc.module][key] || store.counters[doc.module][key] < seq) {
+        store.counters[doc.module][key] = seq;
+      }
+    }
+    return;
+  }
+  // auto-generate
+  doc.nomor = genNomor(doc.module);
+}
+function saveForm() {
+  const doc = collectForm();
+  if (!doc.tanggal) { showToast('Tanggal wajib','error'); return; }
+  if (!doc.items || doc.items.length === 0) { showToast('Item kosong','error'); return; }
+  // cleanup: hapus item kode+nama+qty kosong semua
+  doc.items = doc.items.filter(it => (it.kode || it.nama || it.qty));
+  if (doc.items.length === 0) { showToast('Item semua kosong','error'); return; }
+  // VALIDASI LOLOS → generate nomor bila perlu
+  if (!doc.id) assignNomorIfNew(doc);
+  if (!doc.nomor) { showToast('Nomor gagal generate','error'); return; }
+  if (doc.id) {
+    // edit
+    const idx = store.docs.findIndex(x => x.id === doc.id);
+    if (idx >= 0) {
+      doc.updatedAt = new Date().toISOString();
+      store.docs[idx] = doc;
+    }
+  } else {
+    doc.id = uid();
+    doc.createdAt = new Date().toISOString();
+    store.docs.push(doc);
+  }
+  saveStore();
+  showToast(`Tersimpan: ${doc.nomor}`, 'success');
+  editingDoc = JSON.parse(JSON.stringify(doc));
+  currentView = 'list';
+  render();
+}
+function saveAndPrint() {
+  const doc = collectForm();
+  if (!doc.tanggal) { showToast('Tanggal wajib','error'); return; }
+  if (!doc.items || doc.items.length === 0) { showToast('Item kosong','error'); return; }
+  doc.items = doc.items.filter(it => (it.kode || it.nama || it.qty));
+  if (doc.items.length === 0) { showToast('Item semua kosong','error'); return; }
+  if (!doc.id) assignNomorIfNew(doc);
+  if (!doc.nomor) { showToast('Nomor gagal generate','error'); return; }
+  if (doc.id) {
+    const idx = store.docs.findIndex(x => x.id === doc.id);
+    if (idx >= 0) { doc.updatedAt = new Date().toISOString(); store.docs[idx] = doc; }
+  } else {
+    doc.id = uid();
+    doc.createdAt = new Date().toISOString();
+    store.docs.push(doc);
+  }
+  saveStore();
+  showToast(`Tersimpan & siap cetak: ${doc.nomor}`, 'success');
+  editingDoc = JSON.parse(JSON.stringify(doc));
+  currentView = 'print';
+  render();
+}
+
+// ============================================================
+// PRINT VIEW
+// ============================================================
+function renderPrintView(main) {
+  const d = editingDoc;
+  if (!d) { currentView = 'list'; render(); return; }
+  const cfg = MODULES[d.module];
+  const s = store.settings;
+  const partnerLabel = cfg.partnerType === 'supplier' ? 'Supplier' : (cfg.partnerType === 'pelanggan' ? 'Pelanggan' : 'Tujuan');
+  const isKwitansi = d.module === 'kwitansi';
+  const isInvoice = d.module === 'invoice';
+  const showTotal = cfg.hasTotal;
+  const grand = (isInvoice && d.extra && d.extra.grandTotal !== undefined) ? d.extra.grandTotal : d.total;
+
+  main.innerHTML = `
+    <div class="topbar no-print">
+      <h2>🖨️ Cetak ${cfg.label} — ${d.nomor}</h2>
+      <div class="actions">
+        <button class="btn btn-ghost" onclick="cancelForm()">← Kembali</button>
+        <button class="btn btn-gold" onclick="editDoc('${d.id}')">✏️ Edit</button>
+        <button class="btn btn-primary" onclick="window.print()">🖨️ Print / Save PDF</button>
+      </div>
+    </div>
+    <div class="print-page">
+      <div class="print-kop">
+        <div class="company-name">${escapeHtml(s.companyName)}</div>
+        <div class="company-meta">${escapeHtml(s.companyAddress)}${s.companyPhone?' · '+escapeHtml(s.companyPhone):''}${s.companyNPWP?' · NPWP: '+escapeHtml(s.companyNPWP):''}</div>
+      </div>
+      <div class="print-title">
+        ${cfg.fullName}
+        <div class="nomor">Nomor: <b>${escapeHtml(d.nomor)}</b></div>
+      </div>
+      <div class="print-meta">
+        <div><span class="label">Tanggal:</span> <span class="value">${fmtDateID(d.tanggal)}</span></div>
+        ${cfg.partnerType !== 'internal' ? `<div><span class="label">${partnerLabel}:</span> <span class="value">${escapeHtml(d.partnerNama||'-')}</span></div>` : ''}
+        ${cfg.partnerType !== 'internal' && d.partnerAlamat ? `<div><span class="label">Alamat:</span> <span class="value">${escapeHtml(d.partnerAlamat)}</span></div>` : ''}
+        ${cfg.partnerType === 'internal' ? `<div><span class="label">Tujuan:</span> <span class="value">${escapeHtml(d.partnerNama||'-')}</span></div>` : ''}
+        ${cfg.fields.map(f => {
+          const v = d.extra ? d.extra[f.key] : '';
+          if (!v) return '';
+          const lbl = f.label.replace(/\s*\(.*\)\s*/g,'').trim();
+          return `<div><span class="label">${escapeHtml(lbl)}:</span> <span class="value">${escapeHtml(f.type==='date'?fmtDateID(v):v)}</span></div>`;
+        }).join('')}
+        ${d.catatan ? `<div class="full" style="grid-column:1/-1"><span class="label">Catatan:</span> <span class="value">${escapeHtml(d.catatan)}</span></div>` : ''}
+      </div>
+      <table class="print-items">
+        <thead>
+          <tr>
+            <th style="width:30px">No</th>
+            <th style="width:90px">Kode</th>
+            <th>Nama Barang</th>
+            <th style="width:60px">Qty</th>
+            <th style="width:60px">Satuan</th>
+            ${showTotal ? '<th style="width:90px">Harga</th><th style="width:110px">Subtotal</th>' : '<th style="width:auto">Catatan</th>'}
+          </tr>
+        </thead>
+        <tbody>
+          ${d.items.map((it,i) => `
+            <tr>
+              <td class="center">${i+1}</td>
+              <td>${escapeHtml(it.kode||'')}</td>
+              <td>${escapeHtml(it.nama||'')}</td>
+              <td class="center">${it.qty||0}</td>
+              <td class="center">${escapeHtml(it.satuan||'')}</td>
+              ${showTotal ? `<td class="num">Rp ${fmtIDR(it.harga||0)}</td><td class="num">Rp ${fmtIDR(it.subtotal||0)}</td>` : `<td>${escapeHtml(it.catatan||'')}</td>`}
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+      ${showTotal ? `
+        <div class="print-totals">
+          <div class="row"><span>Subtotal</span><span>Rp ${fmtIDR(d.total||0)}</span></div>
+          ${isInvoice && d.extra && d.extra.ppnPct ? `<div class="row"><span>PPN ${d.extra.ppnPct}%</span><span>Rp ${fmtIDR(d.extra.ppnAmt||0)}</span></div>` : ''}
+          <div class="row total"><span>TOTAL</span><span>Rp ${fmtIDR(grand||0)}</span></div>
+        </div>
+        ${(isKwitansi || isInvoice) ? `
+          <div class="print-terbilang">
+            Terbilang: <b>${terbilangIDR(grand||0)}</b>
+          </div>
+        ` : ''}
+      ` : ''}
+      ${d.catatan && !showTotal ? `<div class="print-catatan"><b>Catatan:</b> ${escapeHtml(d.catatan)}</div>` : ''}
+      <div class="print-ttd">
+        <div>
+          <div class="role">Dibuat oleh,</div>
+          <div class="name">&nbsp;</div>
+        </div>
+        <div>
+          <div class="role">${cfg.partnerType==='supplier'?'Supplier / Pemasok':'Penerima,'}</div>
+          <div class="name">&nbsp;</div>
+        </div>
+        <div>
+          <div class="role">Mengetahui,</div>
+          <div class="name">&nbsp;</div>
+        </div>
+      </div>
+    </div>
+  `;
+  // auto-trigger print (optional — biar user bisa cek dulu, jangan auto)
+}
+
+// ============================================================
+// TERBILANG (Indonesian number-to-words)
+// ============================================================
+function terbilangIDR(n) {
+  if (n === 0) return 'nol rupiah';
+  n = Math.abs(Math.round(n));
+  const satuan = ['','satu','dua','tiga','empat','lima','enam','tujuh','delapan','sembilan'];
+  const belasan = ['sepuluh','sebelas','dua belas','tiga belas','empat belas','lima belas','enam belas','tujuh belas','delapan belas','sembilan belas'];
+  function conv(x) {
+    if (x === 0) return '';
+    if (x < 10) return satuan[x];
+    if (x < 20) return belasan[x-10];
+    if (x < 100) return satuan[Math.floor(x/10)] + ' puluh' + (x%10?' '+conv(x%10):'');
+    if (x < 200) return 'seratus' + (x-100?' '+conv(x-100):'');
+    if (x < 1000) return satuan[Math.floor(x/100)] + ' ratus' + (x%100?' '+conv(x%100):'');
+    if (x < 2000) return 'seribu' + (x-1000?' '+conv(x-1000):'');
+    if (x < 1000000) return conv(Math.floor(x/1000)) + ' ribu' + (x%1000?' '+conv(x%1000):'');
+    if (x < 1000000000) return conv(Math.floor(x/1000000)) + ' juta' + (x%1000000?' '+conv(x%1000000):'');
+    if (x < 1000000000000) return conv(Math.floor(x/1000000000)) + ' miliar' + (x%1000000000?' '+conv(x%1000000000):'');
+    return conv(Math.floor(x/1000000000000)) + ' triliun' + (x%1000000000000?' '+conv(x%1000000000000):'');
+  }
+  return conv(n) + ' rupiah';
+}
+
+// ============================================================
+// MASTER DATA VIEW
+// ============================================================
+function renderMaster(main) {
+  main.innerHTML = `
+    <div class="topbar">
+      <h2>🗂️ Master Data</h2>
+      <div class="actions">
+        <button class="btn btn-gold" onclick="showImportMaster()">📥 Import dari File Akuntansi</button>
+      </div>
+    </div>
+    <div class="kpi-strip">
+      <div class="kpi"><div class="label">Master Barang</div><div class="value">${store.masterBarang.length}</div></div>
+      <div class="kpi"><div class="label">Master Supplier</div><div class="value">${store.masterSupplier.length}</div></div>
+      <div class="kpi gold"><div class="label">Master Pelanggan</div><div class="value">${store.masterPelanggan.length}</div></div>
+    </div>
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+        <h3 class="card-title" style="margin:0; border:0; padding:0;">Master Barang</h3>
+        <button class="btn btn-ghost btn-sm" onclick="addMasterRow('masterBarang')">+ Tambah</button>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Kode</th><th>Nama</th><th>Satuan</th><th class="center-cell">Aksi</th></tr></thead>
+        <tbody>
+          ${store.masterBarang.length === 0 ? `<tr><td colspan="4" style="text-align:center; color:var(--stone-500); padding:1rem">Belum ada data. Klik Import di kanan atas.</td></tr>` :
+          store.masterBarang.map((b,i) => `
+            <tr>
+              <td><input type="text" value="${escapeHtml(b.kode||'')}" oninput="store.masterBarang[${i}].kode=this.value; saveStore()" style="width:100%; padding:2px 4px; border:1px solid var(--stone-300); border-radius:3px"></td>
+              <td><input type="text" value="${escapeHtml(b.nama||'')}" oninput="store.masterBarang[${i}].nama=this.value; saveStore()" style="width:100%; padding:2px 4px; border:1px solid var(--stone-300); border-radius:3px"></td>
+              <td style="width:80px"><input type="text" value="${escapeHtml(b.satuan||'')}" oninput="store.masterBarang[${i}].satuan=this.value; saveStore()" style="width:100%; padding:2px 4px; border:1px solid var(--stone-300); border-radius:3px"></td>
+              <td class="center-cell"><span class="row-action" onclick="removeMasterRow('masterBarang',${i})">🗑️</span></td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+    <div class="card" style="margin-top:1rem;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+        <h3 class="card-title" style="margin:0; border:0; padding:0;">Master Supplier</h3>
+        <button class="btn btn-ghost btn-sm" onclick="addMasterRow('masterSupplier')">+ Tambah</button>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Nama</th><th>Alamat</th><th>Telp</th><th class="center-cell">Aksi</th></tr></thead>
+        <tbody>
+          ${store.masterSupplier.length === 0 ? `<tr><td colspan="4" style="text-align:center; color:var(--stone-500); padding:1rem">Belum ada data.</td></tr>` :
+          store.masterSupplier.map((p,i) => `
+            <tr>
+              <td><input type="text" value="${escapeHtml(p.nama||'')}" oninput="store.masterSupplier[${i}].nama=this.value; saveStore()" style="width:100%; padding:2px 4px; border:1px solid var(--stone-300); border-radius:3px"></td>
+              <td><input type="text" value="${escapeHtml(p.alamat||'')}" oninput="store.masterSupplier[${i}].alamat=this.value; saveStore()" style="width:100%; padding:2px 4px; border:1px solid var(--stone-300); border-radius:3px"></td>
+              <td style="width:130px"><input type="text" value="${escapeHtml(p.telp||'')}" oninput="store.masterSupplier[${i}].telp=this.value; saveStore()" style="width:100%; padding:2px 4px; border:1px solid var(--stone-300); border-radius:3px"></td>
+              <td class="center-cell"><span class="row-action" onclick="removeMasterRow('masterSupplier',${i})">🗑️</span></td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+    <div class="card" style="margin-top:1rem;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+        <h3 class="card-title" style="margin:0; border:0; padding:0;">Master Pelanggan</h3>
+        <button class="btn btn-ghost btn-sm" onclick="addMasterRow('masterPelanggan')">+ Tambah</button>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Nama</th><th>Alamat</th><th>Telp</th><th class="center-cell">Aksi</th></tr></thead>
+        <tbody>
+          ${store.masterPelanggan.length === 0 ? `<tr><td colspan="4" style="text-align:center; color:var(--stone-500); padding:1rem">Belum ada data.</td></tr>` :
+          store.masterPelanggan.map((p,i) => `
+            <tr>
+              <td><input type="text" value="${escapeHtml(p.nama||'')}" oninput="store.masterPelanggan[${i}].nama=this.value; saveStore()" style="width:100%; padding:2px 4px; border:1px solid var(--stone-300); border-radius:3px"></td>
+              <td><input type="text" value="${escapeHtml(p.alamat||'')}" oninput="store.masterPelanggan[${i}].alamat=this.value; saveStore()" style="width:100%; padding:2px 4px; border:1px solid var(--stone-300); border-radius:3px"></td>
+              <td style="width:130px"><input type="text" value="${escapeHtml(p.telp||'')}" oninput="store.masterPelanggan[${i}].telp=this.value; saveStore()" style="width:100%; padding:2px 4px; border:1px solid var(--stone-300); border-radius:3px"></td>
+              <td class="center-cell"><span class="row-action" onclick="removeMasterRow('masterPelanggan',${i})">🗑️</span></td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+    <datalist id="dl-barang">
+      ${store.masterBarang.map(b => `<option value="${escapeHtml(b.kode)}">${escapeHtml(b.nama)}</option>`).join('')}
+    </datalist>
+  `;
+}
+function addMasterRow(key) {
+  if (key === 'masterBarang') store.masterBarang.push({ kode:'', nama:'', satuan:'' });
+  else store[key].push({ id:'p-'+Date.now(), nama:'', alamat:'', telp:'' });
+  saveStore();
+  renderMaster(document.getElementById('main'));
+}
+function removeMasterRow(key, i) {
+  if (!confirm('Hapus baris ini?')) return;
+  store[key].splice(i,1);
+  saveStore();
+  renderMaster(document.getElementById('main'));
+}
+function showImportMaster() {
+  const html = `
+    <div class="fixed inset-0 bg-black/40 z-40 flex items-center justify-center p-4" id="importOverlay">
+      <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-auto">
+        <div class="px-5 py-3 border-b border-stone-200 flex items-center justify-between">
+          <h3 class="font-bold text-stone-800">Import Master dari File Akuntansi</h3>
+          <button onclick="document.getElementById('importOverlay').remove()" class="text-stone-400 hover:text-stone-700">✕</button>
+        </div>
+        <div class="p-5 space-y-4 text-sm">
+          <div class="bg-[#FBE9EE] border border-[#F0CDD6] rounded-lg p-3 text-xs text-[#6D0F2B]">
+            <p class="font-medium mb-1">Cara import:</p>
+            <ol class="list-decimal ml-5 space-y-0.5">
+              <li>Buka file <b>INDOSARI_Akuntansi_2026_perbulan.html</b> di browser.</li>
+              <li>Klik menu <b>Master Data</b> di sidebar.</li>
+              <li>Klik tombol <b>Export Master (JSON)</b> (atau ketik di console: <code>JSON.stringify({masterBarang, masterSupplier, masterPelanggan})</code>) — copy hasilnya.</li>
+              <li>Kembali ke sini, paste ke textarea di bawah.</li>
+              <li>Klik <b>Import</b>. Data master akan ditambah/replace.</li>
+            </ol>
+            <p class="mt-2 text-amber-700"><b>Alternatif:</b> upload file Excel master barang (.xlsx) dengan kolom Kode, Nama, Satuan.</p>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-stone-600 mb-1">Paste JSON master dari file akuntansi:</label>
+            <textarea id="importArea" rows="6" class="w-full border border-stone-300 rounded px-3 py-2 text-xs font-mono" placeholder='{"masterBarang":[{"kode":"A00002","nama":"ALKOHOL","satuan":"Ltr"}],"masterSupplier":[],"masterPelanggan":[]}'></textarea>
+          </div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <button class="btn btn-primary" onclick="doImportMasterJSON()">Import JSON</button>
+            <span class="text-stone-400 text-xs">atau</span>
+            <label class="btn btn-ghost cursor-pointer">
+              📎 Upload Excel (.xlsx)
+              <input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="doImportMasterExcel(this.files[0])">
+            </label>
+            <span class="text-stone-400 text-xs">|</span>
+            <select id="importMode" class="border border-stone-300 rounded px-2 py-1.5 text-xs">
+              <option value="merge">Merge (gabung, tak double kode)</option>
+              <option value="replace">Replace (ganti semua)</option>
+            </select>
+          </div>
+          <div id="importStatus" class="text-xs"></div>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+async function doImportMasterJSON() {
+  const txt = document.getElementById('importArea').value.trim();
+  if (!txt) { alert('Paste JSON dulu'); return; }
+  const mode = document.getElementById('importMode').value;
+  try {
+    const data = JSON.parse(txt);
+    const mb = data.masterBarang || data.barang || [];
+    const ms = data.masterSupplier || data.supplier || [];
+    const mp = data.masterPelanggan || data.pelanggan || [];
+    applyImportMaster(mb, ms, mp, mode);
+    document.getElementById('importOverlay').remove();
+    showToast(`Import sukses: ${mb.length} barang, ${ms.length} supplier, ${mp.length} pelanggan`, 'success');
+    render();
+  } catch (e) {
+    document.getElementById('importStatus').innerHTML = `<span class="text-rose-600">❌ JSON tidak valid: ${escapeHtml(e.message)}</span>`;
+  }
+}
+async function doImportMasterExcel(file) {
+  if (!file) return;
+  const mode = document.getElementById('importMode').value;
+  try {
+    const buf = await file.arrayBuffer();
+    const XLSX = window.XLSX || await loadSheetJS();
+    const wb = XLSX.read(buf, {type:'array'});
+    const mb = [];
+    for (const sn of wb.SheetNames) {
+      const ws = wb.Sheets[sn];
+      const rows = XLSX.utils.sheet_to_json(ws, {header:1});
+      // detect header
+      if (rows.length < 2) continue;
+      const header = rows[0].map(h => String(h||'').toLowerCase().trim());
+      const iKode = header.findIndex(h => h.includes('kode'));
+      const iNama = header.findIndex(h => h.includes('nama') || h.includes('barang'));
+      const iSat = header.findIndex(h => h.includes('satuan') || h.includes('sat'));
+      if (iKode >= 0 && iNama >= 0) {
+        for (let r=1; r<rows.length; r++) {
+          const kode = String(rows[r][iKode]||'').trim();
+          const nama = String(rows[r][iNama]||'').trim();
+          const sat = iSat>=0 ? String(rows[r][iSat]||'').trim() : '';
+          if (kode && nama) mb.push({ kode, nama, satuan: sat });
+        }
+        break;
+      }
+    }
+    applyImportMaster(mb, [], [], mode);
+    document.getElementById('importOverlay').remove();
+    showToast(`Import Excel sukses: ${mb.length} barang`, 'success');
+    render();
+  } catch (e) {
+    document.getElementById('importStatus').innerHTML = `<span class="text-rose-600">❌ Gagal baca Excel: ${escapeHtml(e.message)}</span>`;
+  }
+}
+function applyImportMaster(mb, ms, mp, mode) {
+  if (mode === 'replace') {
+    store.masterBarang = mb;
+    store.masterSupplier = ms.map(p => ({id: p.id||('p-'+Math.random().toString(36).slice(2,8)), nama:p.nama||'', alamat:p.alamat||'', telp:p.telp||''}));
+    store.masterPelanggan = mp.map(p => ({id: p.id||('p-'+Math.random().toString(36).slice(2,8)), nama:p.nama||'', alamat:p.alamat||'', telp:p.telp||''}));
+  } else {
+    // merge per kode (barang) / nama (supplier, pelanggan)
+    const existKode = new Set(store.masterBarang.map(b => b.kode));
+    for (const b of mb) if (b.kode && !existKode.has(b.kode)) store.masterBarang.push(b);
+    const existNamaS = new Set(store.masterSupplier.map(p => p.nama.toLowerCase()));
+    for (const p of ms) if (p.nama && !existNamaS.has(p.nama.toLowerCase())) store.masterSupplier.push({id: p.id||('p-'+Math.random().toString(36).slice(2,8)), nama:p.nama, alamat:p.alamat||'', telp:p.telp||''});
+    const existNamaP = new Set(store.masterPelanggan.map(p => p.nama.toLowerCase()));
+    for (const p of mp) if (p.nama && !existNamaP.has(p.nama.toLowerCase())) store.masterPelanggan.push({id: p.id||('p-'+Math.random().toString(36).slice(2,8)), nama:p.nama, alamat:p.alamat||'', telp:p.telp||''});
+  }
+  saveStore();
+}
+function loadSheetJS() {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+    s.onload = () => resolve(window.XLSX);
+    s.onerror = () => reject(new Error('Tidak bisa load SheetJS dari CDN. Cek internet.'));
+    document.head.appendChild(s);
+  });
+}
+
+// ============================================================
+// BACKUP / RESTORE
+// ============================================================
+function renderBackup(main) {
+  const dataSize = new Blob([JSON.stringify(store)]).size;
+  main.innerHTML = `
+    <div class="topbar">
+      <h2>💾 Backup & Restore</h2>
+    </div>
+    <div class="card">
+      <h3 class="card-title">Status Data</h3>
+      <div class="form-grid" style="grid-template-columns:1fr 1fr;">
+        <div><b>Total dokumen:</b> ${store.docs.length}</div>
+        <div><b>Master barang:</b> ${store.masterBarang.length}</div>
+        <div><b>Master supplier:</b> ${store.masterSupplier.length}</div>
+        <div><b>Master pelanggan:</b> ${store.masterPelanggan.length}</div>
+        <div class="full"><b>Ukuran data:</b> ${(dataSize/1024).toFixed(1)} KB</div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:1rem;">
+      <h3 class="card-title">Backup (Export)</h3>
+      <p class="text-stone-600 text-sm mb-3">Simpan seluruh data ke file JSON. Simpan file ini di tempat aman (flashdisk/cloud). Bila komputer rusak/browser dibersihkan, data bisa dipulihkan dari file backup.</p>
+      <button class="btn btn-gold" onclick="backupDownload()">⬇️ Download Backup JSON</button>
+    </div>
+    <div class="card" style="margin-top:1rem;">
+      <h3 class="card-title">Restore (Import)</h3>
+      <p class="text-stone-600 text-sm mb-3">Pulihkan data dari file backup JSON. <b>Semua data saat ini akan ditimpa.</b></p>
+      <label class="btn btn-primary cursor-pointer">
+        📂 Pilih File Backup JSON
+        <input type="file" accept=".json,application/json" style="display:none" onchange="restoreUpload(this.files[0])">
+      </label>
+    </div>
+    <div class="card" style="margin-top:1rem; border-color:#b91c1c;">
+      <h3 class="card-title" style="color:#b91c1c;">⚠ Zona Berbahaya</h3>
+      <p class="text-stone-600 text-sm mb-3">Hapus SEMUA data (dokumen + master + settings). Tidak bisa dibatalkan. Pastikan sudah backup sebelumnya.</p>
+      <button class="btn btn-ghost" style="border-color:#b91c1c; color:#b91c1c;" onclick="resetAll()">🗑️ Reset Semua Data</button>
+    </div>
+  `;
+}
+function backupDownload() {
+  const blob = new Blob([JSON.stringify(store, null, 2)], { type:'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `INDOSARI_Operasional_backup_${todayISO()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Backup tersimpan', 'success');
+}
+async function restoreUpload(file) {
+  if (!file) return;
+  if (!confirm('Restore akan menimpa SEMUA data saat ini. Lanjutkan?')) return;
+  try {
+    const txt = await file.text();
+    const data = JSON.parse(txt);
+    if (!data.docs || !Array.isArray(data.docs)) throw new Error('Format file backup tidak valid');
+    store = Object.assign(defaultStore(), data);
+    rebuildCounters();
+    saveStore();
+    showToast('Restore berhasil', 'success');
+    render();
+  } catch (e) {
+    showToast('Gagal restore: ' + e.message, 'error');
+  }
+}
+function resetAll() {
+  if (!confirm('Yakin hapus SEMUA data? Pastikan sudah backup!')) return;
+  if (!confirm('Konfirmasi terakhir: SEMUA data akan hilang. Lanjut?')) return;
+  store = defaultStore();
+  saveStore();
+  showToast('Semua data direset', 'success');
+  navigate('spb');
+}
+
+// ============================================================
+// SETTINGS
+// ============================================================
+function renderSettings(main) {
+  const s = store.settings;
+  main.innerHTML = `
+    <div class="topbar">
+      <h2>⚙️ Settings — Identitas Perusahaan</h2>
+      <div class="actions">
+        <button class="btn btn-gold" onclick="saveSettings()">💾 Simpan</button>
+      </div>
+    </div>
+    <div class="card">
+      <p class="text-stone-600 text-sm mb-3">Identitas ini dipakai di header kop cetak semua dokumen.</p>
+      <div class="form-grid">
+        <div class="form-field full">
+          <label>Nama Perusahaan</label>
+          <input type="text" id="s-name" value="${escapeHtml(s.companyName)}">
+        </div>
+        <div class="form-field full">
+          <label>Alamat</label>
+          <input type="text" id="s-addr" value="${escapeHtml(s.companyAddress)}">
+        </div>
+        <div class="form-field">
+          <label>Telepon</label>
+          <input type="text" id="s-phone" value="${escapeHtml(s.companyPhone)}">
+        </div>
+        <div class="form-field">
+          <label>NPWP</label>
+          <input type="text" id="s-npwp" value="${escapeHtml(s.companyNPWP)}">
+        </div>
+      </div>
+    </div>
+  `;
+}
+function saveSettings() {
+  store.settings = {
+    companyName: document.getElementById('s-name').value,
+    companyAddress: document.getElementById('s-addr').value,
+    companyPhone: document.getElementById('s-phone').value,
+    companyNPWP: document.getElementById('s-npwp').value,
+  };
+  saveStore();
+  showToast('Settings tersimpan', 'success');
+}
+
+// ============================================================
+// INIT
+// ============================================================
+function init() {
+  rebuildCounters();
+  render();
+}
+window.addEventListener('DOMContentLoaded', init);
+"""
+
+# ============================================================
+# HTML WRAPPER
+# ============================================================
+HTML = f"""<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>INDOSARI Operasional — SPB / LPB / PO / Invoice / Kwitansi</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>{CSS}</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <h1>INDOSARI</h1>
+      <div class="sub">Operasional · v1</div>
+    </div>
+    <div class="sidebar-section">Dokumen</div>
+    <div class="sidebar-item active" data-module="spb" onclick="navigate('spb')"><span class="ico">📝</span> SPB</div>
+    <div class="sidebar-item" data-module="lpb" onclick="navigate('lpb')"><span class="ico">📥</span> LPB</div>
+    <div class="sidebar-item" data-module="po" onclick="navigate('po')"><span class="ico">🛒</span> Purchase Order</div>
+    <div class="sidebar-item" data-module="invoice" onclick="navigate('invoice')"><span class="ico">🧾</span> Invoice</div>
+    <div class="sidebar-item" data-module="kwitansi" onclick="navigate('kwitansi')"><span class="ico">💰</span> Kwitansi</div>
+    <div class="sidebar-section">Data &amp; Sistem</div>
+    <div class="sidebar-item" data-module="master" onclick="navigate('master')"><span class="ico">🗂️</span> Master Data</div>
+    <div class="sidebar-item" data-module="backup" onclick="navigate('backup')"><span class="ico">💾</span> Backup &amp; Restore</div>
+    <div class="sidebar-item" data-module="settings" onclick="navigate('settings')"><span class="ico">⚙️</span> Settings</div>
+    <div class="sidebar-section" style="margin-top:1rem; padding-top:0.75rem; border-top:1px solid rgba(255,255,255,0.15);">
+      <div style="font-size:10px; color:rgba(255,255,255,0.4); padding:0 1.25rem;">File ini terpisah dari INDOSARI_Akuntansi.<br>Backup berkala lewat menu Backup.</div>
+    </div>
+  </aside>
+  <main class="main" id="main"></main>
+</div>
+<script>{JS}</script>
+</body>
+</html>
+"""
+
+OUT.write_text(HTML, encoding='utf-8')
+print(f"Wrote {OUT} ({OUT.stat().st_size:,} bytes)")

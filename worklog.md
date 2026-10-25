@@ -131,3 +131,37 @@ Stage Summary:
 - Bug bulan "Agt" teratasi: PDF Penjualan Agustus (dan bulan-bulan lain yg mungkin pakai varian singkatan) sekarang bisa di-parse.
 - Saran ke user: jangan upload Excel hasil konversi PDF. Pakai "Paste dari Accurate": buka PDF di Acrobat/Edge → Ctrl+A → Ctrl+C → paste ke dialog. Untuk Agustus setelah fix ini, parse akan berhasil tanpa notif "tidak ada data".
 - Script artefak: scripts/test_agt_month.js
+
+---
+Task ID: 6
+Agent: main (Z.ai)
+Task: Buat file operasional terpisah INDOSARI_Operasional.html (5 modul: SPB/LPB/PO/Invoice/Kwitansi)
+
+Work Log:
+- AskUserQuestion (6 dimensi): modul (SPB+LPB+PO+Invoice+Kwitansi), penomoran (bulanan SPB-2026-10-001), layout (kop sederhana), master (import dari akuntansi), backup (JSON export/import), start no (dari 001).
+- Builder: scripts/build_operasional.py (Python, generate HTML 66 KB dengan CSS+JS embedded).
+- Arsitektur: single-file HTML, Tailwind via CDN, vanilla JS (no React), localStorage persistence. Tema maroon #6D0F2B senada dgn file akuntansi.
+- Data model generik: docs[{id, module, nomor, tanggal, partnerId/Nama/Alamat, catatan, extra{}, items[], total, status}] — 5 modul pakai struktur sama, hanya beda di MODULES[].fields (module-specific extra fields).
+- Penomoran: counters[module][YYYY-MM] di store, genNomor(module) increment+save. Format: SPB-2026-10-001. Rebuild dari existing docs saat init (rebuildCounters) agar restore import tidak salah urut.
+- Per-modul specific fields:
+  • SPB (internal partner, no total): dimintaOleh, ditujukanKe, tanggalButuh
+  • LPB (supplier, hasTotal): tanggalTerima, noSuratJalan, penerima, kendaraan
+  • PO (supplier, hasTotal): tanggalKirim, termsPembayaran, pengirim, topAlamat
+  • Invoice (pelanggan, hasTotal): jatuhTempo, ppnPct (auto-calc grandTotal = subtotal + PPN%)
+  • Kwitansi (pelanggan, hasTotal): diterimaDari, untukPembayaran (terbilang otomatis)
+- Master data: masterBarang (kode/nama/satuan), masterSupplier, masterPelanggan (id/nama/alamat/telp). Import lewat dialog: paste JSON dari file akuntansi ATAU upload Excel (.xlsx via SheetJS CDN). Mode merge (gabung per kode/nama, tak double) atau replace.
+- Backup/Restore: backupDownload() → download file JSON berisi seluruh store (settings + 3 master + docs + counters). restoreUpload(file) → read file, JSON.parse, Object.assign(defaultStore, data), rebuildCounters, saveStore. Reset all data (2x konfirmasi).
+- Settings: companyName/Address/Phone/NPWP — dipakai di kop cetak semua dokumen.
+- Print layout: window.print() dengan @media print CSS (sidebar/topbar hidden). Kop sederhana (nama + alamat + telp + NPWP), judul dokumen + nomor, meta header (tanggal/partner/extra fields), tabel item dgn border, total (subtotal + PPN untuk invoice, terbilang untuk invoice/kwitansi), ttd 3 kolom (Dibuat oleh / Penerima / Mengetahui).
+- TerbilangIDR(n): implementasi full Indonesia (satuan, belasan, puluh, ratus, ribu, juta, miliar, triliun; "seratus"/"seribu" Special). Test 6 angka: 0/1/11000/280000/1110000/25250000 semua benar.
+- BUG FIX (smoke test browser temukan): collectForm() lama panggil genNomor() sebelum validasi item filter → bila saveForm gagal krn item kosong, counter tetap ter-increment. Ditemukan saat test Invoice: nomor jadi INV-002 padahal save valid pertama gagal. Fix: genNomor dipindah ke assignNomorIfNew(doc) yang dipanggil di saveForm SETELAH semua validasi lolos. Test: empty save → counter tetap 0 ✓, valid save → counter jadi 1 ✓, valid save lagi → nomor lanjut 002 ✓.
+- Smoke test browser (agent-browser CLI, Chromium): 11 cek SEMUA LULUS — initial render, form create, auto-nomor, total calc (PO 5×56000=280000), PPN calc (Invoice 1M+11%=1.11M), print view (kop + judul + tabel + ttd), master JSON import (2 barang/1 supplier/1 pelanggan), settings update, backup download (2.9 KB JSON), reset (2x confirm), restore upload (round-trip full data), terbilang 6 angka.
+- verify_operasional.js (new Function wrapper): inline script syntax OK 54102 chars.
+
+Stage Summary:
+- File deliverable: /home/z/my-project/download/INDOSARI_Operasional.html (~66 KB, single file, syntax OK, smoke test 11/11 LULUS)
+- 5 modul terpisah: SPB, LPB, PO, Invoice, Kwitansi — penomoran bulanan otomatis, form module-specific, print kop sederhana + ttd 3 kolom.
+- Master import dari file akuntansi (JSON paste atau Excel upload via SheetJS).
+- Backup JSON full round-trip (download → reset → restore = data kembali utuh, counter ter-rebuild).
+- File terpisah dari INDOSARI_Akuntansi — masing-masing ringan, tak saling membebani.
+- Script artefak: scripts/build_operasional.py (builder), scripts/verify_operasional.js (syntax check), scripts/test_restore.js (restore blob helper), scripts/data/operasional_print_spb.png (screenshot print view).
