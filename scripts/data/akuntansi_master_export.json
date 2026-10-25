@@ -1,0 +1,1438 @@
+{
+  "masterBarang": [
+    {
+      "kode": "A00002",
+      "nama": "ALKOHOL",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00003",
+      "nama": "AMONIAK RRC / AMONIUM BICARBONATE (AMONIA KUE)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00004",
+      "nama": "ANTI RAYAP BINTREX",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00005",
+      "nama": "ARPUS KUNING BAGUS / ARPUS LOKAL",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00222",
+      "nama": "Accu GS",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00006",
+      "nama": "BAKING POWDER PRIME",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00007",
+      "nama": "BAKING SELANDIA (DOUBLE ACTING / BP5)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00008",
+      "nama": "BELERANG",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00009",
+      "nama": "BENZOAT HOLLAND",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00010",
+      "nama": "BENZOAT RRC / SODIUM BENZOAT",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00011",
+      "nama": "BIBIT MINYAK SERE",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00308",
+      "nama": "BOTOL PARFUM",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00012",
+      "nama": "BOTOL SEGEL",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00013",
+      "nama": "CAUSTIC SODA FLAKE (SODA API)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00014",
+      "nama": "CAUSTIC TJIWI",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00259",
+      "nama": "CETAKAN KUE",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00015",
+      "nama": "CITRUN GAJAH 50 GRAM",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00016",
+      "nama": "CITRUN RRC / CITRIC ACID",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00294",
+      "nama": "CLASSIC GARPU MAKAN",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00293",
+      "nama": "CLASSIC SENDOK MAKAN",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00295",
+      "nama": "CLASSIC SENDOK TEH",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00017",
+      "nama": "CMC FRANCES / ASHLAN",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00018",
+      "nama": "COKLAT MATAHARI / P 10 (Coklat Bubuk)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00236",
+      "nama": "CORTE ATLANTIS (PISAU TBK)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00274",
+      "nama": "CORTE ATLANTIS GARPU KUE",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00275",
+      "nama": "CORTE ATLANTIS SENDOK ES",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00273",
+      "nama": "CORTE ATLANTIS SENDOK MAKAN",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00276",
+      "nama": "CORTE ATLANTIS SENDOK SUP",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00281",
+      "nama": "CORTE CONTESSA GARPU MAKAN",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00280",
+      "nama": "CORTE CONTESSA SENDOK MAKAN",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00221",
+      "nama": "CP. CANADA",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00019",
+      "nama": "CREOLINE (Karbol)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00310",
+      "nama": "CUKA CAMPURAN",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00020",
+      "nama": "CUKA TAIWAN / KOREA / ACETIC ACID",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00021",
+      "nama": "DEXTROSE HALUS",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00127",
+      "nama": "ESSENCE KAPAL LAYAR (FRAMBOZEN 500 ML)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00128",
+      "nama": "ESSENCE KAPAL LAYAR (NANAS 500 ML)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00231",
+      "nama": "ESSENCE KAPAL LAYAR (Orange/Jeruk 500 ML)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00130",
+      "nama": "ESSENCE KAPAL LAYAR (VANILI 1 L / FRAMBOZEN 500 ML PER BTL)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00129",
+      "nama": "ESSENCE KAPAL LAYAR (VANILI 500 ML)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00131",
+      "nama": "ESSENCE KAPAL LAYAR (VANILI LAYAR 30K / FRAMBOZEN 30 K)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00132",
+      "nama": "ESSENCE KAPAL LAYAR (VANILI LAYAR 30ML / FRAMBOZEN 30 ML)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00307",
+      "nama": "ESSENCE MOHLER",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00283",
+      "nama": "EVORA AVALON GARPU MAKAN",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00282",
+      "nama": "EVORA AVALON SENDOK MAKAN",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00239",
+      "nama": "EVORA JENNIFER (PISAU TBK)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00240",
+      "nama": "EVORA JULIA (PISAU TBK)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00238",
+      "nama": "EVORA LILIE (PISAU TBK)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00237",
+      "nama": "EVORA LUXOR (PISAU TBK)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00278",
+      "nama": "EVORA LUXOR GARPU MAKAN",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00279",
+      "nama": "EVORA LUXOR SENDOK ES",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00277",
+      "nama": "EVORA LUXOR SENDOK MAKAN",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00285",
+      "nama": "EVORA RONDINE GARPU MAKAN",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00287",
+      "nama": "EVORA RONDINE SENDOK ES",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00284",
+      "nama": "EVORA RONDINE SENDOK MAKAN",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00286",
+      "nama": "EVORA RONDINE SENDOK TEH",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00022",
+      "nama": "FRUCI (COPPER SULFATE)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00290",
+      "nama": "G 2000 GLL",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00289",
+      "nama": "G 2000 SVF",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00288",
+      "nama": "G 2000 SVS",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00253",
+      "nama": "GARPU IKAN",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00228",
+      "nama": "GARPU MAKAN CORTE",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00218",
+      "nama": "GARPU MAKAN NEW PARIS",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00226",
+      "nama": "GARPU TUDACI",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00026",
+      "nama": "GLICERIN",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00027",
+      "nama": "GLUCOSE BRIX 85 (GLUGUS)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00028",
+      "nama": "GRISILID",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00029",
+      "nama": "H202 PIP & SINDO PACK (HYDROGEN PEROXIDE)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00030",
+      "nama": "HCL (HYDROCHLORIC ACID)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00258",
+      "nama": "JAPITAN 11 INCHI",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00257",
+      "nama": "JAPITAN 7 INCHI",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00301",
+      "nama": "JENNIFER GARPU KUE",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00300",
+      "nama": "JENNIFER SENDOK TEH",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00225",
+      "nama": "JEPITAN 12 CM",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00245",
+      "nama": "JEPITAN STAINLESS",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "100209",
+      "nama": "JERIGEN 1 LITER",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00215",
+      "nama": "JERIGEN 20 LT",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00031",
+      "nama": "JERIGEN 5 LITER",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00299",
+      "nama": "JULIA GARPU KUE",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00298",
+      "nama": "JULIA SENDOK TEH",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00039",
+      "nama": "K.O.H",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00032",
+      "nama": "KANFER",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00302",
+      "nama": "KANFER (KEMASAN 1 ONS)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00033",
+      "nama": "KAPORIT 60% (CALCIUM HYPOCHLORITE 60 %)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00034",
+      "nama": "KAPORIT TABLET (TCCA TABLET)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00035",
+      "nama": "KARET HITAM",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00036",
+      "nama": "KARET KUPU",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00037",
+      "nama": "KARET PENTIL",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00038",
+      "nama": "KATALIS",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00303",
+      "nama": "KATALIS (KEMASAN CC)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00311",
+      "nama": "KRESEK 15 NATURAL (HITAM)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00110",
+      "nama": "KRESEK 15 X 30 / 15 X 10",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00111",
+      "nama": "KRESEK 15 x 34 (15 x 32 ) Putih",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00112",
+      "nama": "KRESEK 21 X 20 / 21 X 0.25",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00312",
+      "nama": "KRESEK 24 NATURAL",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00113",
+      "nama": "KRESEK 24 X 40 / 24 X 0.1",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00114",
+      "nama": "KRESEK 24 X 44 / 24 X 24",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00309",
+      "nama": "KRESEK 28 NATURAL",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00115",
+      "nama": "KRESEK 28 X 20",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00116",
+      "nama": "KRESEK 35 X 02 / 30 X 32",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00196",
+      "nama": "KRESEK SAMPAH",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00040",
+      "nama": "KROP KUNING",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00041",
+      "nama": "KROP PUTIH / KILAP",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00216",
+      "nama": "Karbol / Lysol / Lisol",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00297",
+      "nama": "LILIE GARPU KUE",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00296",
+      "nama": "LILIE SENDOK TEH",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00042",
+      "nama": "LILIN RRC",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00043",
+      "nama": "MAGNESIUM SULFATE (BITERSAL)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00044",
+      "nama": "MAIZENA",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00045",
+      "nama": "MATT",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00046",
+      "nama": "METANOL / SPIRTUS",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00047",
+      "nama": "MINERAL / SODA KUE JEPANG / Soda Asahi",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00254",
+      "nama": "MINI GARPU IKAN",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00249",
+      "nama": "MINI PENIRIS",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00248",
+      "nama": "MINI SENDOK SUP",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00250",
+      "nama": "MINI SUTIL FLAT",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00251",
+      "nama": "MINI SUTIL LAJUR",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00048",
+      "nama": "MINYAK GONDOPURO",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00049",
+      "nama": "MINYAK SERE",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00262",
+      "nama": "MY BOTTLE",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00050",
+      "nama": "NACL",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00270",
+      "nama": "NAPOLI GARPU MAKAN",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00269",
+      "nama": "NAPOLI SENDOK MAKAN",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00265",
+      "nama": "NEW PARIS GARPU KUE",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00266",
+      "nama": "NEW PARIS SENDOK ES",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00264",
+      "nama": "NEW PARIS SENDOK TEH",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00052",
+      "nama": "OPAQUE WHITE / P.11 / PEMUTIH",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00051",
+      "nama": "PAC HANSON - 30 EX GERMANY",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00055",
+      "nama": "PARFUM EXOTIC",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00054",
+      "nama": "PARFUM LEMON (LEMON BREZZE)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00304",
+      "nama": "PARFUM LEMON (LEMON BREZZE) - 50 CC",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00057",
+      "nama": "PARFUM MOLTO PINK",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00232",
+      "nama": "PARFUM SNAPPY BBA",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00056",
+      "nama": "PARFUM SNAPPY BEDAK",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00305",
+      "nama": "PARFUM SNAPPY BEDAK - 50 CC",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00227",
+      "nama": "PARUTAN KEJU",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00247",
+      "nama": "PEMBUKA BOTOL",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00053",
+      "nama": "PEN OIL (PINE OIL)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00244",
+      "nama": "PENGOCOK PANJANG",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00243",
+      "nama": "PENGOCOK TELUR",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00229",
+      "nama": "PENGUPAS",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00224",
+      "nama": "PIPET PANJANG",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00059",
+      "nama": "PIPET SEDOT KECIL",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00058",
+      "nama": "PIPET SEDOT PANJANG",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00060",
+      "nama": "PIPET SEDOT SEDANG",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00210",
+      "nama": "PLASTIK 10 X 17",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00223",
+      "nama": "PLASTIK 10 x 20",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00197",
+      "nama": "PLASTIK 12 X 24",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00198",
+      "nama": "PLASTIK 15 X 27",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00199",
+      "nama": "PLASTIK 15 X 30",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00200",
+      "nama": "PLASTIK 20 X 35",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00102",
+      "nama": "PLASTIK 4.5 X 15",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00201",
+      "nama": "PLASTIK 5 X 15",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00202",
+      "nama": "PLASTIK 6 X 12",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00203",
+      "nama": "PLASTIK 6 X 15",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00211",
+      "nama": "PLASTIK 7 X 12",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00212",
+      "nama": "PLASTIK 7 X 14",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00204",
+      "nama": "PLASTIK 7 X 15",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00205",
+      "nama": "PLASTIK 8 X 15",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00206",
+      "nama": "PLASTIK 8 X 17",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00207",
+      "nama": "PLASTIK 8 X 35",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00208",
+      "nama": "PLASTIK 9 X 17",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00209",
+      "nama": "PLASTIK 9 X 33",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00107",
+      "nama": "PLASTIK BESAR (10 - 20)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00108",
+      "nama": "PLASTIK KECIL",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00104",
+      "nama": "PLASTIK KLIP 10 X 15",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00103",
+      "nama": "PLASTIK KLIP 13 X 8.7",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00213",
+      "nama": "PLASTIK KLIP 15 X 10",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00105",
+      "nama": "PLASTIK KLIP 6 X 4",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00233",
+      "nama": "PLASTIK KLIP 7 x 10",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00106",
+      "nama": "PLASTIK KLIP 8 X 5",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00109",
+      "nama": "PLASTIK SEDANG (7 - 9)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00064",
+      "nama": "PORSTEK",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00062",
+      "nama": "POTASIUM CARBONATE",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00063",
+      "nama": "POTASIUM CITRATE PTH",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00061",
+      "nama": "POTASIUM SORBATE GRANULE / SULFATE",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00065",
+      "nama": "RACUN TIKUS CAIR",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00066",
+      "nama": "RACUN TIKUS PADI",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00067",
+      "nama": "RACUN TIKUS RRC",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00261",
+      "nama": "RAK SUSUN",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00068",
+      "nama": "RESIN",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00070",
+      "nama": "SABUN CUCI PIRING (SABUN CAIR)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00069",
+      "nama": "SABUN MATIC / DETERGENT LEMON",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00072",
+      "nama": "SAKARIN / SACHARIN",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00073",
+      "nama": "SAPP",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00255",
+      "nama": "SARINGAN 11 CM",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00246",
+      "nama": "SARINGAN 14 CM",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00256",
+      "nama": "SARINGAN 18 CM",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00234",
+      "nama": "SARINGAN BESAR",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00235",
+      "nama": "SCOUP ICE CREAM",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00217",
+      "nama": "SENDOK MAKAN NEW PARIS",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00252",
+      "nama": "SENDOK NASI",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00241",
+      "nama": "SENDOK PENIRIS",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00230",
+      "nama": "SENDOK SUP BESAR",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00219",
+      "nama": "SENDOK TEH (COS) - CORTE",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00074",
+      "nama": "SENDOWO KASAR (KALIUM NITRITE CRSTAL)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00076",
+      "nama": "SILICON EMULTION (MIX)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00075",
+      "nama": "SILICONE EMULSION",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00077",
+      "nama": "SODA ASH DENSE CINER",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00214",
+      "nama": "SODA KUE ITALY",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00079",
+      "nama": "SODA KUE RRC MALAN / SODIUM BICARBONATE (JUAL SAK)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00078",
+      "nama": "SODA KUE THAILAND (DIJUAL ECER)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00080",
+      "nama": "SODA Q BULAT",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00081",
+      "nama": "SODIUM 3T 1 KG / SODIUM 3T (TTS)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00082",
+      "nama": "SODIUM 3T 25 GRAM (TTS)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00086",
+      "nama": "SODIUM METABISULFITE",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00083",
+      "nama": "SODIUM POLIPOSPATE",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00084",
+      "nama": "SODIUM SULFATE",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00085",
+      "nama": "SODIUM SUPER NEW (1 Kg) - SS",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00087",
+      "nama": "SODIUM TAWON SAK (RTB) - RTB / 25 KG (UNTUK SS)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00089",
+      "nama": "SODIUM TAWON SUPER (DUS) / RTB / 1 KG",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00071",
+      "nama": "SOFTENER",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00091",
+      "nama": "STPP",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00242",
+      "nama": "SUTIL FLAT",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00220",
+      "nama": "SUTIL LAJUR",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00092",
+      "nama": "TALI RAFIA",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00093",
+      "nama": "TALK LEONYNG",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00094",
+      "nama": "TAWAS HALUS (ALUMINIUM SULFATE POWDER)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00095",
+      "nama": "TAWAS HIJAU",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00096",
+      "nama": "TAWAS KASAR / TAWAS BENING",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "100208",
+      "nama": "TELUR AYAM",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00097",
+      "nama": "TEPOL ENCER",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00098",
+      "nama": "TEPOL KENTAL",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00099",
+      "nama": "TEPUNG JELLY (JG 704)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00100",
+      "nama": "TEXAFON",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00263",
+      "nama": "VACUUM CUP",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00101",
+      "nama": "VANILI RRC",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00268",
+      "nama": "VICTORIA GARPU MAKAN",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00267",
+      "nama": "VICTORIA SENDOK MAKAN",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00272",
+      "nama": "VIP DOLL GARPU MAKAN",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00271",
+      "nama": "VIP DOLL SENDOK MAKAN",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00155",
+      "nama": "WARNA AROMA (APPLE GREEN)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00156",
+      "nama": "WARNA AROMA (DARK BROWN)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00157",
+      "nama": "WARNA AROMA (EGG YELLOW)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00158",
+      "nama": "WARNA AROMA (LEMON)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00159",
+      "nama": "WARNA AROMA (ORANGE 220)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00162",
+      "nama": "WARNA AROMA (PINAPLLE YELLOW)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00160",
+      "nama": "WARNA AROMA (RASBERRY)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00163",
+      "nama": "WARNA KALENG SUNSEA (APPLE GREEN 2093) 1 Kg",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00164",
+      "nama": "WARNA KALENG SUNSEA (BRILL BLUE 2129) 1 Kg",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00165",
+      "nama": "WARNA KALENG SUNSEA (DARK COKLAT 2088)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00166",
+      "nama": "WARNA KALENG SUNSEA (EGG YELLOW 2115) 1 Kg",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00167",
+      "nama": "WARNA KALENG SUNSEA (ORANGE RED 2103)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00168",
+      "nama": "WARNA KALENG SUNSEA (ORANGE YELLOW)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00169",
+      "nama": "WARNA KALENG SUNSEA (RASBERRY RED 2094 - 1KG)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00170",
+      "nama": "WARNA KALENG SUNSEA (RED SCARLED 2106)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00172",
+      "nama": "WARNA KALENG SUNSEA (STRAWBERRY RED EXTRA)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00171",
+      "nama": "WARNA KALENG SUNSEA (STRAWBERRY RED)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00173",
+      "nama": "WARNA KALENG SUNSEA (VIOLET GRAPE 2125)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00306",
+      "nama": "WARNA TIMBANG / SUNSEA - ORANGE YELLOW",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00187",
+      "nama": "WARNA TIMBANG / SUNSEA @ 25 KG (TARTRAZIN) 1 Kg",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00174",
+      "nama": "WARNA TIMBANG / SUNSEA @25 KG (APPLE GREEN 2093 - HIJAU)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00175",
+      "nama": "WARNA TIMBANG / SUNSEA @25 KG (BRILL BLUE 2129)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00176",
+      "nama": "WARNA TIMBANG / SUNSEA @25 KG (DARK COFFEE BROWN 2128)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00177",
+      "nama": "WARNA TIMBANG / SUNSEA @25 KG (DARK COKLAT 2088)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00178",
+      "nama": "WARNA TIMBANG / SUNSEA @25 KG (EGG YELLOW 2115 - KUNING TELUR)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00179",
+      "nama": "WARNA TIMBANG / SUNSEA @25 KG (HITAM)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00180",
+      "nama": "WARNA TIMBANG / SUNSEA @25 KG (JAMBON)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00181",
+      "nama": "WARNA TIMBANG / SUNSEA @25 KG (MALASID GREEN - HIJAU TEKNIK)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00185",
+      "nama": "WARNA TIMBANG / SUNSEA @25 KG (ORAMIN OO)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00184",
+      "nama": "WARNA TIMBANG / SUNSEA @25 KG (ORANGE ACID)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00188",
+      "nama": "WARNA TIMBANG / SUNSEA @25 KG (PONCEAU) 1 Kg",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00182",
+      "nama": "WARNA TIMBANG / SUNSEA @25 KG (RASBERRY RED 2094 - MERAH TUA)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00183",
+      "nama": "WARNA TIMBANG / SUNSEA @25 KG (RED SCARLED 2106 - MERAH DARAH)",
+      "satuan": "Kg"
+    },
+    {
+      "kode": "A00186",
+      "nama": "WARNA TIMBANG / SUNSEA @25 KG (SUNSET YELLOW) 1 kg",
+      "satuan": "Kg"
+    }
+  ],
+  "masterSupplier": [
+    {
+      "nama": "BINTANG TIMUR MITRA ABADI, PT",
+      "alamat": "",
+      "telp": ""
+    },
+    {
+      "nama": "BIRAN",
+      "alamat": "",
+      "telp": ""
+    },
+    {
+      "nama": "BUANA AGUNG SEJAHTERA, CV",
+      "alamat": "",
+      "telp": ""
+    },
+    {
+      "nama": "CHEMIFIN JAYA UTAMA, PT",
+      "alamat": "",
+      "telp": ""
+    },
+    {
+      "nama": "ENGGAL JAYA",
+      "alamat": "",
+      "telp": ""
+    },
+    {
+      "nama": "FAJAR KIMIA",
+      "alamat": "",
+      "telp": ""
+    },
+    {
+      "nama": "Febe, Ibu",
+      "alamat": "",
+      "telp": ""
+    },
+    {
+      "nama": "GALIC BINA MADA, PT",
+      "alamat": "",
+      "telp": ""
+    },
+    {
+      "nama": "GLOBAL CHEMINDO MEGA TRADING, PT",
+      "alamat": "",
+      "telp": ""
+    },
+    {
+      "nama": "HALIM SARANA CAHAYA SEMESTA",
+      "alamat": "",
+      "telp": ""
+    },
+    {
+      "nama": "MANIS MAKMUR JAYA, PT",
+      "alamat": "",
+      "telp": ""
+    },
+    {
+      "nama": "PANCA PRAKARSA ABADI, CV",
+      "alamat": "",
+      "telp": ""
+    },
+    {
+      "nama": "ROHA DYECHEM INDONESIA, PT",
+      "alamat": "",
+      "telp": ""
+    },
+    {
+      "nama": "RUDY",
+      "alamat": "",
+      "telp": ""
+    },
+    {
+      "nama": "SARI PLASTIK / SARI PERSADA MANDIRI, PT",
+      "alamat": "",
+      "telp": ""
+    },
+    {
+      "nama": "SENTOSA KIMIA",
+      "alamat": "",
+      "telp": ""
+    },
+    {
+      "nama": "TUNAS SUKSES MANDIRI, CV",
+      "alamat": "",
+      "telp": ""
+    }
+  ],
+  "masterPelanggan": [
+    {
+      "nama": "AJI SUSANTO",
+      "alamat": "",
+      "telp": ""
+    },
+    {
+      "nama": "ANEKA UD",
+      "alamat": "",
+      "telp": ""
+    },
+    {
+      "nama": "PENJUALAN HARIAN",
+      "alamat": "",
+      "telp": ""
+    },
+    {
+      "nama": "Walk-in",
+      "alamat": "",
+      "telp": ""
+    }
+  ]
+}

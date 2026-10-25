@@ -193,3 +193,31 @@ Stage Summary:
 - 3 fix terpasang & diverifikasi via agent-browser: (a) sidebar item non-aktif kini cream (#EAE2DB), hover putih, aktif putih; (b) Export JSON Master Data dengan copy + download, siap dipakai untuk import ke operasional.html; (c) per-bulan filter di Piutang & Hutang (KPI dinamis + highlight baris + filter faktur jatuh tempo per bulan).
 - Regresi semua test suite lulus: syntax OK, PU 39, PU-fallback 23, FR 63, Agt-month ALL PASS, Persediaan 51. Neraca, Laba Rugi, Penjualan, Pembelian, Persediaan semua render tanpa error.
 - Script artefak: scripts/data/akuntansi_piutang_perbulan.png, scripts/data/akuntansi_export_master_json.png (screenshot verifikasi).
+
+---
+Task ID: 8
+Agent: main (Z.ai)
+Task: Inisialisasi web app Next.js untuk akuntansi (migrasi parsial dari HTML akuntansi). 3 user, 2 cabang, login sederhana, hosting free tier.
+
+Work Log:
+- fullstack-dev skill invoked → init-fullstack.sh menjalankan setup Next.js 16 + App Router + TypeScript 5 + Tailwind v4 + shadcn/ui (New York) + Prisma 6 + NextAuth v4 + TanStack Query.
+- Stack final: Next.js 16.1.3 (Turbopack), Prisma SQLite (dev; switch ke PostgreSQL di prod via env DATABASE_URL), NextAuth Credentials provider, bcryptjs untuk password hash, shadcn/ui components.
+- Schema Prisma (14 model): Cabang, User, MasterBarang/Supplier/Pelanggan, TransaksiPenjualan/Pembelian, PersediaanBulan, PiutangBulan, UtangBulan, FakturPiutang/Hutang, LabaRugiBulan, NeracaBulan, Setting. Semua transaksi terikat cabangId + tahun/bulan untuk filter cepat.
+- Seed script (scripts/seed.ts): 2 cabang (Jakarta + Surabaya), 3 user (admin1/admin123 ADMIN JKT, finance1/finance123 FINANCE JKT, gudang1/gudang123 GUDANG SBY), 4 setting default (companyName/Address/Phone/NPWP), bootstrap master data dari HTML akuntansi (extract via Python → 265 barang + 17 supplier + 4 pelanggan → import ke Cabang JKT). Semua sukses di-seed.
+- Auth setup: NextAuth v4 Credentials + JWT session + callbacks (jwt/session inject role + cabangId + cabangNama). NEXTAUTH_SECRET set di .env. Login page inline (tampil bila tidak ada session) — tidak butuh route /login terpisah.
+- Tema maroon: globals.css override `--primary: #6D0F2B`, `--sidebar: #470A1D`, `--sidebar-foreground: #EAE2DB`, `--ring: #6D0F2B`. Custom CSS variables (--maroon, --gold, --cream) untuk komponen langsung. Sidebar item active = maroon bg + gold icon, inactive = cream text + hover white. Identik dgn tema HTML akuntansi.
+- Layout: SessionProvider + QueryClientProvider via src/components/providers.tsx. layout.tsx wrap body dgn provider + Toaster + SonnerToaster.
+- API routes (6): /api/master/barang (GET/POST/DELETE), /api/master/supplier, /api/master/pelanggan (mirip), /api/cabang (GET — ADMIN lihat semua, role lain cuma cabang sendiri), /api/setting (GET/POST), /api/dashboard (GET — KPI aggregate per cabang), /api/import-master (POST — terima JSON dari HTML akuntansi, mode merge/replace per cabang).
+- Page (src/app/page.tsx, single-page app): 'use client' dgn useSession. Bila belum login → LoginForm (gradient maroon bg, card putih, tombol maroon, akun demo ditampilkan). Bila login → layout sidebar (9 menu: Dashboard/Laba Rugi/Penjualan/Pembelian/Persediaan/Piutang/Hutang/Neraca/Master Data) + topbar (sheet title + user info + Logout) + content area dgn view switching via useState (activeModule).
+- 3 view components di src/components/views/: Dashboard (KPI cards 4 + master data summary 3 + bar chart 12 bulan jual vs beli dgn warna maroon/gold), MasterData (CRUD 3 tab: barang/supplier/pelanggan, search, dialog edit/tambah, dialog import JSON dari HTML akuntansi), PlaceholderView (untuk 7 modul belum di-port: Laba Rugi, Penjualan, Pembelian, Persediaan, Piutang, Hutang, Neraca — tampil badge "Coming Soon" + info cara pakai file HTML akuntansi sementara).
+- Bug ditemukan & fixed: NEXTAUTH_SECRET belum di-set di env → JWT decryption failed → API return 401. Fix: tambah NEXTAUTH_SECRET + NEXTAUTH_URL di .env, kill + restart dev server agar env terbaca ulang.
+- Verifikasi agent-browser (4 cek SEMUA LULUS): login admin1/admin123 → redirect ke app dgn sidebar + dashboard; Dashboard render 4 KPI (Rp 0 semua krn belum ada transaksi 2026 di web app — akan di-port iterasi berikutnya) + master data summary (265/17/4 — bootstrap sukses); Master Data tab Barang render 265 row (urut kode, search filter, button Edit/Hapus tampil); Placeholder Penjualan tampil "Coming Soon" badge + info sementara pakai HTML akuntansi. Tidak ada runtime error di dev.log. Lint: src/* bersih (no errors), errors hanya di legacy scripts/ Node files (helper tools, tidak bagian app).
+
+Stage Summary:
+- File deliverable: web app Next.js 16 di /home/z/my-project (bisa di-preview via dev server port 3000).
+- Foundation siap: DB schema 14 model + 3 user + 2 cabang + master data bootstrap 265/17/4 + NextAuth + tema maroon + sidebar + topbar.
+- 2 modul aktif: Dashboard (KPI + bar chart + master data summary) + Master Data (CRUD + import JSON dari HTML akuntansi).
+- 7 modul placeholder: Laba Rugi, Penjualan, Pembelian, Persediaan, Piutang, Hutang, Neraca — tampil "Coming Soon", porting dijadwalkan iterasi berikutnya.
+- Akun login: admin1/admin123 (ADMIN, Jakarta) · finance1/finance123 (FINANCE, Jakarta) · gudang1/gudang123 (GUDANG, Surabaya).
+- Script artefak: scripts/seed.ts (seeder), scripts/extract_master_for_seed.py (extract master dari HTML → JSON), scripts/data/{akuntansi_master_export.json, webapp_login.png, webapp_dashboard.png, webapp_master_data.png}.
+- Untuk iterasi berikutnya: porting parser Accurate dari HTML akuntansi (Penjualan/Pembelian/Persediaan/Piutang/Hutang/LR/Neraca — semua sudah ada di HTML, tinggal adapt ke TS + Prisma + multi-cabang).
