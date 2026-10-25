@@ -3167,12 +3167,33 @@ function looksLikeFakturToken(tok) {
   return tok.replace(/\D/g, "").length >= 6;
 }
 
+// Token "mirip angka/nominal" — dipakai sbg batas kanan saat menggabung token faktur.
+// Token ini TIDAK boleh ikut digabung (karena ia nominal transaksi, bukan bagian No. Faktur).
+function isAmountLikeToken(tok) {
+  if (!tok) return false;
+  // Nominal Indonesia: ada pemisah ribuan/desimal (12.500.000, 8.108.108,11, 60.700)
+  if (/^[\d.,]+$/.test(tok) && /[.,]/.test(tok)) return true;
+  // Angka 1 digit (cth: "0" untuk kolom Dibayar)
+  if (/^\d$/.test(tok)) return true;
+  return false;
+}
+
+// Verifikasi gabungan token faktur: harus diawali huruf (prefix spt SI/PI/INV) lalu punya
+// minimal 2 grup angka. Mencegah nama party berserit angka (cth: "Toko 99") salah dikenali.
+function looksLikeJoinedFaktur(s) {
+  if (!s) return false;
+  if (!/^[A-Za-z]{1,5}[.\-\/]/.test(s)) return false;
+  const digitGroups = s.match(/\d+/g) || [];
+  return digitGroups.length >= 2;
+}
+
 function parseAccuratePiutangUtangText(text, kind) {
   // kind: "piutang" | "hutang" (hanya untuk log)
   const lines = String(text).split(/\r?\n/);
   const rows = [];
   let party = "";
   let skipped = 0;
+  const puSkippedWithDigit = []; // simpan preview baris ber-angka yang tak terparse (diagnostik)
   for (const raw of lines) {
     const line = raw.replace(/\s+$/g, "").trim();
     if (!line) continue;
@@ -3197,12 +3218,31 @@ function parseAccuratePiutangUtangText(text, kind) {
     // Buang tanggal dari baris, lalu tokenisasi
     const withoutDates = norm.replace(new RegExp(/(\d{1,2}\s+[A-Za-z]{3,}\s+\d{4})/g.source, "g"), " ");
     const toks = withoutDates.split(/\s+/).filter(Boolean);
-    // Cari token faktur (boleh ada 1 kolom nomor urut di depan)
+    // Cari token faktur (boleh ada beberapa kolom di depan: nomor urut, kolom nama/umur, dsb.)
     let fi = -1;
-    for (let i = 0; i < Math.min(3, toks.length); i++) {
+    for (let i = 0; i < Math.min(6, toks.length); i++) {
       if (looksLikeFakturToken(toks[i])) { fi = i; break; }
     }
-    if (fi < 0) { skipped++; continue; }
+    // Fallback: coba gabung token berurutan dengan pemisah "." agar format "SI 2026 08 00012" tetap dikenali.
+    // Hanya terima gabungan yang sah (lihat looksLikeJoinedFaktur) — mencegah "Toko 99" dsb. salah dikenali.
+    if (fi < 0 && toks.length >= 2) {
+      for (let i = 0; i < Math.min(3, toks.length); i++) {
+        // Batas kanan join: maks 4 token, dan berhenti bila ketemu token amount-like
+        let maxJ = Math.min(i + 4, toks.length);
+        while (maxJ > i + 1 && isAmountLikeToken(toks[maxJ - 1])) maxJ--;
+        // Coba dari gabungan terpanjang dulu (mencegah "SI.2026" dipakai padahal "SI.2026.08.00012" benar)
+        for (let j = maxJ; j > i + 1; j--) {
+          const joined = toks.slice(i, j).join(".");
+          if (looksLikeJoinedFaktur(joined)) {
+            fi = i;
+            toks.splice(i, j - i, joined);
+            break;
+          }
+        }
+        if (fi >= 0) break;
+      }
+    }
+    if (fi < 0) { skipped++; if (puSkippedWithDigit.length < 5) puSkippedWithDigit.push(norm.slice(0, 120)); continue; }
     const noFaktur = toks[fi];
     // Ekstrak tanggal asli (maks 2: tanggal faktur + jatuh tempo)
     const dates = [];
@@ -3237,6 +3277,14 @@ function parseAccuratePiutangUtangText(text, kind) {
     rows.push({ party, noFaktur, tanggal, jatuhTempo, jumlah, dibayar, sisa });
   }
   console.log(`PU parser (${kind || "?"}): ${rows.length} faktur, ${skipped} baris dilewati`);
+  // Simpan diagnostik agar UI bisa tunjukkan pesan error yang lebih berguna
+  parseAccuratePiutangUtangText.lastDebug = {
+    kind: kind || "?",
+    totalLines: lines.length,
+    parsed: rows.length,
+    skipped,
+    skippedWithDigit: puSkippedWithDigit.slice(),
+  };
   return rows;
 }
 
@@ -3347,7 +3395,27 @@ function showPasteAccurateDialog(type, opts = {}) {
         parsedTxs = parseAccurateRincianPembelianText(text);
       }
       if (parsedTxs.length === 0) {
-        document.getElementById("pasteStatus").innerHTML = '<span class="text-rose-600">❌ Tidak ada data terparse. Pastikan format teks sesuai.</span>';
+        // Buat pesan error yang lebih membantu: tampilkan jumlah baris yang diproses
+        // dan preview beberapa baris yang ada angka tetapi tidak berhasil diparse.
+        const rawLines = text.split(/\r?\n/).filter(l => l.trim());
+        const previewRaw = rawLines.slice(0, 5).map((l, i) => `${i + 1}. ${l.length > 140 ? l.slice(0, 140) + "…" : l}`).join("\n");
+        let extra = "";
+        if (isPU && parseAccuratePiutangUtangText.lastDebug) {
+          const d = parseAccuratePiutangUtangText.lastDebug;
+          extra = `\n\n📊 Diagnostik Piutang/Hutang:\n• Total baris diproses: ${d.totalLines}\n• Baris dilewati: ${d.skipped}\n• Faktur berhasil: ${d.parsed}`;
+          if (d.skippedWithDigit.length > 0) {
+            extra += `\n\n🔍 Baris ber-angka yang tidak dikenali sebagai faktur (5 pertama):\n${d.skippedWithDigit.map((l, i) => `${i + 1}. ${l}`).join("\n")}`;
+          }
+          extra += `\n\n💡 Saran: pastikan tiap baris faktur diawali No. Faktur (cth: SI.2026.08.00012 atau 00009260901). Jika format berbeda, kirimkan 5-10 baris pertama dari teks yang Anda paste agar parser dapat disesuaikan.`;
+        } else {
+          extra = `\n\n📊 Total baris di textarea: ${rawLines.length}\n\n🔍 5 baris pertama:\n${previewRaw}\n\n💡 Saran: kirimkan teks yang Anda paste (atau screenshot) agar parser dapat disesuaikan dengan formatnya.`;
+        }
+        document.getElementById("pastePreview").innerHTML = `<div class="text-xs">
+          <p class="text-rose-600 font-medium mb-2">❌ Tidak ada data terparse. Pastikan format teks sesuai.</p>
+          <pre class="bg-rose-50 border border-rose-200 rounded p-3 whitespace-pre-wrap font-mono text-[11px] text-rose-800">${escapeHtml(extra.trim())}</pre>
+        </div>`;
+        document.getElementById("pastePreview").classList.remove("hidden");
+        document.getElementById("pasteStatus").textContent = "";
         return;
       }
       if (isFR) {

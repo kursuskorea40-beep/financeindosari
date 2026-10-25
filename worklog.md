@@ -79,3 +79,29 @@ Stage Summary:
 - Aplikasi kini bertema maroon #6D0F2B + gold penyeimbang + latar cream, senada penuh dengan header Excel embedded.
 - Menu Piutang: + tabel Faktur Piutang Belum Lunas (hasil paste) & tombol Paste dari Accurate; Menu Hutang: + tombol Paste dari Accurate (menimpa faktur bawaan); keduanya reset-able & umur/status dinamis.
 - Script artefak: scripts/apply_maroon_theme.py, scripts/test_piutang_hutang_parser.js, scripts/smoke_pu_browser.py.
+
+---
+Task ID: 4
+Agent: main (Z.ai)
+Task: Perbaiki pesan error "Tidak ada data terparse" pada dialog Paste dari Accurate — buat lebih informatif & tambahkan fallback parser yang lebih lenient
+
+Work Log:
+- Analisis penyebab: parser Piutang/Hutang lama hanya cari token faktur di 3 posisi pertama, jadi format dengan kolom leading (Outstanding / nomor urut / IDR) atau No. Faktur terpisah spasi ("SI 2026 08 00012") akan ditolak → muncul notif generik "Tidak ada data terparse" tanpa info.
+- Tambah 2 helper fungsi di samping looksLikeFakturToken:
+  • isAmountLikeToken(tok): deteksi token nominal Indonesia (12.500.000, 8.108.108,11, 60.700, "0") — dipakai sbg batas kanan join agar nominal tidak ikut tergabung.
+  • looksLikeJoinedFaktur(s): verifikasi gabungan faktur — harus diawali huruf (prefix SI/PI/INV) + minimal 2 grup angka. Mencegah nama party seperti "Toko 99" salah dikenali sebagai No. Faktur.
+- Patch parseAccuratePiutangUtangText:
+  • Cari faktur di 6 posisi pertama (sebelumnya 3) — menangani kolom leading tambahan.
+  • Fallback join token berurutan: gabung 2-4 token dengan pemisah "." sehingga "SI 2026 08 00012" → "SI.2026.08.00012" tetap dikenali. Longest-match dulu (mencegah "SI.2026" dipakai padahal "SI.2026.08.00012" yang benar), dan berhenti di token amount-like.
+  • Simpan diagnostik: parseAccuratePiutangUtangText.lastDebug = { totalLines, parsed, skipped, skippedWithDigit[5] }.
+- Pesan error di showPasteAccurateDialog kini informatif:
+  • Piutang/Hutang: tampilkan total baris, baris dilewati, faktur berhasil, + preview 5 baris ber-angka yang tak terparse + saran kirim sample.
+  • Parser lain (Penjualan/Pembelian/Persediaan/LR/Neraca): tampilkan total baris + 5 baris pertama textarea + saran kirim sample.
+  • Pesan tampil di area preview (kotak merah) bukan lagi satu baris status.
+- Test: test_pu_fallback.js BARU 23 pass/0 fail (8 skenario: format spasi, kolom Outstanding di-depan, 2 kolom leading, diagnostik lastDebug, regression "Toko 99", format slash INV/2026/09/0001, helper isAmountLikeToken, looksLikeJoinedFaktur); regresi semua parser lama tetap lulus (PU 39, Persediaan 51, FR 63, Piutang/Hutang render 34, Pembelian exit 0); verify_syntax OK.
+
+Stage Summary:
+- File deliverable: /home/z/my-project/download/INDOSARI_Akuntansi_2026_perbulan.html (~1,26 MB, syntax OK)
+- Parser Piutang/Hutang kini jauh lebih lenient: menerima format faktur dengan spasi, kolom leading, prefix nomor urut+IDR, dsb. Tanpa breaking format lama.
+- Pesan error kini membantu user self-diagnose: tampilkan baris mana yang diproses vs dilewati, sehingga user bisa kirim sample spesifik bila masih 0 hasil.
+- Script artefak: scripts/test_pu_fallback.js
