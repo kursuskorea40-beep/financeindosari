@@ -14,42 +14,42 @@
   .scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(0,0,0,.15); border-radius: 4px; }
   .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
   table.sheet-table { border-collapse: collapse; }
-  table.sheet-table td, table.sheet-table th { border: 1px solid #e2e8f0; padding: 4px 8px; font-size: 12px; vertical-align: top; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  table.sheet-table td.input-cell { background-color: #dbeafe; cursor: text; }
-  table.sheet-table td.input-cell:hover { background-color: #bfdbfe; }
-  table.sheet-table td.formula-cell { background-color: #f8fafc; color: #1e293b; }
-  table.sheet-table td.muted { color: #94a3b8; font-style: italic; }
-  table.sheet-table td.section-header { background-color: #1e293b; color: #fff; font-weight: 700; text-align: center; }
-  table.sheet-table td.title-cell { background-color: #f1f5f9; font-weight: 700; color: #0f172a; }
+  table.sheet-table td, table.sheet-table th { border: 1px solid #EAE2DB; padding: 4px 8px; font-size: 12px; vertical-align: top; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  table.sheet-table td.input-cell { background-color: #fef9c3; cursor: text; }
+  table.sheet-table td.input-cell:hover { background-color: #fde047; }
+  table.sheet-table td.formula-cell { background-color: #FAF6F2; color: #6D0F2B; }
+  table.sheet-table td.muted { color: #A39499; font-style: italic; }
+  table.sheet-table td.section-header { background-color: #6D0F2B; color: #fff; font-weight: 700; text-align: center; }
+  table.sheet-table td.title-cell { background-color: #F8F3EE; font-weight: 700; color: #3B232A; }
   table.sheet-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
   table.sheet-table td.neg { color: #dc2626; }
   table.sheet-table td.center { text-align: center; }
-  table.sheet-table td.header-row { background-color: #475569; color: #fff; font-weight: 600; text-align: center; }
+  table.sheet-table td.header-row { background-color: #8A1A38; color: #fff; font-weight: 600; text-align: center; }
   table.sheet-table td input.cell-input { width: 100%; background: transparent; border: 0; outline: 0; padding: 0; font: inherit; color: inherit; text-align: inherit; }
-  table.sheet-table td input.cell-input:focus { background: #fff; box-shadow: inset 0 0 0 2px #2563eb; border-radius: 2px; }
-  .sidebar-item.active { background: #1e293b; color: #fff; }
-  .sidebar-item.active .icon-wrap { background: #0ea5e9; color: #fff; }
+  table.sheet-table td input.cell-input:focus { background: #fff; box-shadow: inset 0 0 0 2px #6D0F2B; border-radius: 2px; }
+  .sidebar-item.active { background: #6D0F2B; color: #fff; }
+  .sidebar-item.active .icon-wrap { background: #D4A72C; color: #fff; }
   /* Dashboard styles */
-  .kpi-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 0.5rem; padding: 1rem 1.25rem; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
-  .kpi-card .label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; font-weight: 600; }
-  .kpi-card .value { font-size: 1.25rem; font-weight: 700; color: #0f172a; margin-top: 0.25rem; font-variant-numeric: tabular-nums; }
-  .kpi-card .sub { font-size: 0.7rem; color: #64748b; margin-top: 0.15rem; }
-  .kpi-card.primary { background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%); border-color: #0369a1; }
+  .kpi-card { background: #fff; border: 1px solid #EAE2DB; border-radius: 0.5rem; padding: 1rem 1.25rem; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+  .kpi-card .label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: #7A6B70; font-weight: 600; }
+  .kpi-card .value { font-size: 1.25rem; font-weight: 700; color: #3B232A; margin-top: 0.25rem; font-variant-numeric: tabular-nums; }
+  .kpi-card .sub { font-size: 0.7rem; color: #7A6B70; margin-top: 0.15rem; }
+  .kpi-card.primary { background: linear-gradient(135deg, #6D0F2B 0%, #470A1D 100%); border-color: #470A1D; }
   .kpi-card.primary .label, .kpi-card.primary .value, .kpi-card.primary .sub { color: #fff; }
-  .kpi-card.success { background: linear-gradient(135deg, #22c55e 0%, #15803d 100%); border-color: #15803d; }
+  .kpi-card.success { background: linear-gradient(135deg, #C9A227 0%, #8F6E12 100%); border-color: #8F6E12; }
   .kpi-card.success .label, .kpi-card.success .value, .kpi-card.success .sub { color: #fff; }
   .kpi-card.danger .value { color: #dc2626; }
-  .bar-chart { display: flex; align-items: flex-end; gap: 6px; height: 220px; padding: 1rem; background: #f8fafc; border-radius: 0.5rem; border: 1px solid #e2e8f0; }
+  .bar-chart { display: flex; align-items: flex-end; gap: 6px; height: 220px; padding: 1rem; background: #FAF6F2; border-radius: 0.5rem; border: 1px solid #EAE2DB; }
   .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0; }
   .bar-wrap { width: 100%; display: flex; justify-content: center; align-items: flex-end; height: 180px; gap: 2px; }
-  .bar { background: #0ea5e9; border-radius: 4px 4px 0 0; min-height: 2px; transition: height .3s; max-width: 28px; width: 100%; }
-  .bar.laba { background: #22c55e; }
-  .bar-label { font-size: 0.65rem; color: #475569; text-align: center; line-height: 1.1; }
-  .bar-value { font-size: 0.65rem; color: #0f172a; font-weight: 600; text-align: center; }
+  .bar { background: #6D0F2B; border-radius: 4px 4px 0 0; min-height: 2px; transition: height .3s; max-width: 28px; width: 100%; }
+  .bar.laba { background: #D4A72C; }
+  .bar-label { font-size: 0.65rem; color: #7A6B70; text-align: center; line-height: 1.1; }
+  .bar-value { font-size: 0.65rem; color: #3B232A; font-weight: 600; text-align: center; }
   table.dash-table { border-collapse: collapse; width: 100%; font-size: 0.78rem; }
-  table.dash-table th, table.dash-table td { border: 1px solid #e2e8f0; padding: 6px 10px; text-align: right; }
-  table.dash-table th { background: #1e293b; color: #fff; font-weight: 600; text-align: center; }
-  table.dash-table td.label { text-align: left; font-weight: 600; background: #f1f5f9; }
+  table.dash-table th, table.dash-table td { border: 1px solid #EAE2DB; padding: 6px 10px; text-align: right; }
+  table.dash-table th { background: #6D0F2B; color: #fff; font-weight: 600; text-align: center; }
+  table.dash-table td.label { text-align: left; font-weight: 600; background: #F8F3EE; }
   table.dash-table td.num { font-variant-numeric: tabular-nums; }
   table.dash-table td.neg { color: #dc2626; }
   table.dash-table tr.active-row { background: #fef3c7; }
@@ -57,56 +57,56 @@
   table.dash-table td.input:hover { background-color: #fde047; }
   table.dash-table td input.cell-input { width: 100%; background: transparent; border: 0; outline: 0; padding: 0; font: inherit; color: inherit; text-align: right; }
   table.dash-table tr.total-row td { background: #fef3c7; font-weight: 700; }
-  .toggle-btn { padding: 0.5rem 1rem; border-radius: 0.375rem; font-size: 0.8rem; font-weight: 600; border: 1px solid #cbd5e1; background: #fff; color: #475569; cursor: pointer; transition: all .15s; }
-  .toggle-btn.active { background: #0ea5e9; color: #fff; border-color: #0284c7; }
-  .toggle-btn:hover:not(.active) { background: #f1f5f9; }
-  .select-input { padding: 0.4rem 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.375rem; font-size: 0.8rem; background: #fff; }
+  .toggle-btn { padding: 0.5rem 1rem; border-radius: 0.375rem; font-size: 0.8rem; font-weight: 600; border: 1px solid #D9CEC6; background: #fff; color: #6E5A5F; cursor: pointer; transition: all .15s; }
+  .toggle-btn.active { background: #6D0F2B; color: #fff; border-color: #8A1A38; }
+  .toggle-btn:hover:not(.active) { background: #F8F3EE; }
+  .select-input { padding: 0.4rem 0.75rem; border: 1px solid #D9CEC6; border-radius: 0.375rem; font-size: 0.8rem; background: #fff; }
   /* LR debit/kredit table */
   /* fr-table: Laba Rugi & Neraca format Accurate */
   table.fr-table { border-collapse: collapse; width: 100%; font-size: 0.82rem; }
-  table.fr-table thead th { background: #1e293b; color: #fff; padding: 8px 12px; font-weight: 600; text-align: left; }
-  table.fr-table td { border-bottom: 1px solid #e2e8f0; padding: 5px 12px; vertical-align: middle; }
-  table.fr-table tr.fr-hdr td { background: #f1f5f9; font-weight: 700; color: #0f172a; }
-  table.fr-table tr.fr-hdr.major td { background: #e2e8f0; letter-spacing: .02em; }
+  table.fr-table thead th { background: #6D0F2B; color: #fff; padding: 8px 12px; font-weight: 600; text-align: left; }
+  table.fr-table td { border-bottom: 1px solid #EAE2DB; padding: 5px 12px; vertical-align: middle; }
+  table.fr-table tr.fr-hdr td { background: #F8F3EE; font-weight: 700; color: #3B232A; }
+  table.fr-table tr.fr-hdr.major td { background: #EAE2DB; letter-spacing: .02em; }
   table.fr-table td.fr-name { cursor: text; }
-  table.fr-table td.fr-name:hover { background: #f8fafc; }
+  table.fr-table td.fr-name:hover { background: #FAF6F2; }
   table.fr-table td.fr-val { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
   table.fr-table td.fr-val.input { background: #fef9c3; cursor: text; }
   table.fr-table td.fr-val.neg { color: #dc2626; }
-  table.fr-table tr.fr-total td { font-weight: 600; background: #f8fafc; border-top: 1px solid #cbd5e1; }
-  table.fr-table tr.fr-grand td { background: #fef3c7; border-top: 2px solid #1e293b; font-weight: 700; }
+  table.fr-table tr.fr-total td { font-weight: 600; background: #FAF6F2; border-top: 1px solid #D9CEC6; }
+  table.fr-table tr.fr-grand td { background: #fef3c7; border-top: 2px solid #6D0F2B; font-weight: 700; }
   table.fr-table td.fr-act { width: 64px; text-align: center; white-space: nowrap; }
-  table.fr-table td.fr-act button { opacity: .3; border: 1px solid #cbd5e1; background: #fff; border-radius: 4px; padding: 1px 6px; cursor: pointer; font-size: 11px; margin-left: 3px; }
+  table.fr-table td.fr-act button { opacity: .3; border: 1px solid #D9CEC6; background: #fff; border-radius: 4px; padding: 1px 6px; cursor: pointer; font-size: 11px; margin-left: 3px; }
   table.fr-table tr:hover td.fr-act button { opacity: 1; }
   table.fr-table td input.cell-input { width: 100%; background: transparent; border: 0; outline: 0; padding: 0; font: inherit; color: inherit; text-align: right; }
-  table.fr-table td input.cell-input:focus { background: #fff; box-shadow: inset 0 0 0 2px #2563eb; border-radius: 2px; }
+  table.fr-table td input.cell-input:focus { background: #fff; box-shadow: inset 0 0 0 2px #6D0F2B; border-radius: 2px; }
   table.lr-table { border-collapse: collapse; width: 100%; font-size: 0.85rem; }
-  table.lr-table th, table.lr-table td { border: 1px solid #cbd5e1; padding: 8px 12px; }
-  table.lr-table th { background: #1e293b; color: #fff; text-align: center; font-weight: 600; }
-  table.lr-table td.section { background: #f1f5f9; font-weight: 700; color: #0f172a; }
+  table.lr-table th, table.lr-table td { border: 1px solid #D9CEC6; padding: 8px 12px; }
+  table.lr-table th { background: #6D0F2B; color: #fff; text-align: center; font-weight: 600; }
+  table.lr-table td.section { background: #F8F3EE; font-weight: 700; color: #3B232A; }
   table.lr-table td.akun { text-align: left; padding-left: 24px; }
   table.lr-table td.akun.section { padding-left: 12px; }
   table.lr-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
   table.lr-table td.num.neg { color: #dc2626; }
-  table.lr-table td.num.kredit { color: #15803d; }
-  table.lr-table td.num.input { background: #dbeafe; cursor: text; }
-  table.lr-table tr.total-row td { background: #fef3c7; font-weight: 700; border-top: 2px solid #1e293b; }
-  table.lr-table tr.subtotal-row td { background: #f1f5f9; font-weight: 600; }
+  table.lr-table td.num.kredit { color: #8A6A12; }
+  table.lr-table td.num.input { background: #fef9c3; cursor: text; }
+  table.lr-table tr.total-row td { background: #fef3c7; font-weight: 700; border-top: 2px solid #6D0F2B; }
+  table.lr-table tr.subtotal-row td { background: #F8F3EE; font-weight: 600; }
   table.lr-table td input.cell-input { width: 100%; background: transparent; border: 0; outline: 0; padding: 0; font: inherit; color: inherit; text-align: right; }
-  table.lr-table td input.cell-input:focus { background: #fff; box-shadow: inset 0 0 0 2px #2563eb; border-radius: 2px; }
+  table.lr-table td input.cell-input:focus { background: #fff; box-shadow: inset 0 0 0 2px #6D0F2B; border-radius: 2px; }
   /* Transaction list table */
   table.tx-table { border-collapse: collapse; width: 100%; font-size: 0.78rem; }
-  table.tx-table th, table.tx-table td { border: 1px solid #e2e8f0; padding: 6px 8px; }
-  table.tx-table th { background: #475569; color: #fff; font-weight: 600; text-align: center; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  table.tx-table th, table.tx-table td { border: 1px solid #EAE2DB; padding: 6px 8px; }
+  table.tx-table th { background: #8A1A38; color: #fff; font-weight: 600; text-align: center; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; }
   table.tx-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
   table.tx-table td.center { text-align: center; }
   table.tx-table td.neg { color: #dc2626; }
   table.tx-table td input.cell-input { width: 100%; background: transparent; border: 0; outline: 0; padding: 0; font: inherit; color: inherit; }
-  table.tx-table td input.cell-input:focus { background: #fff; box-shadow: inset 0 0 0 2px #2563eb; border-radius: 2px; }
+  table.tx-table td input.cell-input:focus { background: #fff; box-shadow: inset 0 0 0 2px #6D0F2B; border-radius: 2px; }
   table.tx-table tr.total-row td { background: #fef3c7; font-weight: 700; }
   /* Tab buttons (master data, persediaan month selector) */
-  .tab-btn { padding: 0.4rem 0.85rem; border-radius: 0.375rem; font-size: 0.78rem; font-weight: 600; border: 1px solid #cbd5e1; background: #fff; color: #475569; cursor: pointer; }
-  .tab-btn.active { background: #0ea5e9; color: #fff; border-color: #0284c7; }
+  .tab-btn { padding: 0.4rem 0.85rem; border-radius: 0.375rem; font-size: 0.78rem; font-weight: 600; border: 1px solid #D9CEC6; background: #fff; color: #6E5A5F; cursor: pointer; }
+  .tab-btn.active { background: #6D0F2B; color: #fff; border-color: #8A1A38; }
   @media print {
     .no-print { display: none !important; }
     .sheet-table, .lr-table, .tx-table, .dash-table { font-size: 10px !important; }
@@ -115,50 +115,50 @@
   }
 </style>
 </head>
-<body class="bg-slate-100 text-slate-800">
+<body class="bg-[#F6F1E9] text-slate-stone-800">
 <div id="app" class="min-h-screen flex">
-  <aside class="no-print w-64 shrink-0 bg-slate-900 text-slate-100 flex flex-col h-screen sticky top-0">
-    <div class="px-4 py-4 border-b border-slate-700">
+  <aside class="no-print w-64 shrink-0 bg-[#470A1D] text-slate-stone-100 flex flex-col h-screen sticky top-0">
+    <div class="px-4 py-4 border-b border-[#7A2A3C]">
       <div class="flex items-center gap-2">
-        <div class="size-9 rounded-lg bg-sky-500 flex items-center justify-center text-white font-bold">IN</div>
+        <div class="size-9 rounded-lg bg-[#D4A72C] flex items-center justify-center text-white font-bold">IN</div>
         <div>
           <div class="text-sm font-bold tracking-wide">INDOSARI</div>
-          <div class="text-[10px] uppercase tracking-wider text-slate-400">Akuntansi 2026</div>
+          <div class="text-[10px] uppercase tracking-wider text-slate-stone-400">Akuntansi 2026</div>
         </div>
       </div>
     </div>
     <nav id="sidebar" class="flex-1 overflow-y-auto scrollbar-thin py-2 px-2 space-y-1"></nav>
-    <div class="border-t border-slate-700 p-3 text-[10px] text-slate-400 leading-relaxed">
-      Sel biru = input manual. Sel hitam = formula otomatis. Fokus tahun 2026. Edit tersimpan otomatis di browser (localStorage).
+    <div class="border-t border-[#7A2A3C] p-3 text-[10px] text-slate-stone-400 leading-relaxed">
+      Sel kuning = input manual. Sel lainnya = formula otomatis. Fokus tahun 2026. Edit tersimpan otomatis di browser (localStorage).
     </div>
   </aside>
 
   <div class="flex-1 flex flex-col min-w-0">
-    <header class="no-print sticky top-0 z-20 bg-white/90 backdrop-blur border-b border-slate-200 px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+    <header class="no-print sticky top-0 z-20 bg-white/90 backdrop-blur border-b border-slate-stone-200 px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center gap-3 min-w-0">
         <h1 id="sheetTitle" class="text-lg sm:text-xl font-bold truncate"></h1>
-        <span id="sheetSubtitle" class="text-xs text-slate-500 truncate"></span>
+        <span id="sheetSubtitle" class="text-xs text-slate-stone-500 truncate"></span>
       </div>
       <div id="toolbarButtons" class="flex items-center gap-2 flex-wrap">
-        <button id="btnExport" class="inline-flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium hover:bg-slate-50">⬇ Export CSV</button>
-        <label class="inline-flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium hover:bg-slate-50 cursor-pointer">⬆ Import CSV<input id="fileImport" type="file" accept=".csv" class="hidden"></label>
+        <button id="btnExport" class="inline-flex items-center gap-1.5 rounded-md border border-slate-stone-300 bg-white px-3 py-1.5 text-xs font-medium hover:bg-slate-stone-50">⬇ Export CSV</button>
+        <label class="inline-flex items-center gap-1.5 rounded-md border border-slate-stone-300 bg-white px-3 py-1.5 text-xs font-medium hover:bg-slate-stone-50 cursor-pointer">⬆ Import CSV<input id="fileImport" type="file" accept=".csv" class="hidden"></label>
         <button id="btnReset" class="inline-flex items-center gap-1.5 rounded-md border border-rose-300 bg-rose-50 px-3 py-1.5 text-xs font-medium hover:bg-rose-100 text-rose-700">↺ Reset Sheet</button>
-        <button id="btnPrint" class="inline-flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium hover:bg-slate-50">🖨 Print / PDF</button>
+        <button id="btnPrint" class="inline-flex items-center gap-1.5 rounded-md border border-slate-stone-300 bg-white px-3 py-1.5 text-xs font-medium hover:bg-slate-stone-50">🖨 Print / PDF</button>
       </div>
     </header>
 
     <main class="flex-1 overflow-auto p-4 sm:p-6">
-      <div id="sheetContainer" class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-auto scrollbar-thin"></div>
-      <div id="statusBar" class="mt-3 text-xs text-slate-500"></div>
+      <div id="sheetContainer" class="bg-white rounded-lg shadow-sm border border-slate-stone-200 overflow-auto scrollbar-thin"></div>
+      <div id="statusBar" class="mt-3 text-xs text-slate-stone-500"></div>
     </main>
 
-    <footer class="no-print mt-auto border-t border-slate-200 bg-white/60 py-3 px-4 sm:px-6 text-center text-xs text-slate-500">
+    <footer class="no-print mt-auto border-t border-slate-stone-200 bg-white/60 py-3 px-4 sm:px-6 text-center text-xs text-slate-stone-500">
       INDOSARI Aplikasi Akuntansi 2026 — terhubung otomatis seperti rumus Excel. Revisi manual + import/export CSV tersedia di setiap sheet. Tersimpan di browser Anda.
     </footer>
   </div>
 </div>
 
-<div id="toast" class="fixed bottom-6 right-6 z-50 hidden bg-slate-900 text-white text-sm px-4 py-2.5 rounded-lg shadow-xl"></div>
+<div id="toast" class="fixed bottom-6 right-6 z-50 hidden bg-[#470A1D] text-white text-sm px-4 py-2.5 rounded-lg shadow-xl"></div>
 
 <script>
 // ============================================================
@@ -264,14 +264,14 @@ function renderSidebar() {
   sb.innerHTML = "";
   SIDEBAR_ITEMS.forEach((item, idx) => {
     const el = document.createElement("button");
-    el.className = `sidebar-item w-full text-left px-3 py-2.5 rounded-md hover:bg-slate-800 transition-colors ${item.key === activeSheet ? "active" : ""}`;
+    el.className = `sidebar-item w-full text-left px-3 py-2.5 rounded-md hover:bg-[#5A0C24] transition-colors ${item.key === activeSheet ? "active" : ""}`;
     el.dataset.sheet = item.key;
     el.innerHTML = `
       <div class="flex items-center gap-3">
-        <span class="icon-wrap size-7 shrink-0 rounded bg-slate-700 text-slate-200 text-xs font-bold flex items-center justify-center">${item.icon}</span>
+        <span class="icon-wrap size-7 shrink-0 rounded bg-[#5A0C24] text-slate-stone-200 text-xs font-bold flex items-center justify-center">${item.icon}</span>
         <div class="flex flex-col min-w-0">
           <span class="text-sm font-medium truncate">${item.label}</span>
-          <span class="text-[10px] text-slate-400 truncate">${item.desc}</span>
+          <span class="text-[10px] text-slate-stone-400 truncate">${item.desc}</span>
         </div>
       </div>`;
     el.onclick = () => { activeSheet = item.key; render(); };
@@ -356,8 +356,8 @@ function renderDashboard() {
     <div class="space-y-6">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 class="text-lg font-bold text-slate-800">Dashboard Akuntansi INDOSARI</h2>
-          <p class="text-xs text-slate-500" id="dashSubtitle"></p>
+          <h2 class="text-lg font-bold text-slate-stone-800">Dashboard Akuntansi INDOSARI</h2>
+          <p class="text-xs text-slate-stone-500" id="dashSubtitle"></p>
         </div>
         <div class="flex gap-2">
           <button id="modeTahun" class="toggle-btn ${dashMode==='tahun'?'active':''}">📊 Per Tahun (2026 YTD)</button>
@@ -418,9 +418,9 @@ function renderDashTahun() {
         <div class="sub">Target: Rp 5,4 M/tahun</div>
       </div>
     </div>
-    <div class="bg-white border border-slate-200 rounded-lg p-4 mb-6">
-      <h3 class="text-sm font-bold text-slate-700 mb-2">Ringkasan YTD 2026</h3>
-      <p class="text-xs text-slate-500 mb-3">Data ini dihitung otomatis dari laporan Laba Rugi, Neraca, Piutang & Utang, dan Persediaan. Untuk mengubah, edit data lewat menu yang ada di sidebar.</p>
+    <div class="bg-white border border-slate-stone-200 rounded-lg p-4 mb-6">
+      <h3 class="text-sm font-bold text-slate-stone-700 mb-2">Ringkasan YTD 2026</h3>
+      <p class="text-xs text-slate-stone-500 mb-3">Data ini dihitung otomatis dari laporan Laba Rugi, Neraca, Piutang & Utang, dan Persediaan. Untuk mengubah, edit data lewat menu yang ada di sidebar.</p>
       <table class="dash-table">
         <thead><tr><th>KOMPONEN</th><th>NILAI (Rp)</th></tr></thead>
         <tbody>
@@ -454,7 +454,7 @@ function renderDashBulan() {
   const monthOpts = `<option value="all" ${dashMonth==='all'?'selected':''}>Semua Bulan (YTD)</option>` + BULAN_NAMES.map((b,i)=>`<option value="${i+1}" ${dashMonth===String(i+1)?'selected':''}>${b}</option>`).join("");
   document.getElementById("dashBody").innerHTML = `
     <div class="flex items-center gap-2 mb-4">
-      <label class="text-sm font-medium text-slate-700">Bulan:</label>
+      <label class="text-sm font-medium text-slate-stone-700">Bulan:</label>
       <select id="selectBulan" class="select-input">${monthOpts}</select>
     </div>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
@@ -463,18 +463,18 @@ function renderDashBulan() {
       <div class="kpi-card ${kpis.labaBersih<0?'danger':'success'}"><div class="label">Laba (Rugi)</div><div class="value">Rp ${fmtRupiah(kpis.labaBersih)}</div><div class="sub">Margin Bersih</div></div>
       <div class="kpi-card"><div class="label">% vs Target</div><div class="value">${(kpis.pct*100).toFixed(1)}%</div><div class="sub">Target: Rp 450 juta/bln</div></div>
     </div>
-    <div class="bg-white border border-slate-200 rounded-lg p-4 mb-6">
-      <h3 class="text-sm font-bold text-slate-700 mb-2">Omzet per Bulan (2026)</h3>
+    <div class="bg-white border border-slate-stone-200 rounded-lg p-4 mb-6">
+      <h3 class="text-sm font-bold text-slate-stone-700 mb-2">Omzet per Bulan (2026)</h3>
       <div class="bar-chart">
         ${all.map(m=>{
           const h = (m.omzet / maxOmzet * 100).toFixed(1);
-          return `<div class="bar-col"><div class="bar-value">${(m.omzet/1e6).toFixed(0)}jt</div><div class="bar-wrap"><div class="bar" style="height:${h}%; ${m.omzet===0?'background:#cbd5e1;':''}" title="${m.name}: Rp ${fmtRupiah(m.omzet)}"></div></div><div class="bar-label">${m.name.slice(0,3)}</div></div>`;
+          return `<div class="bar-col"><div class="bar-value">${(m.omzet/1e6).toFixed(0)}jt</div><div class="bar-wrap"><div class="bar" style="height:${h}%; ${m.omzet===0?'background:#D9CEC6;':''}" title="${m.name}: Rp ${fmtRupiah(m.omzet)}"></div></div><div class="bar-label">${m.name.slice(0,3)}</div></div>`;
         }).join("")}
       </div>
-      <div class="text-xs text-slate-500 mt-2">Biru = omzet aktual. Abu-abu = belum ada data.</div>
+      <div class="text-xs text-slate-stone-500 mt-2">Maroon = omzet aktual. Abu-abu = belum ada data.</div>
     </div>
-    <div class="bg-white border border-slate-200 rounded-lg p-4">
-      <h3 class="text-sm font-bold text-slate-700 mb-2">Tabel Bulanan 2026</h3>
+    <div class="bg-white border border-slate-stone-200 rounded-lg p-4">
+      <h3 class="text-sm font-bold text-slate-stone-700 mb-2">Tabel Bulanan 2026</h3>
       <table class="dash-table">
         <thead><tr><th>BULAN</th><th>OMZET</th><th>TARGET</th><th>LABA KOTOR</th><th>LABA (RUGI)</th><th>% vs TARGET</th></tr></thead>
         <tbody>${rows}</tbody>
@@ -808,27 +808,27 @@ function frRenderPage(cfg) {
     <div class="space-y-4">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 class="text-lg font-bold text-slate-800">${cfg.title} — ${BULAN_NAMES[cfg.month - 1]} 2026</h2>
-          <p class="text-xs text-slate-500">${cfg.subtitle}</p>
+          <h2 class="text-lg font-bold text-slate-stone-800">${cfg.title} — ${BULAN_NAMES[cfg.month - 1]} 2026</h2>
+          <p class="text-xs text-slate-stone-500">${cfg.subtitle}</p>
         </div>
         <div class="flex items-center gap-2">
-          <label class="text-sm font-medium text-slate-700">Bulan:</label>
+          <label class="text-sm font-medium text-slate-stone-700">Bulan:</label>
           <select id="frMonthSel" class="select-input">${monthOpts}</select>
         </div>
       </div>
       <div class="grid grid-cols-2 md:grid-cols-4 gap-3">${cfg.kpis}</div>
       <div class="flex flex-wrap gap-2">
-        <button id="btnPasteFR" class="inline-flex items-center gap-1.5 rounded-md border border-violet-300 bg-violet-50 px-3 py-1.5 text-xs font-medium text-violet-700 hover:bg-violet-100">📋 Paste dari Accurate</button>
-        <button id="btnAddFR" class="inline-flex items-center gap-1.5 rounded-md bg-sky-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-sky-700">+ Tambah Akun</button>
-        <button id="btnResetFR" class="inline-flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100">↺ Reset ${BULAN_NAMES[cfg.month - 1]}</button>
+        <button id="btnPasteFR" class="inline-flex items-center gap-1.5 rounded-md border border-[#E0AEBB] bg-[#FBE9EE] px-3 py-1.5 text-xs font-medium text-[#8A1A38] hover:bg-[#F5D9E0]">📋 Paste dari Accurate</button>
+        <button id="btnAddFR" class="inline-flex items-center gap-1.5 rounded-md bg-[#6D0F2B] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#8A1A38]">+ Tambah Akun</button>
+        <button id="btnResetFR" class="inline-flex items-center gap-1.5 rounded-md border border-slate-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-stone-600 hover:bg-[#EFE7DC]">↺ Reset ${BULAN_NAMES[cfg.month - 1]}</button>
       </div>
-      <div class="bg-white border border-slate-200 rounded-lg overflow-auto scrollbar-thin">
+      <div class="bg-white border border-slate-stone-200 rounded-lg overflow-auto scrollbar-thin">
         <table class="fr-table">
           <thead><tr><th style="width:62%">DESKRIPSI</th><th style="width:30%;text-align:right">NILAI (Rp)</th><th style="width:8%;text-align:center">AKSI</th></tr></thead>
           <tbody id="frTbody"></tbody>
         </table>
       </div>
-      <p class="text-xs text-slate-500">Klik <b>angka kuning</b> untuk edit nilai, klik <b>nama akun</b> untuk rename, tombol <b>＋</b> menambah akun di bawahnya, <b>✕</b> menghapus. Baris <b>tebal</b> (Jumlah/LABA) auto-hitung dari akun di atasnya. Pembulatan bisa beda ±1 dari Accurate.</p>
+      <p class="text-xs text-slate-stone-500">Klik <b>angka kuning</b> untuk edit nilai, klik <b>nama akun</b> untuk rename, tombol <b>＋</b> menambah akun di bawahnya, <b>✕</b> menghapus. Baris <b>tebal</b> (Jumlah/LABA) auto-hitung dari akun di atasnya. Pembulatan bisa beda ±1 dari Accurate.</p>
     </div>`;
   document.getElementById("frMonthSel").onchange = (e) => { cfg.onMonth(parseInt(e.target.value, 10)); };
   document.getElementById("btnPasteFR").onclick = cfg.onPaste;
@@ -1038,8 +1038,8 @@ function renderRincian(type) {
     <div class="space-y-4">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 class="text-lg font-bold text-slate-800">${headerTitle}</h2>
-          <p class="text-xs text-slate-500" id="rincSub">${headerDesc}</p>
+          <h2 class="text-lg font-bold text-slate-stone-800">${headerTitle}</h2>
+          <p class="text-xs text-slate-stone-500" id="rincSub">${headerDesc}</p>
         </div>
         <div class="flex gap-2">
           <button id="modeTahun" class="toggle-btn ${mode==='tahun'?'active':''}">📊 Per Tahun</button>
@@ -1126,19 +1126,19 @@ function renderRincianTahun(type) {
       </div>
     </div>
 
-    <div class="bg-white border border-slate-200 rounded-lg p-4 mb-4">
-      <h3 class="text-sm font-bold text-slate-700 mb-2">Bar Chart ${isJual?'Penjualan':'Pembelian'} per Bulan (2026)</h3>
+    <div class="bg-white border border-slate-stone-200 rounded-lg p-4 mb-4">
+      <h3 class="text-sm font-bold text-slate-stone-700 mb-2">Bar Chart ${isJual?'Penjualan':'Pembelian'} per Bulan (2026)</h3>
       <div class="bar-chart">
         ${byMonth.map(b => {
           const h = (b.omzet / maxOmzet * 100).toFixed(1);
-          return `<div class="bar-col"><div class="bar-value">${(b.omzet/1e6).toFixed(0)}jt</div><div class="bar-wrap"><div class="bar" style="height:${h}%; ${b.omzet===0?'background:#cbd5e1;':''}" title="${BULAN_NAMES[b.m-1]}: Rp ${fmtRupiah(b.omzet)} (${b.tx} transaksi)"></div></div><div class="bar-label">${BULAN_SHORT[b.m-1]}</div></div>`;
+          return `<div class="bar-col"><div class="bar-value">${(b.omzet/1e6).toFixed(0)}jt</div><div class="bar-wrap"><div class="bar" style="height:${h}%; ${b.omzet===0?'background:#D9CEC6;':''}" title="${BULAN_NAMES[b.m-1]}: Rp ${fmtRupiah(b.omzet)} (${b.tx} transaksi)"></div></div><div class="bar-label">${BULAN_SHORT[b.m-1]}</div></div>`;
         }).join("")}
       </div>
-      <div class="text-xs text-slate-500 mt-2">Biru = omzet aktual bulan tersebut. Abu-abu = belum ada data. Klik toggle "Per Bulan" di atas untuk lihat detail transaksi per bulan.</div>
+      <div class="text-xs text-slate-stone-500 mt-2">Maroon = omzet aktual bulan tersebut. Abu-abu = belum ada data. Klik toggle "Per Bulan" di atas untuk lihat detail transaksi per bulan.</div>
     </div>
 
-    <div class="bg-white border border-slate-200 rounded-lg p-4 mb-4">
-      <h3 class="text-sm font-bold text-slate-700 mb-2">Tabel Bulanan ${isJual?'Penjualan':'Pembelian'} 2026</h3>
+    <div class="bg-white border border-slate-stone-200 rounded-lg p-4 mb-4">
+      <h3 class="text-sm font-bold text-slate-stone-700 mb-2">Tabel Bulanan ${isJual?'Penjualan':'Pembelian'} 2026</h3>
       <table class="dash-table">
         <thead>
           <tr>
@@ -1157,8 +1157,8 @@ function renderRincianTahun(type) {
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      <div class="bg-white border border-slate-200 rounded-lg p-4">
-        <h3 class="text-sm font-bold text-slate-700 mb-2">Top 8 Barang (berdasarkan nilai)</h3>
+      <div class="bg-white border border-slate-stone-200 rounded-lg p-4">
+        <h3 class="text-sm font-bold text-slate-stone-700 mb-2">Top 8 Barang (berdasarkan nilai)</h3>
         <table class="dash-table">
           <thead><tr><th>NO</th><th>NAMA BARANG</th><th>QTY</th><th>TX</th><th>TOTAL</th></tr></thead>
           <tbody>
@@ -1166,12 +1166,12 @@ function renderRincianTahun(type) {
           </tbody>
         </table>
       </div>
-      <div class="bg-white border border-slate-200 rounded-lg p-4">
-        <h3 class="text-sm font-bold text-slate-700 mb-2">Top 8 ${isJual?'Pelanggan':'Supplier'} (berdasarkan nilai)</h3>
+      <div class="bg-white border border-slate-stone-200 rounded-lg p-4">
+        <h3 class="text-sm font-bold text-slate-stone-700 mb-2">Top 8 ${isJual?'Pelanggan':'Supplier'} (berdasarkan nilai)</h3>
         <table class="dash-table">
           <thead><tr><th>NO</th><th>NAMA</th><th>QTY</th><th>TX</th><th>TOTAL</th></tr></thead>
           <tbody>
-            ${topPartner.map((p,i)=>`<tr><td class="center">${i+1}</td><td class="label">${escapeHtml(p.nama)}</td><td class="num">${fmtNum(p.qty,2)}</td><td class="num">${p.tx}</td><td class="num">Rp ${fmtRupiah(p.total)}</td></tr>`).join("") || `<tr><td colspan="5" class="text-center text-slate-400">Belum ada data</td></tr>`}
+            ${topPartner.map((p,i)=>`<tr><td class="center">${i+1}</td><td class="label">${escapeHtml(p.nama)}</td><td class="num">${fmtNum(p.qty,2)}</td><td class="num">${p.tx}</td><td class="num">Rp ${fmtRupiah(p.total)}</td></tr>`).join("") || `<tr><td colspan="5" class="text-center text-slate-stone-400">Belum ada data</td></tr>`}
           </tbody>
         </table>
       </div>
@@ -1203,13 +1203,13 @@ function renderRincianBulan(type) {
   body.innerHTML = `
     <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
       <div class="flex items-center gap-2">
-        <label class="text-sm font-medium text-slate-700">Bulan:</label>
+        <label class="text-sm font-medium text-slate-stone-700">Bulan:</label>
         <select id="rincMonthSel" class="select-input">${monthOpts}</select>
       </div>
       <div class="flex gap-2">
-        <button id="btnImportTx" class="inline-flex items-center gap-1.5 rounded-md border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-100">⬆ Import Excel/CSV</button>
-        <button id="btnPasteAccurate" class="inline-flex items-center gap-1.5 rounded-md border border-violet-300 bg-violet-50 px-3 py-1.5 text-xs font-medium text-violet-700 hover:bg-violet-100">📋 Paste dari Accurate</button>
-        <button id="btnTambahTx" class="inline-flex items-center gap-1.5 rounded-md bg-sky-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-sky-700">+ Tambah Transaksi</button>
+        <button id="btnImportTx" class="inline-flex items-center gap-1.5 rounded-md border border-[#E5D5A3] bg-[#FBF3DC] px-3 py-1.5 text-xs font-medium text-[#8A6A12] hover:bg-[#F3E7BC]">⬆ Import Excel/CSV</button>
+        <button id="btnPasteAccurate" class="inline-flex items-center gap-1.5 rounded-md border border-[#E0AEBB] bg-[#FBE9EE] px-3 py-1.5 text-xs font-medium text-[#8A1A38] hover:bg-[#F5D9E0]">📋 Paste dari Accurate</button>
+        <button id="btnTambahTx" class="inline-flex items-center gap-1.5 rounded-md bg-[#6D0F2B] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#8A1A38]">+ Tambah Transaksi</button>
       </div>
     </div>
 
@@ -1236,7 +1236,7 @@ function renderRincianBulan(type) {
       </div>
     </div>
 
-    <div class="bg-white border border-slate-200 rounded-lg overflow-auto scrollbar-thin">
+    <div class="bg-white border border-slate-stone-200 rounded-lg overflow-auto scrollbar-thin">
       <table class="tx-table">
         <thead>
           <tr>
@@ -1261,7 +1261,7 @@ function renderRincianBulan(type) {
         </tfoot>
       </table>
       <div class="p-3 flex justify-between items-center">
-        <p class="text-xs text-slate-500">${totalTx === 0 ? 'Belum ada transaksi di bulan ini. Klik "Tambah Transaksi" di atas untuk menambah.' : 'Klik "Tambah Transaksi" di atas untuk menambah baris baru.'}</p>
+        <p class="text-xs text-slate-stone-500">${totalTx === 0 ? 'Belum ada transaksi di bulan ini. Klik "Tambah Transaksi" di atas untuk menambah.' : 'Klik "Tambah Transaksi" di atas untuk menambah baris baru.'}</p>
       </div>
     </div>`;
 
@@ -1283,11 +1283,11 @@ function renderRincianBulan(type) {
       <td class="num">Rp ${fmtRupiah(r.hargaSatuan)}</td>
       <td class="num">Rp ${fmtRupiah(totalRow)}</td>
       ${isJual?
-        `<td class="center"><span class="px-1.5 py-0.5 rounded text-[10px] font-medium ${r.kategori==='NOTA KECIL'?'bg-green-100 text-green-700':'bg-amber-100 text-amber-700'}">${r.kategori||'-'}</span></td>
+        `<td class="center"><span class="px-1.5 py-0.5 rounded text-[10px] font-medium ${r.kategori==='NOTA KECIL'?'bg-[#F5EAC4] text-[#8A6A12]':'bg-amber-100 text-amber-700'}">${r.kategori||'-'}</span></td>
          <td>${escapeHtml(r.pelanggan||"-")}</td>`
         :
         `<td>${escapeHtml(r.supplier||"-")}</td>
-         <td class="center"><span class="px-1.5 py-0.5 rounded text-[10px] font-medium ${r.isLunas?'bg-green-100 text-green-700':'bg-rose-100 text-rose-700'}">${r.isLunas?'LUNAS':'KREDIT'}</span></td>
+         <td class="center"><span class="px-1.5 py-0.5 rounded text-[10px] font-medium ${r.isLunas?'bg-[#F5EAC4] text-[#8A6A12]':'bg-rose-100 text-rose-700'}">${r.isLunas?'LUNAS':'KREDIT'}</span></td>
          <td>${r.jatuhTempo||"-"}</td>`
       }
       <td class="center"><button class="text-rose-600 hover:text-rose-800 text-xs" data-del-idx="${idx}">🗑</button></td>`;
@@ -1336,34 +1336,34 @@ function showAddTxDialog(type, prefillMonth) {
   const html = `
     <div class="fixed inset-0 bg-black/40 z-40 flex items-center justify-center p-4" id="addTxOverlay">
       <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-auto">
-        <div class="px-5 py-3 border-b border-slate-200 flex items-center justify-between">
-          <h3 class="font-bold text-slate-800">Tambah Transaksi ${isJual?'Penjualan':'Pembelian'}</h3>
-          <button id="closeAddTx" class="text-slate-400 hover:text-slate-700">✕</button>
+        <div class="px-5 py-3 border-b border-slate-stone-200 flex items-center justify-between">
+          <h3 class="font-bold text-slate-stone-800">Tambah Transaksi ${isJual?'Penjualan':'Pembelian'}</h3>
+          <button id="closeAddTx" class="text-slate-stone-400 hover:text-slate-stone-700">✕</button>
         </div>
         <div class="p-5 grid grid-cols-2 gap-3 text-sm">
-          <div><label class="block text-xs font-medium text-slate-600 mb-1">Tanggal</label><input id="txTanggal" type="date" value="${defaultTanggal}" class="w-full border border-slate-300 rounded px-2 py-1.5 text-sm"></div>
-          <div><label class="block text-xs font-medium text-slate-600 mb-1">No ${isJual?'Nota':'Faktur'}</label><input id="txNoNota" type="text" placeholder="auto" class="w-full border border-slate-300 rounded px-2 py-1.5 text-sm"></div>
-          <div class="col-span-2"><label class="block text-xs font-medium text-slate-600 mb-1">Nama Barang</label>
-            <input id="txBarangSearch" type="text" placeholder="🔍 Cari barang (ketik nama/kode)..." class="w-full border border-slate-300 rounded px-2 py-1.5 text-sm mb-1">
-            <select id="txBarang" class="w-full border border-slate-300 rounded px-2 py-1.5 text-sm" size="8"><option value="">— pilih barang —</option>${barangOpts}</select>
+          <div><label class="block text-xs font-medium text-slate-stone-600 mb-1">Tanggal</label><input id="txTanggal" type="date" value="${defaultTanggal}" class="w-full border border-slate-stone-300 rounded px-2 py-1.5 text-sm"></div>
+          <div><label class="block text-xs font-medium text-slate-stone-600 mb-1">No ${isJual?'Nota':'Faktur'}</label><input id="txNoNota" type="text" placeholder="auto" class="w-full border border-slate-stone-300 rounded px-2 py-1.5 text-sm"></div>
+          <div class="col-span-2"><label class="block text-xs font-medium text-slate-stone-600 mb-1">Nama Barang</label>
+            <input id="txBarangSearch" type="text" placeholder="🔍 Cari barang (ketik nama/kode)..." class="w-full border border-slate-stone-300 rounded px-2 py-1.5 text-sm mb-1">
+            <select id="txBarang" class="w-full border border-slate-stone-300 rounded px-2 py-1.5 text-sm" size="8"><option value="">— pilih barang —</option>${barangOpts}</select>
           </div>
-          <div><label class="block text-xs font-medium text-slate-600 mb-1">Satuan</label><input id="txSatuan" type="text" value="Kg" class="w-full border border-slate-300 rounded px-2 py-1.5 text-sm"></div>
-          <div><label class="block text-xs font-medium text-slate-600 mb-1">Kuantitas</label><input id="txQty" type="number" step="0.01" value="1" class="w-full border border-slate-300 rounded px-2 py-1.5 text-sm"></div>
-          <div><label class="block text-xs font-medium text-slate-600 mb-1">Harga Satuan (Rp)</label><input id="txHarga" type="number" step="1" value="0" class="w-full border border-slate-300 rounded px-2 py-1.5 text-sm"></div>
-          <div><label class="block text-xs font-medium text-slate-600 mb-1">Total (auto)</label><input id="txTotal" type="text" readonly value="Rp 0" class="w-full border border-slate-300 rounded px-2 py-1.5 text-sm bg-slate-50"></div>
+          <div><label class="block text-xs font-medium text-slate-stone-600 mb-1">Satuan</label><input id="txSatuan" type="text" value="Kg" class="w-full border border-slate-stone-300 rounded px-2 py-1.5 text-sm"></div>
+          <div><label class="block text-xs font-medium text-slate-stone-600 mb-1">Kuantitas</label><input id="txQty" type="number" step="0.01" value="1" class="w-full border border-slate-stone-300 rounded px-2 py-1.5 text-sm"></div>
+          <div><label class="block text-xs font-medium text-slate-stone-600 mb-1">Harga Satuan (Rp)</label><input id="txHarga" type="number" step="1" value="0" class="w-full border border-slate-stone-300 rounded px-2 py-1.5 text-sm"></div>
+          <div><label class="block text-xs font-medium text-slate-stone-600 mb-1">Total (auto)</label><input id="txTotal" type="text" readonly value="Rp 0" class="w-full border border-slate-stone-300 rounded px-2 py-1.5 text-sm bg-slate-stone-50"></div>
           ${isJual?
-            `<div><label class="block text-xs font-medium text-slate-600 mb-1">Kategori</label><select id="txKategori" class="w-full border border-slate-300 rounded px-2 py-1.5 text-sm"><option value="NOTA KECIL">NOTA KECIL (tunai)</option><option value="NOTA BESAR">NOTA BESAR (kredit)</option></select></div>
-             <div><label class="block text-xs font-medium text-slate-600 mb-1">Pelanggan</label><select id="txPelanggan" class="w-full border border-slate-300 rounded px-2 py-1.5 text-sm"><option value="">— pilih —</option>${partnerOpts}</select></div>`
+            `<div><label class="block text-xs font-medium text-slate-stone-600 mb-1">Kategori</label><select id="txKategori" class="w-full border border-slate-stone-300 rounded px-2 py-1.5 text-sm"><option value="NOTA KECIL">NOTA KECIL (tunai)</option><option value="NOTA BESAR">NOTA BESAR (kredit)</option></select></div>
+             <div><label class="block text-xs font-medium text-slate-stone-600 mb-1">Pelanggan</label><select id="txPelanggan" class="w-full border border-slate-stone-300 rounded px-2 py-1.5 text-sm"><option value="">— pilih —</option>${partnerOpts}</select></div>`
             :
-            `<div><label class="block text-xs font-medium text-slate-600 mb-1">Supplier</label><select id="txSupplier" class="w-full border border-slate-300 rounded px-2 py-1.5 text-sm"><option value="">— pilih —</option>${partnerOpts}</select></div>
-             <div><label class="block text-xs font-medium text-slate-600 mb-1">Status</label><select id="txStatus" class="w-full border border-slate-300 rounded px-2 py-1.5 text-sm"><option value="kredit">KREDIT (belum lunas)</option><option value="lunas">LUNAS (tunai)</option></select></div>
-             <div><label class="block text-xs font-medium text-slate-600 mb-1">Jatuh Tempo</label><input id="txJatuhTempo" type="date" class="w-full border border-slate-300 rounded px-2 py-1.5 text-sm"></div>`
+            `<div><label class="block text-xs font-medium text-slate-stone-600 mb-1">Supplier</label><select id="txSupplier" class="w-full border border-slate-stone-300 rounded px-2 py-1.5 text-sm"><option value="">— pilih —</option>${partnerOpts}</select></div>
+             <div><label class="block text-xs font-medium text-slate-stone-600 mb-1">Status</label><select id="txStatus" class="w-full border border-slate-stone-300 rounded px-2 py-1.5 text-sm"><option value="kredit">KREDIT (belum lunas)</option><option value="lunas">LUNAS (tunai)</option></select></div>
+             <div><label class="block text-xs font-medium text-slate-stone-600 mb-1">Jatuh Tempo</label><input id="txJatuhTempo" type="date" class="w-full border border-slate-stone-300 rounded px-2 py-1.5 text-sm"></div>`
           }
-          <div class="col-span-2"><label class="block text-xs font-medium text-slate-600 mb-1">Catatan</label><input id="txCatatan" type="text" placeholder="opsional" class="w-full border border-slate-300 rounded px-2 py-1.5 text-sm"></div>
+          <div class="col-span-2"><label class="block text-xs font-medium text-slate-stone-600 mb-1">Catatan</label><input id="txCatatan" type="text" placeholder="opsional" class="w-full border border-slate-stone-300 rounded px-2 py-1.5 text-sm"></div>
         </div>
-        <div class="px-5 py-3 border-t border-slate-200 flex justify-end gap-2">
-          <button id="cancelAddTx" class="px-4 py-1.5 text-sm border border-slate-300 rounded hover:bg-slate-50">Batal</button>
-          <button id="saveAddTx" class="px-4 py-1.5 text-sm bg-sky-600 text-white rounded hover:bg-sky-700">Simpan</button>
+        <div class="px-5 py-3 border-t border-slate-stone-200 flex justify-end gap-2">
+          <button id="cancelAddTx" class="px-4 py-1.5 text-sm border border-slate-stone-300 rounded hover:bg-slate-stone-50">Batal</button>
+          <button id="saveAddTx" class="px-4 py-1.5 text-sm bg-[#6D0F2B] text-white rounded hover:bg-[#8A1A38]">Simpan</button>
         </div>
       </div>
     </div>`;
@@ -1504,8 +1504,8 @@ function renderPersediaan() {
     <div class="space-y-4">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 class="text-lg font-bold text-slate-800">Persediaan 2026</h2>
-          <p class="text-xs text-slate-500" id="persSub"></p>
+          <h2 class="text-lg font-bold text-slate-stone-800">Persediaan 2026</h2>
+          <p class="text-xs text-slate-stone-500" id="persSub"></p>
         </div>
         <div class="flex gap-2">
           <button id="persModeTahun" class="toggle-btn ${persediaanMode==='tahun'?'active':''}">📊 Per Tahun</button>
@@ -1553,19 +1553,19 @@ function renderPersediaanTahun() {
       <div class="kpi-card success"><div class="label">Saldo Akhir Tahun</div><div class="value">Rp ${fmtRupiah(totalAkhirNilai)}</div><div class="sub">Auto-hitung (Awal+Masuk-Keluar)</div></div>
     </div>
 
-    <div class="bg-white border border-slate-200 rounded-lg p-4 mb-4">
-      <h3 class="text-sm font-bold text-slate-700 mb-2">Saldo Persediaan Akhir per Bulan (2026)</h3>
+    <div class="bg-white border border-slate-stone-200 rounded-lg p-4 mb-4">
+      <h3 class="text-sm font-bold text-slate-stone-700 mb-2">Saldo Persediaan Akhir per Bulan (2026)</h3>
       <div class="bar-chart">
         ${byMonthTotal.map(b => {
           const h = (b.akhirNilai / maxMonthAkhir * 100).toFixed(1);
-          return `<div class="bar-col"><div class="bar-value">${(b.akhirNilai/1e6).toFixed(0)}jt</div><div class="bar-wrap"><div class="bar" style="height:${h}%; ${b.akhirNilai===0?'background:#cbd5e1;':''}" title="${BULAN_NAMES[b.m-1]}: Rp ${fmtRupiah(b.akhirNilai)} (${b.itemCount} item)"></div></div><div class="bar-label">${BULAN_SHORT[b.m-1]}</div></div>`;
+          return `<div class="bar-col"><div class="bar-value">${(b.akhirNilai/1e6).toFixed(0)}jt</div><div class="bar-wrap"><div class="bar" style="height:${h}%; ${b.akhirNilai===0?'background:#D9CEC6;':''}" title="${BULAN_NAMES[b.m-1]}: Rp ${fmtRupiah(b.akhirNilai)} (${b.itemCount} item)"></div></div><div class="bar-label">${BULAN_SHORT[b.m-1]}</div></div>`;
         }).join("")}
       </div>
-      <div class="text-xs text-slate-500 mt-2">Biru = ada data. Abu-abu = belum ada data. Klik toggle "Per Bulan" untuk lihat/edit detail per bulan.</div>
+      <div class="text-xs text-slate-stone-500 mt-2">Maroon = ada data. Abu-abu = belum ada data. Klik toggle "Per Bulan" untuk lihat/edit detail per bulan.</div>
     </div>
 
-    <div class="bg-white border border-slate-200 rounded-lg p-4 mb-4">
-      <h3 class="text-sm font-bold text-slate-700 mb-2">Top 10 Item berdasarkan Nilai Saldo Akhir</h3>
+    <div class="bg-white border border-slate-stone-200 rounded-lg p-4 mb-4">
+      <h3 class="text-sm font-bold text-slate-stone-700 mb-2">Top 10 Item berdasarkan Nilai Saldo Akhir</h3>
       <div class="bar-chart" style="height:260px;">
         ${topItems.map(t => {
           const h = (t.akhirNilai / maxNilai * 100).toFixed(1);
@@ -1574,8 +1574,8 @@ function renderPersediaanTahun() {
       </div>
     </div>
 
-    <div class="bg-white border border-slate-200 rounded-lg overflow-auto scrollbar-thin">
-      <h3 class="text-sm font-bold text-slate-700 m-4 mb-2">Tabel Per Item (Akumulasi 12 Bulan)</h3>
+    <div class="bg-white border border-slate-stone-200 rounded-lg overflow-auto scrollbar-thin">
+      <h3 class="text-sm font-bold text-slate-stone-700 m-4 mb-2">Tabel Per Item (Akumulasi 12 Bulan)</h3>
       <table class="tx-table">
         <thead>
           <tr>
@@ -1609,7 +1609,7 @@ function renderPersediaanTahun() {
           </tr>
         </tfoot>
       </table>
-      ${items.length > 50 ? '<p class="text-xs text-slate-500 m-4">Tampilkan 50 item pertama. Total ada ' + items.length + ' item. Untuk lihat semua, gunakan mode Per Bulan.</p>' : ''}
+      ${items.length > 50 ? '<p class="text-xs text-slate-stone-500 m-4">Tampilkan 50 item pertama. Total ada ' + items.length + ' item. Untuk lihat semua, gunakan mode Per Bulan.</p>' : ''}
     </div>`;
 
   document.getElementById("persSub").textContent = `Mode Per Tahun — ${items.length} item unik, Saldo Akhir Tahun Rp ${fmtRupiah(totalAkhirNilai)}`;
@@ -1627,13 +1627,13 @@ function renderPersediaanBulan() {
   c.innerHTML = `
     <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
       <div class="flex items-center gap-2">
-        <label class="text-sm font-medium text-slate-700">Bulan:</label>
+        <label class="text-sm font-medium text-slate-stone-700">Bulan:</label>
         <select id="persMonthSel" class="select-input">${monthOpts}</select>
       </div>
       <div class="flex gap-2">
-        <button id="btnImportPers" class="inline-flex items-center gap-1.5 rounded-md border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-100">⬆ Import Excel/CSV</button>
-        <button id="btnPasteAccuratePers" class="inline-flex items-center gap-1.5 rounded-md border border-violet-300 bg-violet-50 px-3 py-1.5 text-xs font-medium text-violet-700 hover:bg-violet-100">📋 Paste dari Accurate</button>
-        <button id="btnTambahBarangPers" class="inline-flex items-center gap-1.5 rounded-md bg-sky-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-sky-700">+ Tambah Item</button>
+        <button id="btnImportPers" class="inline-flex items-center gap-1.5 rounded-md border border-[#E5D5A3] bg-[#FBF3DC] px-3 py-1.5 text-xs font-medium text-[#8A6A12] hover:bg-[#F3E7BC]">⬆ Import Excel/CSV</button>
+        <button id="btnPasteAccuratePers" class="inline-flex items-center gap-1.5 rounded-md border border-[#E0AEBB] bg-[#FBE9EE] px-3 py-1.5 text-xs font-medium text-[#8A1A38] hover:bg-[#F5D9E0]">📋 Paste dari Accurate</button>
+        <button id="btnTambahBarangPers" class="inline-flex items-center gap-1.5 rounded-md bg-[#6D0F2B] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#8A1A38]">+ Tambah Item</button>
       </div>
     </div>
 
@@ -1644,7 +1644,7 @@ function renderPersediaanBulan() {
       <div class="kpi-card success"><div class="label">Saldo Akhir Bulan Ini</div><div class="value">Rp ${fmtRupiah(totalAkhirNilai)}</div><div class="sub">Auto-hitung</div></div>
     </div>
 
-    <div class="bg-white border border-slate-200 rounded-lg overflow-auto scrollbar-thin">
+    <div class="bg-white border border-slate-stone-200 rounded-lg overflow-auto scrollbar-thin">
       <table class="tx-table">
         <thead>
           <tr>
@@ -1678,7 +1678,7 @@ function renderPersediaanBulan() {
       </table>
     </div>
     <div class="flex justify-between items-center mt-3">
-      <p class="text-xs text-slate-500">Klik sel angka untuk edit. Saldo Akhir auto-hitung. Klik "Tambah Item" di atas untuk menambah baris baru.</p>
+      <p class="text-xs text-slate-stone-500">Klik sel angka untuk edit. Saldo Akhir auto-hitung. Klik "Tambah Item" di atas untuk menambah baris baru.</p>
     </div>`;
 
   document.getElementById("persMonthSel").onchange = (e) => { persMonth = parseInt(e.target.value,10); renderPersediaanBulan(); };
@@ -1744,28 +1744,28 @@ function renderPersediaanBulan() {
     const html = `
       <div class="fixed inset-0 bg-black/40 z-40 flex items-center justify-center p-4" id="addBarangOverlay">
         <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-auto">
-          <div class="px-5 py-3 border-b border-slate-200 flex items-center justify-between">
-            <h3 class="font-bold text-slate-800">Tambah Item Persediaan — ${BULAN_NAMES[persMonth-1]} 2026</h3>
-            <button id="closeAddBarang" class="text-slate-400 hover:text-slate-700">✕</button>
+          <div class="px-5 py-3 border-b border-slate-stone-200 flex items-center justify-between">
+            <h3 class="font-bold text-slate-stone-800">Tambah Item Persediaan — ${BULAN_NAMES[persMonth-1]} 2026</h3>
+            <button id="closeAddBarang" class="text-slate-stone-400 hover:text-slate-stone-700">✕</button>
           </div>
           <div class="p-5 space-y-3 text-sm">
             <div>
-              <label class="block text-xs font-medium text-slate-600 mb-1">Pilih Barang</label>
-              <input id="newBarangSearch" type="text" placeholder="🔍 Cari barang (ketik nama/kode)..." class="w-full border border-slate-300 rounded px-2 py-1.5 mb-1">
-              <select id="newBarangSel" class="w-full border border-slate-300 rounded px-2 py-1.5" size="8"><option value="">— pilih —</option>${barangOpts}</select>
+              <label class="block text-xs font-medium text-slate-stone-600 mb-1">Pilih Barang</label>
+              <input id="newBarangSearch" type="text" placeholder="🔍 Cari barang (ketik nama/kode)..." class="w-full border border-slate-stone-300 rounded px-2 py-1.5 mb-1">
+              <select id="newBarangSel" class="w-full border border-slate-stone-300 rounded px-2 py-1.5" size="8"><option value="">— pilih —</option>${barangOpts}</select>
             </div>
             <div class="grid grid-cols-2 gap-3">
-              <div><label class="block text-xs font-medium text-slate-600 mb-1">Awal Qty</label><input id="newAwalQty" type="number" step="0.01" value="0" class="w-full border border-slate-300 rounded px-2 py-1.5"></div>
-              <div><label class="block text-xs font-medium text-slate-600 mb-1">Awal Nilai</label><input id="newAwalNilai" type="number" step="1" value="0" class="w-full border border-slate-300 rounded px-2 py-1.5"></div>
-              <div><label class="block text-xs font-medium text-slate-600 mb-1">Masuk Qty</label><input id="newMasukQty" type="number" step="0.01" value="0" class="w-full border border-slate-300 rounded px-2 py-1.5"></div>
-              <div><label class="block text-xs font-medium text-slate-600 mb-1">Masuk Nilai</label><input id="newMasukNilai" type="number" step="1" value="0" class="w-full border border-slate-300 rounded px-2 py-1.5"></div>
-              <div><label class="block text-xs font-medium text-slate-600 mb-1">Keluar Qty</label><input id="newKeluarQty" type="number" step="0.01" value="0" class="w-full border border-slate-300 rounded px-2 py-1.5"></div>
-              <div><label class="block text-xs font-medium text-slate-600 mb-1">Keluar Nilai</label><input id="newKeluarNilai" type="number" step="1" value="0" class="w-full border border-slate-300 rounded px-2 py-1.5"></div>
+              <div><label class="block text-xs font-medium text-slate-stone-600 mb-1">Awal Qty</label><input id="newAwalQty" type="number" step="0.01" value="0" class="w-full border border-slate-stone-300 rounded px-2 py-1.5"></div>
+              <div><label class="block text-xs font-medium text-slate-stone-600 mb-1">Awal Nilai</label><input id="newAwalNilai" type="number" step="1" value="0" class="w-full border border-slate-stone-300 rounded px-2 py-1.5"></div>
+              <div><label class="block text-xs font-medium text-slate-stone-600 mb-1">Masuk Qty</label><input id="newMasukQty" type="number" step="0.01" value="0" class="w-full border border-slate-stone-300 rounded px-2 py-1.5"></div>
+              <div><label class="block text-xs font-medium text-slate-stone-600 mb-1">Masuk Nilai</label><input id="newMasukNilai" type="number" step="1" value="0" class="w-full border border-slate-stone-300 rounded px-2 py-1.5"></div>
+              <div><label class="block text-xs font-medium text-slate-stone-600 mb-1">Keluar Qty</label><input id="newKeluarQty" type="number" step="0.01" value="0" class="w-full border border-slate-stone-300 rounded px-2 py-1.5"></div>
+              <div><label class="block text-xs font-medium text-slate-stone-600 mb-1">Keluar Nilai</label><input id="newKeluarNilai" type="number" step="1" value="0" class="w-full border border-slate-stone-300 rounded px-2 py-1.5"></div>
             </div>
           </div>
-          <div class="px-5 py-3 border-t border-slate-200 flex justify-end gap-2">
-            <button id="cancelAddBarang" class="px-4 py-1.5 text-sm border border-slate-300 rounded hover:bg-slate-50">Batal</button>
-            <button id="saveAddBarang" class="px-4 py-1.5 text-sm bg-sky-600 text-white rounded hover:bg-sky-700">Simpan</button>
+          <div class="px-5 py-3 border-t border-slate-stone-200 flex justify-end gap-2">
+            <button id="cancelAddBarang" class="px-4 py-1.5 text-sm border border-slate-stone-300 rounded hover:bg-slate-stone-50">Batal</button>
+            <button id="saveAddBarang" class="px-4 py-1.5 text-sm bg-[#6D0F2B] text-white rounded hover:bg-[#8A1A38]">Simpan</button>
           </div>
         </div>
       </div>`;
@@ -1820,6 +1820,23 @@ function renderPersediaanBulan() {
 // Edit sel tersimpan di localStorage (userEdits.extras.piutangBulan), bisa di-reset ke data Excel asli.
 const PIUTANG_FIELDS = ["saldoAwal","penjualan","pembayaran","penyesuaian"];
 const UTANG_FIELDS = ["saldoAwal","penyesuaianAwal","pembelian","pembayaran"];
+
+// Umur (hari sejak tanggal faktur) & status (TERLEWAT bila jatuh tempo sudah lewat)
+// dihitung DINAMIS saat render supaya selalu akurat terhadap "hari ini".
+function hitungUmurStatus(f) {
+  const parseD = (s) => { if (!s) return null; const m = String(s).match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? new Date(+m[1], +m[2]-1, +m[3]) : null; };
+  const today = new Date(); today.setHours(0,0,0,0);
+  const tg = parseD(f.tanggal), jt = parseD(f.jatuhTempo);
+  const umur = tg ? Math.max(0, Math.round((today - tg) / 86400000)) : (Number(f.umur) || 0);
+  const status = jt ? (jt < today ? "TERLEWAT" : "BERJALAN") : (f.status || "BERJALAN");
+  return { umur, status };
+}
+
+// Faktur piutang hasil paste "Daftar Piutang Usaha" (disimpan per override localStorage)
+function getPiuFaktur() {
+  if (userEdits.extras && userEdits.extras.piutangFaktur) return userEdits.extras.piutangFaktur;
+  return [];
+}
 
 function getPiutangRows() {
   const ov = (userEdits.extras && userEdits.extras.piutangBulan) || {};
@@ -1934,16 +1951,21 @@ function renderPiutang() {
   const totKredit = tkRows.reduce((s,r)=>s+r.kredit,0);
   const totPenjualan = totTunai + totKredit;
   const pctTunai = totPenjualan > 0 ? totTunai/totPenjualan : 0;
-  const hasEdit = !!(userEdits.extras && userEdits.extras.piutangBulan);
+  const hasEdit = !!(userEdits.extras && (userEdits.extras.piutangBulan || userEdits.extras.piutangFaktur));
+  const puFaktur = getPiuFaktur();
+  const puSt = puFaktur.map(f => hitungUmurStatus(f));
+  const totPuSisa = puFaktur.reduce((s,f)=>s+(Number(f.nilai)||0),0);
+  const puTerlewat = puSt.filter(x=>x.status==="TERLEWAT").length;
 
   c.innerHTML = `
     <div class="space-y-4">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 class="text-lg font-bold text-slate-800">Piutang Usaha — 2026</h2>
-          <p class="text-xs text-slate-500">Saldo piutang bulanan (penjualan kredit / Nota Besar) + breakdown Tunai vs Kredit</p>
+          <h2 class="text-lg font-bold text-slate-stone-800">Piutang Usaha — 2026</h2>
+          <p class="text-xs text-slate-stone-500">Saldo piutang bulanan (penjualan kredit / Nota Besar) + breakdown Tunai vs Kredit</p>
         </div>
         <div class="flex gap-2">
+          <button id="btnPastePiu" class="inline-flex items-center gap-1.5 rounded-md border border-[#E0AEBB] bg-[#FBE9EE] px-3 py-1.5 text-xs font-medium text-[#8A1A38] hover:bg-[#F5D9E0]">📋 Paste dari Accurate</button>
           ${hasEdit ? '<button id="btnResetPiu" class="inline-flex items-center gap-1.5 rounded-md border border-rose-300 bg-rose-50 px-3 py-1.5 text-xs font-medium text-rose-700 hover:bg-rose-100">↺ Reset Edit</button>' : ''}
         </div>
       </div>
@@ -1955,9 +1977,9 @@ function renderPiutang() {
         <div class="kpi-card"><div class="label">% Penjualan Tunai YTD</div><div class="value">${(pctTunai*100).toFixed(1)}%</div><div class="sub">Tunai Rp ${fmtRupiah(totTunai)} / Total Rp ${fmtRupiah(totPenjualan)}</div></div>
       </div>
 
-      <div class="bg-white border border-slate-200 rounded-lg overflow-auto scrollbar-thin">
-        <h3 class="text-sm font-bold text-slate-700 m-4 mb-1">Piutang Usaha per Bulan</h3>
-        <p class="text-xs text-slate-500 mx-4 mt-0 mb-2">Saldo Akhir = Saldo Awal + Penjualan − Pembayaran (auto). Kolom Penyesuaian sudah termasuk dalam Saldo Awal (sama dengan Excel). Klik sel angka (kuning) untuk edit.</p>
+      <div class="bg-white border border-slate-stone-200 rounded-lg overflow-auto scrollbar-thin">
+        <h3 class="text-sm font-bold text-slate-stone-700 m-4 mb-1">Piutang Usaha per Bulan</h3>
+        <p class="text-xs text-slate-stone-500 mx-4 mt-0 mb-2">Saldo Akhir = Saldo Awal + Penjualan − Pembayaran (auto). Kolom Penyesuaian sudah termasuk dalam Saldo Awal (sama dengan Excel). Klik sel angka (kuning) untuk edit.</p>
         <table class="dash-table">
           <thead><tr><th>BULAN</th><th>SALDO AWAL</th><th>PENJUALAN (KREDIT)</th><th>PEMBAYARAN</th><th>PENYESUAIAN</th><th>SALDO AKHIR</th></tr></thead>
           <tbody id="piuTbody">
@@ -1966,13 +1988,13 @@ function renderPiutang() {
         </table>
       </div>
 
-      <div class="bg-white border border-slate-200 rounded-lg overflow-auto scrollbar-thin">
-        <h3 class="text-sm font-bold text-slate-700 m-4 mb-1">Penjualan: Tunai (Nota Kecil) vs Kredit (Nota Besar)</h3>
-        <p class="text-xs text-slate-500 mx-4 mt-0 mb-2">Bulan bertanda "⚡ dari transaksi" dihitung otomatis dari data menu Penjualan (hasil paste Accurate). Bulan lain memakai data Excel.</p>
+      <div class="bg-white border border-slate-stone-200 rounded-lg overflow-auto scrollbar-thin">
+        <h3 class="text-sm font-bold text-slate-stone-700 m-4 mb-1">Penjualan: Tunai (Nota Kecil) vs Kredit (Nota Besar)</h3>
+        <p class="text-xs text-slate-stone-500 mx-4 mt-0 mb-2">Bulan bertanda "⚡ dari transaksi" dihitung otomatis dari data menu Penjualan (hasil paste Accurate). Bulan lain memakai data Excel.</p>
         <table class="dash-table">
           <thead><tr><th>BULAN</th><th>NOTA KECIL (TUNAI)</th><th>NOTA BESAR (KREDIT)</th><th>TOTAL</th><th>% TUNAI</th><th>SUMBER</th></tr></thead>
           <tbody>
-            ${tkRows.map(r=>{ const tot = r.tunai + r.kredit; const pct = tot>0 ? r.tunai/tot : null; return `<tr><td class="label">${r.bulan}</td><td class="num">Rp ${fmtRupiah(r.tunai)}</td><td class="num">Rp ${fmtRupiah(r.kredit)}</td><td class="num">Rp ${fmtRupiah(tot)}</td><td class="num">${pct===null?"-":(pct*100).toFixed(1)+"%"}</td><td class="center text-[10px] ${r.fromTx?'text-emerald-600 font-medium':'text-slate-400'}">${r.fromTx?"⚡ dari transaksi":"Excel"}</td></tr>`; }).join("")}
+            ${tkRows.map(r=>{ const tot = r.tunai + r.kredit; const pct = tot>0 ? r.tunai/tot : null; return `<tr><td class="label">${r.bulan}</td><td class="num">Rp ${fmtRupiah(r.tunai)}</td><td class="num">Rp ${fmtRupiah(r.kredit)}</td><td class="num">Rp ${fmtRupiah(tot)}</td><td class="num">${pct===null?"-":(pct*100).toFixed(1)+"%"}</td><td class="center text-[10px] ${r.fromTx?'text-[#8A6A12] font-medium':'text-slate-stone-400'}">${r.fromTx?"⚡ dari transaksi":"Excel"}</td></tr>`; }).join("")}
           </tbody>
           <tfoot>
             <tr class="total-row"><td style="text-align:left;font-weight:700">TOTAL</td><td class="num">Rp ${fmtRupiah(totTunai)}</td><td class="num">Rp ${fmtRupiah(totKredit)}</td><td class="num">Rp ${fmtRupiah(totPenjualan)}</td><td class="num">${totPenjualan>0?(pctTunai*100).toFixed(1)+"%":"-"}</td><td></td></tr>
@@ -1980,13 +2002,33 @@ function renderPiutang() {
         </table>
       </div>
 
-      <p class="text-xs text-slate-500">Sumber data: sheet Excel "Piutang & Utang" + data transaksi Penjualan. Edit tersimpan otomatis di browser (localStorage); gunakan "Reset Edit" untuk kembali ke data Excel asli.</p>
+      <div class="bg-white border border-slate-stone-200 rounded-lg overflow-auto scrollbar-thin">
+        <div class="flex flex-wrap items-center justify-between gap-2 m-4 mb-1">
+          <h3 class="text-sm font-bold text-slate-stone-700">Faktur Piutang Belum Lunas (per pelanggan)</h3>
+          ${puFaktur.length ? '<button id="btnHapusPiuFaktur" class="text-xs font-medium text-rose-600 hover:text-rose-800">✕ Hapus data paste</button>' : ''}
+        </div>
+        ${puFaktur.length ? `
+        <p class="text-xs text-slate-stone-500 mx-4 mt-0 mb-2">Sumber: paste "Daftar Piutang Usaha" Accurate. NILAI = sisa yang belum dibayar. Umur & status dihitung otomatis dari jatuh tempo vs hari ini.</p>
+        <table class="tx-table">
+          <thead><tr><th>PELANGGAN</th><th>NO. FAKTUR</th><th>TANGGAL</th><th>JATUH TEMPO</th><th>UMUR (HR)</th><th>NILAI</th><th>STATUS</th></tr></thead>
+          <tbody>
+            ${puFaktur.map((f,i)=>{ const st=puSt[i]; return `<tr><td>${escapeHtml(f.pelanggan||"-")}</td><td>${escapeHtml(f.noFaktur)}</td><td class="center">${f.tanggal||"-"}</td><td class="center">${f.jatuhTempo||"-"}</td><td class="num">${st.umur}</td><td class="num">Rp ${fmtRupiah(f.nilai)}</td><td class="center"><span class="px-1.5 py-0.5 rounded text-[10px] font-medium ${st.status==='TERLEWAT'?'bg-rose-100 text-rose-700':'bg-amber-100 text-amber-700'}">${st.status}</span></td></tr>`; }).join("")}
+          </tbody>
+          <tfoot>
+            <tr class="total-row"><td colspan="5" style="text-align:right">TOTAL (${puFaktur.length} faktur${puTerlewat?` · ${puTerlewat} terlewat`:""})</td><td class="num">Rp ${fmtRupiah(totPuSisa)}</td><td></td></tr>
+          </tfoot>
+        </table>` : `
+        <p class="text-xs text-slate-stone-400 mx-4 mb-4 mt-1">Belum ada data faktur piutang. Klik <b>📋 Paste dari Accurate</b> lalu paste laporan <b>"Daftar Piutang Usaha"</b> untuk mengisi daftar faktur pelanggan yang belum lunas.</p>`}
+      </div>
+
+      <p class="text-xs text-slate-stone-500">Sumber data: sheet Excel "Piutang & Utang" + data transaksi Penjualan + faktur piutang hasil paste "Daftar Piutang Usaha" Accurate. Edit tersimpan otomatis di browser (localStorage); gunakan "Reset Edit" untuk kembali ke data Excel asli.</p>
     </div>`;
 
   if (hasEdit) {
     document.getElementById("btnResetPiu").onclick = () => {
-      if (!confirm("Reset semua edit Piutang ke data Excel asli?")) return;
+      if (!confirm("Reset semua edit Piutang (saldo bulanan + faktur hasil paste) ke data Excel asli?")) return;
       delete userEdits.extras.piutangBulan;
+      delete userEdits.extras.piutangFaktur;
       saveEdits(userEdits);
       renderPiutang();
       showToast("✓ Edit Piutang direset");
@@ -1994,7 +2036,18 @@ function renderPiutang() {
   }
   attachMonthCellEdit(document.getElementById("piuTbody"), rows, savePiutangBulan, renderPiutang, "Piutang");
 
-  document.getElementById("statusBar").textContent = `Piutang Akhir (Des): Rp ${fmtRupiah(saldoAkhirDes)} · Penjualan Kredit YTD: Rp ${fmtRupiah(totJual)} · Pembayaran YTD: Rp ${fmtRupiah(totBayar)}`;
+  const btnPastePiu = document.getElementById("btnPastePiu");
+  if (btnPastePiu) btnPastePiu.onclick = () => showPasteAccurateDialog("piutang");
+  const btnHapusPiuFaktur = document.getElementById("btnHapusPiuFaktur");
+  if (btnHapusPiuFaktur) btnHapusPiuFaktur.onclick = () => {
+    if (!confirm("Hapus semua faktur piutang hasil paste Accurate?")) return;
+    delete userEdits.extras.piutangFaktur;
+    saveEdits(userEdits);
+    renderPiutang();
+    showToast("✓ Faktur piutang hasil paste dihapus");
+  };
+
+  document.getElementById("statusBar").textContent = `Piutang Akhir (Des): Rp ${fmtRupiah(saldoAkhirDes)} · Penjualan Kredit YTD: Rp ${fmtRupiah(totJual)} · Pembayaran YTD: Rp ${fmtRupiah(totBayar)}${puFaktur.length ? ` · Faktur Piutang Belum Lunas: Rp ${fmtRupiah(totPuSisa)} (${puFaktur.length} faktur, ${puTerlewat} terlewat)` : ""}`;
 }
 
 // ============================================================
@@ -2049,17 +2102,20 @@ function renderHutang() {
   const totBayar = rows.reduce((s,r)=>s+r.pembayaran,0);
   const faktur = getFakturBelumLunas();
   const totalFaktur = faktur.reduce((s,r)=>s+r.nilai,0);
-  const terlewat = faktur.filter(f=>f.status==="TERLEWAT").length;
-  const hasEdit = !!(userEdits.extras && userEdits.extras.utangBulan);
+  const fakturSt = faktur.map(f => hitungUmurStatus(f));
+  const terlewat = fakturSt.filter(x=>x.status==="TERLEWAT").length;
+  const hasEdit = !!(userEdits.extras && (userEdits.extras.utangBulan || userEdits.extras.fakturBelumLunas));
+  const fakturFromPaste = !!(userEdits.extras && userEdits.extras.fakturBelumLunas);
 
   c.innerHTML = `
     <div class="space-y-4">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 class="text-lg font-bold text-slate-800">Hutang Usaha — 2026</h2>
-          <p class="text-xs text-slate-500">Saldo hutang bulanan (pembelian kredit ke supplier) + faktur belum lunas</p>
+          <h2 class="text-lg font-bold text-slate-stone-800">Hutang Usaha — 2026</h2>
+          <p class="text-xs text-slate-stone-500">Saldo hutang bulanan (pembelian kredit ke supplier) + faktur belum lunas</p>
         </div>
         <div class="flex gap-2">
+          <button id="btnPasteHut" class="inline-flex items-center gap-1.5 rounded-md border border-[#E0AEBB] bg-[#FBE9EE] px-3 py-1.5 text-xs font-medium text-[#8A1A38] hover:bg-[#F5D9E0]">📋 Paste dari Accurate</button>
           ${hasEdit ? '<button id="btnResetHut" class="inline-flex items-center gap-1.5 rounded-md border border-rose-300 bg-rose-50 px-3 py-1.5 text-xs font-medium text-rose-700 hover:bg-rose-100">↺ Reset Edit</button>' : ''}
         </div>
       </div>
@@ -2071,9 +2127,9 @@ function renderHutang() {
         <div class="kpi-card"><div class="label">Faktur Belum Lunas</div><div class="value">Rp ${fmtRupiah(totalFaktur)}</div><div class="sub">${faktur.length} faktur · ${terlewat} jatuh tempo terlewat</div></div>
       </div>
 
-      <div class="bg-white border border-slate-200 rounded-lg overflow-auto scrollbar-thin">
-        <h3 class="text-sm font-bold text-slate-700 m-4 mb-1">Hutang Usaha per Bulan</h3>
-        <p class="text-xs text-slate-500 mx-4 mt-0 mb-2">Saldo Akhir = Saldo Awal + Pembelian − Pembayaran (auto). Kolom Penyesuaian Awal sudah termasuk dalam Saldo Awal (sama dengan Excel). Klik sel angka (kuning) untuk edit.</p>
+      <div class="bg-white border border-slate-stone-200 rounded-lg overflow-auto scrollbar-thin">
+        <h3 class="text-sm font-bold text-slate-stone-700 m-4 mb-1">Hutang Usaha per Bulan</h3>
+        <p class="text-xs text-slate-stone-500 mx-4 mt-0 mb-2">Saldo Akhir = Saldo Awal + Pembelian − Pembayaran (auto). Kolom Penyesuaian Awal sudah termasuk dalam Saldo Awal (sama dengan Excel). Klik sel angka (kuning) untuk edit.</p>
         <table class="dash-table">
           <thead><tr><th>BULAN</th><th>SALDO AWAL</th><th>PENYESUAIAN AWAL</th><th>PEMBELIAN</th><th>PEMBAYARAN</th><th>SALDO AKHIR</th></tr></thead>
           <tbody id="hutTbody">
@@ -2082,15 +2138,15 @@ function renderHutang() {
         </table>
       </div>
 
-      <div class="bg-white border border-slate-200 rounded-lg overflow-auto scrollbar-thin">
-        <h3 class="text-sm font-bold text-slate-700 m-4 mb-1">Rincian Faktur Belum Lunas (per 30 Sep 2026)</h3>
-        <p class="text-xs text-slate-500 mx-4 mt-0 mb-2">Status TERLEWAT/BERJALAN dihitung dari tanggal jatuh tempo vs hari ini</p>
+      <div class="bg-white border border-slate-stone-200 rounded-lg overflow-auto scrollbar-thin">
+        <h3 class="text-sm font-bold text-slate-stone-700 m-4 mb-1">Rincian Faktur Belum Lunas${fakturFromPaste ? " (hasil paste Accurate)" : " (per 30 Sep 2026)"}</h3>
+        <p class="text-xs text-slate-stone-500 mx-4 mt-0 mb-2">Umur & status TERLEWAT/BERJALAN dihitung otomatis dari tanggal jatuh tempo vs hari ini</p>
         <table class="tx-table">
           <thead>
             <tr><th>SUPPLIER</th><th>NO. FAKTUR</th><th>TANGGAL</th><th>JATUH TEMPO</th><th>UMUR (HR)</th><th>NILAI</th><th>STATUS</th></tr>
           </thead>
           <tbody>
-            ${faktur.map(f=>`<tr><td>${escapeHtml(f.supplier)}</td><td>${escapeHtml(f.noFaktur)}</td><td class="center">${f.tanggal||"-"}</td><td class="center">${f.jatuhTempo||"-"}</td><td class="num">${f.umur}</td><td class="num">Rp ${fmtRupiah(f.nilai)}</td><td class="center"><span class="px-1.5 py-0.5 rounded text-[10px] font-medium ${f.status==='TERLEWAT'?'bg-rose-100 text-rose-700':'bg-amber-100 text-amber-700'}">${f.status}</span></td></tr>`).join("")}
+            ${faktur.map((f,i)=>{ const st=fakturSt[i]; return `<tr><td>${escapeHtml(f.supplier)}</td><td>${escapeHtml(f.noFaktur)}</td><td class="center">${f.tanggal||"-"}</td><td class="center">${f.jatuhTempo||"-"}</td><td class="num">${st.umur}</td><td class="num">Rp ${fmtRupiah(f.nilai)}</td><td class="center"><span class="px-1.5 py-0.5 rounded text-[10px] font-medium ${st.status==='TERLEWAT'?'bg-rose-100 text-rose-700':'bg-amber-100 text-amber-700'}">${st.status}</span></td></tr>`; }).join("")}
           </tbody>
           <tfoot>
             <tr class="total-row"><td colspan="5" style="text-align:right">TOTAL (${faktur.length} faktur)</td><td class="num">Rp ${fmtRupiah(totalFaktur)}</td><td></td></tr>
@@ -2098,19 +2154,23 @@ function renderHutang() {
         </table>
       </div>
 
-      <p class="text-xs text-slate-500">Sumber data: sheet Excel "Piutang & Utang" (bagian Hutang) + Faktur Belum Lunas. Edit tersimpan otomatis di browser (localStorage); gunakan "Reset Edit" untuk kembali ke data Excel asli.</p>
+      <p class="text-xs text-slate-stone-500">Sumber data: sheet Excel "Piutang & Utang" (bagian Hutang) + faktur supplier bawaan/hasil paste "Daftar Utang Usaha" Accurate. Edit tersimpan otomatis di browser (localStorage); gunakan "Reset Edit" untuk kembali ke data Excel asli.</p>
     </div>`;
 
   if (hasEdit) {
     document.getElementById("btnResetHut").onclick = () => {
-      if (!confirm("Reset semua edit Hutang ke data Excel asli?")) return;
+      if (!confirm("Reset semua edit Hutang (saldo bulanan + faktur hasil paste) ke data Excel asli?")) return;
       delete userEdits.extras.utangBulan;
+      delete userEdits.extras.fakturBelumLunas;
       saveEdits(userEdits);
       renderHutang();
       showToast("✓ Edit Hutang direset");
     };
   }
   attachMonthCellEdit(document.getElementById("hutTbody"), rows, saveUtangBulan, renderHutang, "Hutang");
+
+  const btnPasteHut = document.getElementById("btnPasteHut");
+  if (btnPasteHut) btnPasteHut.onclick = () => showPasteAccurateDialog("hutang");
 
   document.getElementById("statusBar").textContent = `Hutang Akhir (Des): Rp ${fmtRupiah(saldoAkhirDes)} · Pembelian Kredit YTD: Rp ${fmtRupiah(totBeli)} · Faktur Belum Lunas: Rp ${fmtRupiah(totalFaktur)} (${faktur.length} faktur, ${terlewat} terlewat).`;
 }
@@ -2160,22 +2220,22 @@ function renderMasterData() {
     <div class="space-y-4">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 class="text-lg font-bold text-slate-800">Master Data</h2>
-          <p class="text-xs text-slate-500">${items.length} ${totalLabel} terdaftar${q?` · ${filtered.length} hasil pencarian`:''}</p>
+          <h2 class="text-lg font-bold text-slate-stone-800">Master Data</h2>
+          <p class="text-xs text-slate-stone-500">${items.length} ${totalLabel} terdaftar${q?` · ${filtered.length} hasil pencarian`:''}</p>
         </div>
         <div class="flex flex-wrap gap-2 items-center">
-          <input id="masterSearch" type="text" placeholder="🔍 Cari ${totalLabel}..." value="${escapeHtml(masterSearchQ)}" class="border border-slate-300 rounded px-2 py-1.5 text-xs w-48">
+          <input id="masterSearch" type="text" placeholder="🔍 Cari ${totalLabel}..." value="${escapeHtml(masterSearchQ)}" class="border border-slate-stone-300 rounded px-2 py-1.5 text-xs w-48">
           <div class="flex gap-2">
             <button class="tab-btn ${masterTab==='barang'?'active':''}" data-tab="barang">📦 Barang</button>
             <button class="tab-btn ${masterTab==='supplier'?'active':''}" data-tab="supplier">🚚 Supplier</button>
             <button class="tab-btn ${masterTab==='pelanggan'?'active':''}" data-tab="pelanggan">👥 Pelanggan</button>
           </div>
-          <button id="btnImportMaster" class="inline-flex items-center gap-1.5 rounded-md border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-100">⬆ Import</button>
-          <button id="btnTambahMaster" class="inline-flex items-center gap-1.5 rounded-md bg-sky-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-sky-700">+ Tambah ${totalLabel}</button>
+          <button id="btnImportMaster" class="inline-flex items-center gap-1.5 rounded-md border border-[#E5D5A3] bg-[#FBF3DC] px-3 py-1.5 text-xs font-medium text-[#8A6A12] hover:bg-[#F3E7BC]">⬆ Import</button>
+          <button id="btnTambahMaster" class="inline-flex items-center gap-1.5 rounded-md bg-[#6D0F2B] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#8A1A38]">+ Tambah ${totalLabel}</button>
         </div>
       </div>
 
-      <div class="bg-white border border-slate-200 rounded-lg overflow-auto scrollbar-thin">
+      <div class="bg-white border border-slate-stone-200 rounded-lg overflow-auto scrollbar-thin">
         <table class="tx-table">
           <thead>
             <tr>
@@ -2186,9 +2246,9 @@ function renderMasterData() {
           </thead>
           <tbody id="masterTbody"></tbody>
         </table>
-        ${filtered.length === 0 ? '<p class="text-center text-slate-400 text-xs p-4">' + (q ? 'Tidak ada hasil pencarian.' : 'Belum ada data. Klik "+ Tambah ' + totalLabel + '" untuk menambah.') + '</p>' : ''}
+        ${filtered.length === 0 ? '<p class="text-center text-slate-stone-400 text-xs p-4">' + (q ? 'Tidak ada hasil pencarian.' : 'Belum ada data. Klik "+ Tambah ' + totalLabel + '" untuk menambah.') + '</p>' : ''}
       </div>
-      <p class="text-xs text-slate-500">Master data ini digunakan sebagai dropdown di form "Tambah Transaksi" pada Penjualan/Pembelian dan Persediaan. Perubahan tersimpan otomatis di browser (localStorage). Klik ✏️ Edit untuk mengubah, 🗑 Hapus untuk menghapus.</p>
+      <p class="text-xs text-slate-stone-500">Master data ini digunakan sebagai dropdown di form "Tambah Transaksi" pada Penjualan/Pembelian dan Persediaan. Perubahan tersimpan otomatis di browser (localStorage). Klik ✏️ Edit untuk mengubah, 🗑 Hapus untuk menghapus.</p>
     </div>`;
 
   c.querySelectorAll("button[data-tab]").forEach(b => {
@@ -2222,7 +2282,7 @@ function renderMasterData() {
         `<td>${escapeHtml(r.kode)}</td><td>${escapeHtml(r.nama)}</td><td class="center">${escapeHtml(r.satuan)}</td>`
         :`<td>${escapeHtml(r.nama)}</td>`}
       <td class="center">
-        <button class="text-sky-600 hover:text-sky-800 text-xs mr-2" data-edit-idx="${realIdx}">✏️ Edit</button>
+        <button class="text-[#6D0F2B] hover:text-[#8A1A38] text-xs mr-2" data-edit-idx="${realIdx}">✏️ Edit</button>
         <button class="text-rose-600 hover:text-rose-800 text-xs" data-del-idx="${realIdx}">🗑 Hapus</button>
       </td>`;
     tbody.appendChild(tr);
@@ -2259,21 +2319,21 @@ function showMasterDialog(type, editIdx) {
   const html = `
     <div class="fixed inset-0 bg-black/40 z-40 flex items-center justify-center p-4" id="masterDialogOverlay">
       <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
-        <div class="px-5 py-3 border-b border-slate-200 flex items-center justify-between">
-          <h3 class="font-bold text-slate-800">${title}</h3>
-          <button id="closeMasterDialog" class="text-slate-400 hover:text-slate-700">✕</button>
+        <div class="px-5 py-3 border-b border-slate-stone-200 flex items-center justify-between">
+          <h3 class="font-bold text-slate-stone-800">${title}</h3>
+          <button id="closeMasterDialog" class="text-slate-stone-400 hover:text-slate-stone-700">✕</button>
         </div>
         <div class="p-5 space-y-3 text-sm">
           ${type==='barang'?
-            `<div><label class="block text-xs font-medium text-slate-600 mb-1">Kode ${isEdit?'':'(otomatis bila kosong)'}</label><input id="mKode" type="text" value="${escapeHtml(item.kode)}" placeholder="cth: A00100" class="w-full border border-slate-300 rounded px-2 py-1.5"></div>
-             <div><label class="block text-xs font-medium text-slate-600 mb-1">Nama Barang *</label><input id="mNama" type="text" value="${escapeHtml(item.nama)}" class="w-full border border-slate-300 rounded px-2 py-1.5"></div>
-             <div><label class="block text-xs font-medium text-slate-600 mb-1">Satuan</label><input id="mSatuan" type="text" value="${escapeHtml(item.satuan)}" class="w-full border border-slate-300 rounded px-2 py-1.5"></div>`
-            :`<div><label class="block text-xs font-medium text-slate-600 mb-1">Nama *</label><input id="mNama" type="text" value="${escapeHtml(item.nama)}" class="w-full border border-slate-300 rounded px-2 py-1.5"></div>`
+            `<div><label class="block text-xs font-medium text-slate-stone-600 mb-1">Kode ${isEdit?'':'(otomatis bila kosong)'}</label><input id="mKode" type="text" value="${escapeHtml(item.kode)}" placeholder="cth: A00100" class="w-full border border-slate-stone-300 rounded px-2 py-1.5"></div>
+             <div><label class="block text-xs font-medium text-slate-stone-600 mb-1">Nama Barang *</label><input id="mNama" type="text" value="${escapeHtml(item.nama)}" class="w-full border border-slate-stone-300 rounded px-2 py-1.5"></div>
+             <div><label class="block text-xs font-medium text-slate-stone-600 mb-1">Satuan</label><input id="mSatuan" type="text" value="${escapeHtml(item.satuan)}" class="w-full border border-slate-stone-300 rounded px-2 py-1.5"></div>`
+            :`<div><label class="block text-xs font-medium text-slate-stone-600 mb-1">Nama *</label><input id="mNama" type="text" value="${escapeHtml(item.nama)}" class="w-full border border-slate-stone-300 rounded px-2 py-1.5"></div>`
           }
         </div>
-        <div class="px-5 py-3 border-t border-slate-200 flex justify-end gap-2">
-          <button id="cancelMasterDialog" class="px-4 py-1.5 text-sm border border-slate-300 rounded hover:bg-slate-50">Batal</button>
-          <button id="saveMasterDialog" class="px-4 py-1.5 text-sm bg-sky-600 text-white rounded hover:bg-sky-700">Simpan</button>
+        <div class="px-5 py-3 border-t border-slate-stone-200 flex justify-end gap-2">
+          <button id="cancelMasterDialog" class="px-4 py-1.5 text-sm border border-slate-stone-300 rounded hover:bg-slate-stone-50">Batal</button>
+          <button id="saveMasterDialog" class="px-4 py-1.5 text-sm bg-[#6D0F2B] text-white rounded hover:bg-[#8A1A38]">Simpan</button>
         </div>
       </div>
     </div>`;
@@ -2547,16 +2607,16 @@ function showImportDialog(importType, opts) {
   const cfg = IMPORT_CONFIG[importType];
   if (!cfg) { alert("Tipe import tidak dikenal"); return; }
   const title = `Import Data ${cfg.label}`;
-  const fieldList = cfg.fields.map(f => `<li><code class="bg-slate-100 px-1 rounded">${f.aliases[0]}</code> ${f.required?'<span class="text-rose-600 font-medium">*wajib</span>':'<span class="text-slate-400">opsional</span>'} ${f.type?`<span class="text-slate-400">(${f.type})</span>`:''}</li>`).join("");
+  const fieldList = cfg.fields.map(f => `<li><code class="bg-[#F6F1E9] px-1 rounded">${f.aliases[0]}</code> ${f.required?'<span class="text-rose-600 font-medium">*wajib</span>':'<span class="text-slate-stone-400">opsional</span>'} ${f.type?`<span class="text-slate-stone-400">(${f.type})</span>`:''}</li>`).join("");
   const html = `
     <div class="fixed inset-0 bg-black/40 z-40 flex items-center justify-center p-4" id="importOverlay">
       <div class="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-auto">
-        <div class="px-5 py-3 border-b border-slate-200 flex items-center justify-between">
-          <h3 class="font-bold text-slate-800">${title}</h3>
-          <button id="closeImport" class="text-slate-400 hover:text-slate-700">✕</button>
+        <div class="px-5 py-3 border-b border-slate-stone-200 flex items-center justify-between">
+          <h3 class="font-bold text-slate-stone-800">${title}</h3>
+          <button id="closeImport" class="text-slate-stone-400 hover:text-slate-stone-700">✕</button>
         </div>
         <div class="p-5 space-y-4 text-sm">
-          <div class="bg-sky-50 border border-sky-200 rounded-lg p-3 text-xs text-sky-800">
+          <div class="bg-[#FBE9EE] border border-[#F0CDD6] rounded-lg p-3 text-xs text-[#6D0F2B]">
             <p class="font-medium mb-1">Petunjuk:</p>
             <ol class="list-decimal ml-5 space-y-0.5">
               <li>Download template CSV untuk format yang benar, atau buat file sendiri (kolom wajib di bawah).</li>
@@ -2567,29 +2627,29 @@ function showImportDialog(importType, opts) {
             </ol>
           </div>
           <div>
-            <p class="text-xs font-medium text-slate-600 mb-1">Kolom yang dikenali (case-insensitive):</p>
-            <ul class="text-xs text-slate-700 grid grid-cols-2 gap-1">${fieldList}</ul>
+            <p class="text-xs font-medium text-slate-stone-600 mb-1">Kolom yang dikenali (case-insensitive):</p>
+            <ul class="text-xs text-slate-stone-700 grid grid-cols-2 gap-1">${fieldList}</ul>
           </div>
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-xs font-medium text-slate-600 mb-1">Pilih File</label>
-              <input id="importFile" type="file" accept=".csv,.xlsx,.xls,.xlsm,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" class="w-full text-xs border border-slate-300 rounded px-2 py-1.5">
+              <label class="block text-xs font-medium text-slate-stone-600 mb-1">Pilih File</label>
+              <input id="importFile" type="file" accept=".csv,.xlsx,.xls,.xlsm,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" class="w-full text-xs border border-slate-stone-300 rounded px-2 py-1.5">
             </div>
             <div>
-              <label class="block text-xs font-medium text-slate-600 mb-1">Mode Import</label>
-              <select id="importMode" class="w-full border border-slate-300 rounded px-2 py-1.5 text-sm">
+              <label class="block text-xs font-medium text-slate-stone-600 mb-1">Mode Import</label>
+              <select id="importMode" class="w-full border border-slate-stone-300 rounded px-2 py-1.5 text-sm">
                 <option value="append">Append (tambahkan ke data lama)</option>
                 <option value="replace">Replace (ganti semua data)</option>
               </select>
             </div>
           </div>
           <div class="flex items-center gap-2">
-            <button id="btnTemplate" class="inline-flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium hover:bg-slate-50">⬇ Download Template CSV</button>
-            <button id="btnPreview" class="inline-flex items-center gap-1.5 rounded-md border border-sky-300 bg-sky-50 px-3 py-1.5 text-xs font-medium text-sky-700 hover:bg-sky-100">👁 Preview</button>
-            <button id="btnSaveImport" class="inline-flex items-center gap-1.5 rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700 ml-auto">💾 Simpan Import</button>
+            <button id="btnTemplate" class="inline-flex items-center gap-1.5 rounded-md border border-slate-stone-300 bg-white px-3 py-1.5 text-xs font-medium hover:bg-slate-stone-50">⬇ Download Template CSV</button>
+            <button id="btnPreview" class="inline-flex items-center gap-1.5 rounded-md border border-[#E0AEBB] bg-[#FBE9EE] px-3 py-1.5 text-xs font-medium text-[#8A1A38] hover:bg-[#F5D9E0]">👁 Preview</button>
+            <button id="btnSaveImport" class="inline-flex items-center gap-1.5 rounded-md bg-[#B8912C] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#8F6E12] ml-auto">💾 Simpan Import</button>
           </div>
-          <div id="importStatus" class="text-xs text-slate-500"></div>
-          <div id="importPreview" class="hidden bg-slate-50 border border-slate-200 rounded-lg p-3 overflow-auto max-h-96"></div>
+          <div id="importStatus" class="text-xs text-slate-stone-500"></div>
+          <div id="importPreview" class="hidden bg-slate-stone-50 border border-slate-stone-200 rounded-lg p-3 overflow-auto max-h-96"></div>
         </div>
       </div>
     </div>`;
@@ -2618,7 +2678,7 @@ function showImportDialog(importType, opts) {
       const sample = mapped.rows.slice(0, 5);
       const headers = Object.keys(sample[0] || {});
       const tableHtml = `
-        <p class="text-xs text-slate-600 mb-2"><b>${mapped.rows.length} baris</b> siap diimport. Menampilkan 5 baris pertama:</p>
+        <p class="text-xs text-slate-stone-600 mb-2"><b>${mapped.rows.length} baris</b> siap diimport. Menampilkan 5 baris pertama:</p>
         <table class="tx-table">
           <thead><tr>${headers.map(h=>`<th>${escapeHtml(h)}</th>`).join("")}</tr></thead>
           <tbody>
@@ -2627,7 +2687,7 @@ function showImportDialog(importType, opts) {
         </table>`;
       document.getElementById("importPreview").innerHTML = tableHtml;
       document.getElementById("importPreview").classList.remove("hidden");
-      document.getElementById("importStatus").innerHTML = `<span class="text-emerald-600">✓ ${mapped.rows.length} baris siap diimport</span>`;
+      document.getElementById("importStatus").innerHTML = `<span class="text-[#8A6A12]">✓ ${mapped.rows.length} baris siap diimport</span>`;
     });
   };
   document.getElementById("btnSaveImport").onclick = () => {
@@ -3067,13 +3127,129 @@ function parseAccuratePersediaanText(text) {
   return items;
 }
 
+// ============================================================
+// 13f. SMART PARSER — Accurate "Daftar Piutang Usaha" / "Daftar Utang Usaha"
+// ============================================================
+// Format: daftar faktur outstanding yang dikelompokkan per pelanggan/supplier.
+//   NAMA PELANGGAN            <- baris tanpa angka = nama party
+//   SI.2026.08.00012  15 Aug 2026  14 Sep 2026  12.500.000  0  12.500.000
+//   ^nofaktur        ^tanggal     ^jatuh tempo  ^jumlah    ^dibayar ^sisa
+// Baris header/footer/Subtotal/Total dilewati otomatis.
+// Kolom angka fleksibel: [Jumlah Dibayar Sisa] | [Jumlah Sisa] | [Sisa] (+ kolom umur di tengah tetap aman,
+// 3 angka terakhir selalu dibaca sebagai Jumlah/Dibayar/Sisa).
+const PU_SKIP_TEXT = [
+  // Header/footer tanpa angka yang SELALU dilewati
+  "INDOSARI","ACCURATE","Daftar Piutang","Daftar Utang","Kartu Piutang","Kartu Utang",
+  "Piutang Usaha","Utang Usaha","Cabang","Filter","Mata Uang","Outstanding",
+];
+const PU_SKIP_ANY = [
+  // Header/footer yang bisa mengandung angka (cek untuk baris ber-digit)
+  "Per Tgl","Dari ","s/d","s.d.","Tercetak","Halaman","Hal ","Page","Nomor #",
+  "No. Faktur","No Faktur","Nomor Faktur","Total","Subtotal","Sub Total","Grand",
+];
+// Token kata kunci header kolom: baris tanpa angka yang SELURUH tokennya termasuk di sini = header, bukan nama party
+const PU_KEYWORD_TOKENS = new Set([
+  "no","nomor","faktur","tanggal","jatuh","tempo","jumlah","sisa","dibayar","sudah",
+  "umur","kode","nama","pelanggan","supplier","customer","vendor","total","subtotal",
+  "sub","grand","mata","uang","idr","nilai","status","alamat","telp","npwp","cabang",
+  "halaman","page","tercetak","accurate","outstanding","per","tgl","dari","sd","filter",
+  "daftar","piutang","utang","kartu","usaha",
+]);
+
+function looksLikeFakturToken(tok) {
+  // No. faktur/nota: >=4 karakter, alnum + . - / , dan mengandung digit.
+  // Angka murni dengan pemisah ribuan (21.250.000) BUKAN faktur; angka murni panjang tanpa pemisah (00009260901) = faktur/nota.
+  if (!tok) return false;
+  if (!/^[\w.\-\/]{4,}$/.test(tok)) return false;
+  if (!/\d/.test(tok)) return false;
+  if (/[A-Za-z]/.test(tok)) return true;
+  if (/[.,]/.test(tok)) return false;
+  return tok.replace(/\D/g, "").length >= 6;
+}
+
+function parseAccuratePiutangUtangText(text, kind) {
+  // kind: "piutang" | "hutang" (hanya untuk log)
+  const lines = String(text).split(/\r?\n/);
+  const rows = [];
+  let party = "";
+  let skipped = 0;
+  for (const raw of lines) {
+    const line = raw.replace(/\s+$/g, "").trim();
+    if (!line) continue;
+    // Normalisasi tanggal bergaya "01-Sep-2026" / "01/Sep/2026" -> "01 Sep 2026"
+    const norm = line.replace(/(\d{1,2})\s*[-\/]\s*([A-Za-z]{3,})\s*[-\/]\s*(\d{4})/g, "$1 $2 $3");
+    if (/^idr$/i.test(norm)) continue;
+    // Prefix party eksplisit (dicek PALING AWAL agar tidak tertelan skip-list):
+    // "Pelanggan: PT X" / "Supplier: PT X" / "Nama: PT X"
+    const pm = norm.match(/^(?:pelanggan|supplier|customer|vendor|nama)\s*:\s*(.+)$/i);
+    if (pm) { party = pm[1].trim(); continue; }
+    const low = norm.toLowerCase();
+    if (!/\d/.test(norm)) {
+      // Baris TANPA angka: header kolom (semua token = kata kunci) ATAU nama party
+      const toks = norm.toLowerCase().replace(/[^a-z0-9\s]/g, " ").split(/\s+/).filter(Boolean);
+      if (toks.length > 0 && toks.every(t => PU_KEYWORD_TOKENS.has(t))) continue;
+      if (PU_SKIP_TEXT.some(p => low.startsWith(p.toLowerCase()))) continue;
+      party = norm.replace(/\s+/g, " ").trim();
+      continue;
+    }
+    // Baris DENGAN angka: skip header/footer dulu
+    if (PU_SKIP_ANY.some(p => low.startsWith(p.toLowerCase()))) continue;
+    // Buang tanggal dari baris, lalu tokenisasi
+    const withoutDates = norm.replace(new RegExp(/(\d{1,2}\s+[A-Za-z]{3,}\s+\d{4})/g.source, "g"), " ");
+    const toks = withoutDates.split(/\s+/).filter(Boolean);
+    // Cari token faktur (boleh ada 1 kolom nomor urut di depan)
+    let fi = -1;
+    for (let i = 0; i < Math.min(3, toks.length); i++) {
+      if (looksLikeFakturToken(toks[i])) { fi = i; break; }
+    }
+    if (fi < 0) { skipped++; continue; }
+    const noFaktur = toks[fi];
+    // Ekstrak tanggal asli (maks 2: tanggal faktur + jatuh tempo)
+    const dates = [];
+    let mm;
+    const re = new RegExp(/(\d{1,2}\s+[A-Za-z]{3,}\s+\d{4})/g.source, "g");
+    while ((mm = re.exec(norm)) !== null && dates.length < 2) {
+      const d = parseAccurateDate(mm[1]);
+      if (d) dates.push(d);
+    }
+    // Kumpulkan angka setelah token faktur
+    const nums = [];
+    toks.slice(fi + 1).forEach(t => {
+      let neg = false, body = t.replace(/,$/, "");
+      if (/^\(.+\)$/.test(body)) { neg = true; body = body.slice(1, -1); }
+      if (/^-?[\d.,]+$/.test(body) && /\d/.test(body)) {
+        const v = parseAccurateNumber(body);
+        nums.push(neg ? -v : v);
+      }
+    });
+    if (nums.length === 0) { skipped++; continue; }
+    const tanggal = dates[0] || null;
+    const jatuhTempo = dates[1] || null;
+    let jumlah = 0, dibayar = 0, sisa = 0;
+    if (nums.length >= 3) {
+      const L = nums.slice(-3);
+      jumlah = L[0]; dibayar = L[1]; sisa = L[2];
+    } else if (nums.length === 2) {
+      jumlah = nums[0]; sisa = nums[1]; dibayar = Math.max(0, jumlah - sisa);
+    } else {
+      jumlah = nums[0]; sisa = nums[0]; dibayar = 0;
+    }
+    rows.push({ party, noFaktur, tanggal, jatuhTempo, jumlah, dibayar, sisa });
+  }
+  console.log(`PU parser (${kind || "?"}): ${rows.length} faktur, ${skipped} baris dilewati`);
+  return rows;
+}
+
 function showPasteAccurateDialog(type, opts = {}) {
-  // type: "penjualan" | "pembelian" | "persediaan" | "labarugi" | "neraca"
+  // type: "penjualan" | "pembelian" | "persediaan" | "labarugi" | "neraca" | "piutang" | "hutang"
   const isJual = type === "penjualan";
   const isBeli = type === "pembelian";
   const isPers = type === "persediaan";
   const isLR = type === "labarugi";
   const isNer = type === "neraca";
+  const isPiu = type === "piutang";
+  const isHut = type === "hutang";
+  const isPU = isPiu || isHut;
   const isFR = isLR || isNer;
   let reportName, title, placeholder, tips, formatUmum;
   if (isFR) {
@@ -3091,6 +3267,14 @@ function showPasteAccurateDialog(type, opts = {}) {
     placeholder = "Contoh format yang akan diparse:\n\nKODE      NAMA BARANG                       SATUAN   AWAL QTY   AWAL NILAI   MASUK QTY   MASUK NILAI   KELUAR QTY   KELUAR NILAI   AKHIR QTY   AKHIR NILAI\nA00002    ALKOHOL                           Ltr      157,25     6.374.998    200          8.108.108     166,25      6.739.863     191         7.743.242\nA00010    BENZOAT RRC / SODIUM BENZOAT     Kg       59         1.771.112    1.100        38.162.500    1.076,5     37.260.308    82,5        2.673.303\n\nAtau format sederhana (Daftar Nilai Persediaan):\n\nKODE      NAMA BARANG                       SATUAN   QTY        NILAI\nA00002    ALKOHOL                           Ltr      191         7.743.242\nA00010    BENZOAT RRC / SODIUM BENZOAT     Kg       82,5        2.673.303";
     tips = "Format Persediaan: tabular per item — KODE, NAMA BARANG, SATUAN, lalu pasangan angka QTY+NILAI untuk Saldo Awal / Masuk / Keluar / Akhir. Parser auto-detect header & format Indonesia (koma=desimal, titik=ribuan). Snapshot yang hanya punya QTY+NILAI dianggap saldo akhir (masuk=akhir). Mode Append menggabungkan berdasarkan KODE: item lama di-update, item baru ditambahkan. Nama item yang wrap ke baris kedua otomatis digabung.";
     formatUmum = "tabular dengan header row (KODE, NAMA BARANG, SATUAN, QTY, NILAI, dll). Pisah kolom otomatis deteksi dari spasi 2+. Parser otomatis deteksi format Indonesia (koma=desimal, titik=ribuan).";
+  } else if (isPU) {
+    reportName = isPiu ? "Daftar Piutang Usaha" : "Daftar Utang Usaha";
+    title = `Paste dari Laporan Accurate — ${isPiu ? "Piutang" : "Hutang"} (faktur belum lunas)`;
+    placeholder = isPiu
+      ? "Contoh format yang akan diparse:\n\nINDOSARI\nDaftar Piutang Usaha\nPer Tgl. 30 Sep 2026\n\nTOKO MAKMUR SEJAHTERA\nSI.2026.08.00012  15 Aug 2026  14 Sep 2026  12.500.000  0  12.500.000\nSI.2026.09.00031  05 Sep 2026  05 Okt 2026  8.750.000  0  8.750.000\n\nCV SINAR JAYA\nSI.2026.07.00004  20 Jul 2026  19 Aug 2026  21.250.000  5.000.000  16.250.000\n..."
+      : "Contoh format yang akan diparse:\n\nINDOSARI\nDaftar Utang Usaha\nPer Tgl. 30 Sep 2026\n\nBINTANG TIMUR MITRA ABADI, PT\nPI.2026.08.000146  24 Aug 2026  23 Sep 2026  8.108.108,11  0  8.108.108,11\nPI.2026.09.000162  16 Sep 2026  16 Okt 2026  8.108.108,11  0  8.108.108,11\n\nBIRAN\nPI.2026.08.000145  22 Aug 2026  21 Sep 2026  550.000  0  550.000\n...";
+    tips = `Format ${isPiu ? "Daftar Piutang" : "Daftar Utang"} Usaha: setiap blok diawali nama ${isPiu ? "pelanggan" : "supplier"} (baris tanpa angka), lalu baris faktur: No. Faktur + Tanggal + [Jatuh Tempo] + angka Jumlah / Dibayar / Sisa. Baris Subtotal/Total/header dilewati otomatis. Yang disimpan adalah SISA (nilai belum dibayar); umur & status TERLEWAT/BERJALAN dihitung otomatis dari tanggal jatuh tempo vs hari ini.`;
+    formatUmum = `baris faktur: "<No. Faktur> <Tanggal> [Jatuh Tempo] <Jumlah> [Dibayar] <Sisa>" — format Indonesia (titik=ribuan, koma=desimal, kurung=negatif). Nama ${isPiu ? "pelanggan" : "supplier"} = baris tanpa angka di atas blok fakturnya.`;
   } else {
     reportName = isJual ? "Rincian Penjualan per Barang" : "Rincian Pembelian per Barang";
     title = `Paste dari Laporan Accurate — ${isJual ? "Penjualan" : "Pembelian"}`;
@@ -3105,37 +3289,37 @@ function showPasteAccurateDialog(type, opts = {}) {
   const html = `
     <div class="fixed inset-0 bg-black/40 z-40 flex items-center justify-center p-4" id="pasteOverlay">
       <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-auto">
-        <div class="px-5 py-3 border-b border-slate-200 flex items-center justify-between">
-          <h3 class="font-bold text-slate-800">${title}</h3>
-          <button id="closePaste" class="text-slate-400 hover:text-slate-700">✕</button>
+        <div class="px-5 py-3 border-b border-slate-stone-200 flex items-center justify-between">
+          <h3 class="font-bold text-slate-stone-800">${title}</h3>
+          <button id="closePaste" class="text-slate-stone-400 hover:text-slate-stone-700">✕</button>
         </div>
         <div class="p-5 space-y-4 text-sm">
-          <div class="bg-sky-50 border border-sky-200 rounded-lg p-3 text-xs text-sky-800">
+          <div class="bg-[#FBE9EE] border border-[#F0CDD6] rounded-lg p-3 text-xs text-[#6D0F2B]">
             <p class="font-medium mb-1">Cara pakai:</p>
             <ol class="list-decimal ml-5 space-y-0.5">
               <li>Buka laporan <b>"${reportName}"</b> di Accurate (periode yang diinginkan).</li>
               <li>Export ke PDF, lalu buka PDF-nya. Tekan <b>Ctrl+A</b> (select all) → <b>Ctrl+C</b> (copy).</li>
               <li>Atau langsung <b>copy dari preview Accurate</b> (select all text, copy).</li>
               <li>Paste ke textarea di bawah, lalu klik <b>Parse & Preview</b>.</li>
-              <li>Pastikan jumlah ${isPers ? 'item' : (isFR ? 'akun' : 'transaksi')} & total nilai sesuai harapan, lalu klik <b>Simpan</b>.</li>
+              <li>Pastikan jumlah ${isPers ? 'item' : (isFR ? 'akun' : (isPU ? 'faktur' : 'transaksi'))} & total nilai sesuai harapan, lalu klik <b>Simpan</b>.</li>
             </ol>
             <p class="mt-2 text-amber-700"><b>Tips:</b> ${tips}</p>
             <p class="mt-1 text-amber-700"><b>Format umum:</b> ${formatUmum}</p>
           </div>
           <div>
-            <label class="block text-xs font-medium text-slate-600 mb-1">Paste teks laporan Accurate di sini:</label>
-            <textarea id="pasteArea" rows="12" class="w-full border border-slate-300 rounded px-3 py-2 text-xs font-mono" placeholder="${escapeHtml(placeholder)}"></textarea>
+            <label class="block text-xs font-medium text-slate-stone-600 mb-1">Paste teks laporan Accurate di sini:</label>
+            <textarea id="pasteArea" rows="12" class="w-full border border-slate-stone-300 rounded px-3 py-2 text-xs font-mono" placeholder="${escapeHtml(placeholder)}"></textarea>
           </div>
           <div class="flex items-center gap-2">
-            <button id="btnParse" class="inline-flex items-center gap-1.5 rounded-md border border-sky-300 bg-sky-50 px-3 py-1.5 text-xs font-medium text-sky-700 hover:bg-sky-100">⚙ Parse &amp; Preview</button>
-            <button id="btnSavePaste" class="inline-flex items-center gap-1.5 rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700 ml-auto">💾 Simpan</button>
-            <select id="pasteMode" class="border border-slate-300 rounded px-2 py-1.5 text-xs">
-              <option value="append" ${isFR ? "" : "selected"}>${isPers ? "Append (gabung per KODE)" : (isFR ? "Append (gabung per akun)" : "Append (tambah ke data lama)")}</option>
-              <option value="replace" ${isFR ? "selected" : ""}>Replace (ganti semua data)</option>
+            <button id="btnParse" class="inline-flex items-center gap-1.5 rounded-md border border-[#E0AEBB] bg-[#FBE9EE] px-3 py-1.5 text-xs font-medium text-[#8A1A38] hover:bg-[#F5D9E0]">⚙ Parse &amp; Preview</button>
+            <button id="btnSavePaste" class="inline-flex items-center gap-1.5 rounded-md bg-[#B8912C] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#8F6E12] ml-auto">💾 Simpan</button>
+            <select id="pasteMode" class="border border-slate-stone-300 rounded px-2 py-1.5 text-xs">
+              <option value="append" ${(isFR || isPU) ? "" : "selected"}>${isPers ? "Append (gabung per KODE)" : (isFR ? "Append (gabung per akun)" : (isPU ? "Append (gabung per No. Faktur)" : "Append (tambah ke data lama)"))}</option>
+              <option value="replace" ${(isFR || isPU) ? "selected" : ""}>Replace (ganti semua data)</option>
             </select>
           </div>
-          <div id="pasteStatus" class="text-xs text-slate-500"></div>
-          <div id="pastePreview" class="hidden bg-slate-50 border border-slate-200 rounded-lg p-3 overflow-auto max-h-96"></div>
+          <div id="pasteStatus" class="text-xs text-slate-stone-500"></div>
+          <div id="pastePreview" class="hidden bg-slate-stone-50 border border-slate-stone-200 rounded-lg p-3 overflow-auto max-h-96"></div>
         </div>
       </div>
     </div>`;
@@ -3155,6 +3339,8 @@ function showPasteAccurateDialog(type, opts = {}) {
         parsedTxs = parseAccurateNeracaText(text);
       } else if (isPers) {
         parsedTxs = parseAccuratePersediaanText(text);
+      } else if (isPU) {
+        parsedTxs = parseAccuratePiutangUtangText(text, isPiu ? "piutang" : "hutang");
       } else if (isJual) {
         parsedTxs = parseAccurateRincianText(text);
       } else {
@@ -3177,12 +3363,12 @@ function showPasteAccurateDialog(type, opts = {}) {
           ["Jumlah Ekuitas", TV("jek")], ["Selisih (harus 0)", TV("jas") - TV("jle")],
         ];
         document.getElementById("pastePreview").innerHTML =
-          `<p class="text-xs text-slate-600 mb-2"><b>${itemsFR.length} akun</b> terisi (${customFR.length} akun baru otomatis ditambahkan) · Total auto-hitung:</p>
+          `<p class="text-xs text-slate-stone-600 mb-2"><b>${itemsFR.length} akun</b> terisi (${customFR.length} akun baru otomatis ditambahkan) · Total auto-hitung:</p>
           <table class="tx-table"><tbody>
             ${kpiRows.map(([k, v]) => `<tr><td>${k}</td><td class="num"><b>Rp ${fmtFRNum(v)}</b></td></tr>`).join("")}
           </tbody></table>`;
         document.getElementById("pastePreview").classList.remove("hidden");
-        document.getElementById("pasteStatus").innerHTML = `<span class="text-emerald-600">✓ Template ${isLR ? "Laba Rugi" : "Neraca"} siap disimpan (${itemsFR.length} akun, ${customFR.length} baru)</span>`;
+        document.getElementById("pasteStatus").innerHTML = `<span class="text-[#8A6A12]">✓ Template ${isLR ? "Laba Rugi" : "Neraca"} siap disimpan (${itemsFR.length} akun, ${customFR.length} baru)</span>`;
       } else if (isPers) {
         // Preview for persediaan
         const totalAwalNilai = parsedTxs.reduce((s, r) => s + (r.awalNilai || 0), 0);
@@ -3191,7 +3377,7 @@ function showPasteAccurateDialog(type, opts = {}) {
         const totalAkhirNilai = totalAwalNilai + totalMasukNilai - totalKeluarNilai;
         const sample = parsedTxs.slice(0, 5);
         const tableHtml = `
-          <p class="text-xs text-slate-600 mb-2"><b>${parsedTxs.length} item</b> · Saldo Awal: <b>Rp ${fmtRupiah(totalAwalNilai)}</b> · Masuk: <b>Rp ${fmtRupiah(totalMasukNilai)}</b> · Keluar: <b>Rp ${fmtRupiah(totalKeluarNilai)}</b> · Saldo Akhir (auto): <b>Rp ${fmtRupiah(totalAkhirNilai)}</b> · Menampilkan 5 item pertama:</p>
+          <p class="text-xs text-slate-stone-600 mb-2"><b>${parsedTxs.length} item</b> · Saldo Awal: <b>Rp ${fmtRupiah(totalAwalNilai)}</b> · Masuk: <b>Rp ${fmtRupiah(totalMasukNilai)}</b> · Keluar: <b>Rp ${fmtRupiah(totalKeluarNilai)}</b> · Saldo Akhir (auto): <b>Rp ${fmtRupiah(totalAkhirNilai)}</b> · Menampilkan 5 item pertama:</p>
           <table class="tx-table">
             <thead><tr><th>KODE</th><th>NAMA</th><th>SAT</th><th>AWAL QTY</th><th>AWAL NILAI</th><th>MASUK QTY</th><th>MASUK NILAI</th><th>KELUAR QTY</th><th>KELUAR NILAI</th></tr></thead>
             <tbody>
@@ -3200,25 +3386,43 @@ function showPasteAccurateDialog(type, opts = {}) {
           </table>`;
         document.getElementById("pastePreview").innerHTML = tableHtml;
         document.getElementById("pastePreview").classList.remove("hidden");
-        document.getElementById("pasteStatus").innerHTML = `<span class="text-emerald-600">✓ ${parsedTxs.length} item persediaan siap disimpan. Saldo Akhir (auto-hitung) = Rp ${fmtRupiah(totalAkhirNilai)}</span>`;
+        document.getElementById("pasteStatus").innerHTML = `<span class="text-[#8A6A12]">✓ ${parsedTxs.length} item persediaan siap disimpan. Saldo Akhir (auto-hitung) = Rp ${fmtRupiah(totalAkhirNilai)}</span>`;
+      } else if (isPU) {
+        // Preview untuk faktur piutang/hutang
+        const totalSisa = parsedTxs.reduce((s, r) => s + (r.sisa || 0), 0);
+        const totalDibayar = parsedTxs.reduce((s, r) => s + (r.dibayar || 0), 0);
+        const totalJumlah = parsedTxs.reduce((s, r) => s + (r.jumlah || 0), 0);
+        const parties = new Set(parsedTxs.map(r => (r.party || "").toUpperCase()).filter(Boolean));
+        const noJT = parsedTxs.filter(r => !r.jatuhTempo).length;
+        const sample = parsedTxs.slice(0, 5);
+        document.getElementById("pastePreview").innerHTML = `
+          <p class="text-xs text-slate-stone-600 mb-2"><b>${parsedTxs.length} faktur</b> · <b>${parties.size} ${isPiu ? "pelanggan" : "supplier"}</b> · Jumlah: <b>Rp ${fmtRupiah(totalJumlah)}</b> · Dibayar: <b>Rp ${fmtRupiah(totalDibayar)}</b> · SISA (disimpan): <b>Rp ${fmtRupiah(totalSisa)}</b>${noJT ? ` · <span class="text-amber-700">${noJT} faktur tanpa jatuh tempo</span>` : ""} · Menampilkan 5 faktur pertama:</p>
+          <table class="tx-table">
+            <thead><tr><th>${isPiu ? "PELANGGAN" : "SUPPLIER"}</th><th>NO. FAKTUR</th><th>TANGGAL</th><th>JATUH TEMPO</th><th>JUMLAH</th><th>DIBAYAR</th><th>SISA</th></tr></thead>
+            <tbody>
+              ${sample.map(r => `<tr><td>${escapeHtml(r.party || "-")}</td><td>${escapeHtml(r.noFaktur)}</td><td class="center">${r.tanggal || "-"}</td><td class="center">${r.jatuhTempo || "-"}</td><td class="num">Rp ${fmtRupiah(r.jumlah)}</td><td class="num">Rp ${fmtRupiah(r.dibayar)}</td><td class="num">Rp ${fmtRupiah(r.sisa)}</td></tr>`).join("")}
+            </tbody>
+          </table>`;
+        document.getElementById("pastePreview").classList.remove("hidden");
+        document.getElementById("pasteStatus").innerHTML = `<span class="text-[#8A6A12]">✓ ${parsedTxs.length} faktur (${parties.size} ${isPiu ? "pelanggan" : "supplier"}, Total sisa Rp ${fmtRupiah(totalSisa)}) siap disimpan</span>`;
       } else {
         // Preview for penjualan/pembelian
         const total = parsedTxs.reduce((s, r) => s + r.kuantitas * r.hargaSatuan, 0);
         const items = new Set(parsedTxs.map(r => r.namaBarang));
         const sample = parsedTxs.slice(0, 5);
         const tableHtml = isJual ? `
-          <p class="text-xs text-slate-600 mb-2"><b>${parsedTxs.length} transaksi</b> · <b>${items.size} item unik</b> · Total: <b>Rp ${fmtRupiah(total)}</b> · Menampilkan 5 transaksi pertama:</p>
+          <p class="text-xs text-slate-stone-600 mb-2"><b>${parsedTxs.length} transaksi</b> · <b>${items.size} item unik</b> · Total: <b>Rp ${fmtRupiah(total)}</b> · Menampilkan 5 transaksi pertama:</p>
           <table class="tx-table">
             <thead><tr><th>TANGGAL</th><th>NO NOTA</th><th>NAMA BARANG</th><th>QTY</th><th>SAT</th><th>HARGA</th><th>TOTAL</th><th>KATEGORI</th></tr></thead>
             <tbody>
               ${sample.map(r => `<tr><td>${r.tanggal}</td><td>${escapeHtml(r.noNota)}</td><td>${escapeHtml(r.namaBarang)}</td><td class="num">${fmtNum(r.kuantitas,2)}</td><td>${escapeHtml(r.satuan)}</td><td class="num">Rp ${fmtRupiah(r.hargaSatuan)}</td><td class="num">Rp ${fmtRupiah(r.kuantitas*r.hargaSatuan)}</td><td>${r.kategori}</td></tr>`).join("")}
             </tbody>
           </table>` : `
-          <p class="text-xs text-slate-600 mb-2"><b>${parsedTxs.length} transaksi</b> · <b>${items.size} item unik</b> · Total: <b>Rp ${fmtRupiah(total)}</b> · Menampilkan 5 transaksi pertama:</p>
+          <p class="text-xs text-slate-stone-600 mb-2"><b>${parsedTxs.length} transaksi</b> · <b>${items.size} item unik</b> · Total: <b>Rp ${fmtRupiah(total)}</b> · Menampilkan 5 transaksi pertama:</p>
           <table class="tx-table">
             <thead><tr><th>TANGGAL</th><th>NO FAKTUR</th><th>NAMA BARANG</th><th>QTY</th><th>SAT</th><th>HARGA</th><th>TOTAL</th><th>STATUS</th><th>JATUH TEMPO</th><th>CATATAN</th></tr></thead>
             <tbody>
-              ${sample.map(r => `<tr><td>${r.tanggal}</td><td>${escapeHtml(r.noFaktur)}</td><td>${escapeHtml(r.namaBarang)}</td><td class="num">${fmtNum(r.kuantitas,2)}</td><td>${escapeHtml(r.satuan)}</td><td class="num">Rp ${fmtRupiah(r.hargaSatuan)}</td><td class="num">Rp ${fmtRupiah(r.kuantitas*r.hargaSatuan)}</td><td>${r.isLunas?'<span class="text-emerald-600 font-medium">LUNAS</span>':'<span class="text-rose-600 font-medium">KREDIT</span>'}</td><td>${r.jatuhTempo||'-'}</td><td>${escapeHtml(r.catatan||'')}</td></tr>`).join("")}
+              ${sample.map(r => `<tr><td>${r.tanggal}</td><td>${escapeHtml(r.noFaktur)}</td><td>${escapeHtml(r.namaBarang)}</td><td class="num">${fmtNum(r.kuantitas,2)}</td><td>${escapeHtml(r.satuan)}</td><td class="num">Rp ${fmtRupiah(r.hargaSatuan)}</td><td class="num">Rp ${fmtRupiah(r.kuantitas*r.hargaSatuan)}</td><td>${r.isLunas?'<span class="text-[#8A6A12] font-medium">LUNAS</span>':'<span class="text-rose-600 font-medium">KREDIT</span>'}</td><td>${r.jatuhTempo||'-'}</td><td>${escapeHtml(r.catatan||'')}</td></tr>`).join("")}
             </tbody>
           </table>`;
         document.getElementById("pastePreview").innerHTML = tableHtml;
@@ -3230,7 +3434,7 @@ function showPasteAccurateDialog(type, opts = {}) {
           const kredit = parsedTxs.length - lunas;
           statusInfo = ` (${lunas} LUNAS, ${kredit} KREDIT)`;
         }
-        document.getElementById("pasteStatus").innerHTML = `<span class="text-emerald-600">✓ ${parsedTxs.length} transaksi (${items.size} item, Total Rp ${fmtRupiah(total)})${statusInfo} siap disimpan</span>`;
+        document.getElementById("pasteStatus").innerHTML = `<span class="text-[#8A6A12]">✓ ${parsedTxs.length} transaksi (${items.size} item, Total Rp ${fmtRupiah(total)})${statusInfo} siap disimpan</span>`;
       }
     } catch (err) {
       document.getElementById("pasteStatus").innerHTML = `<span class="text-rose-600">❌ Error: ${escapeHtml(err.message)}</span>`;
@@ -3270,6 +3474,37 @@ function showPasteAccurateDialog(type, opts = {}) {
       close();
       render();
       showToast(`✓ ${parsedTxs.length} item persediaan ${BULAN_NAMES[month-1]} 2026 di-${mode === "replace" ? "replace" : "append"}`);
+    } else if (isPU) {
+      // Save faktur piutang/hutang
+      const key = isPiu ? "piutangFaktur" : "fakturBelumLunas";
+      const field = isPiu ? "pelanggan" : "supplier";
+      const mapped = parsedTxs.map(r => ({
+        [field]: r.party || "-",
+        noFaktur: r.noFaktur,
+        tanggal: r.tanggal || "",
+        jatuhTempo: r.jatuhTempo || "",
+        jumlah: r.jumlah || 0,
+        dibayar: r.dibayar || 0,
+        nilai: r.sisa || 0,
+      }));
+      const existing = mode === "append" ? (isPiu ? getPiuFaktur().slice() : getFakturBelumLunas().slice()) : [];
+      let finalRows;
+      if (mode === "replace") {
+        finalRows = mapped;
+      } else {
+        finalRows = existing;
+        mapped.forEach(p => {
+          const idx = finalRows.findIndex(e => e.noFaktur === p.noFaktur);
+          if (idx >= 0) finalRows[idx] = p; else finalRows.push(p);
+        });
+      }
+      if (!userEdits.extras) userEdits.extras = {};
+      userEdits.extras[key] = finalRows;
+      saveEdits(userEdits);
+      const totSisa = finalRows.reduce((s, r) => s + (Number(r.nilai) || 0), 0);
+      close();
+      render();
+      showToast(`✓ ${finalRows.length} faktur ${isPiu ? "piutang" : "hutang"} tersimpan (mode ${mode === "replace" ? "replace" : "append"}, total Rp ${fmtRupiah(totSisa)})`);
     } else {
       // Save penjualan/pembelian
       const existing = getTxData(type);
@@ -3292,7 +3527,7 @@ function renderExcelSheet(sheetName) {
   const c = document.getElementById("sheetContainer");
   const rows = RENDER_SHEETS[sheetName];
   const meta = SHEETS_META[sheetName];
-  if (!rows || rows.length === 0) { c.innerHTML = `<div class="p-8 text-center text-slate-400">Sheet kosong</div>`; return; }
+  if (!rows || rows.length === 0) { c.innerHTML = `<div class="p-8 text-center text-slate-stone-400">Sheet kosong</div>`; return; }
   const table = document.createElement("table");
   table.className = "sheet-table";
   const tbody = document.createElement("tbody");

@@ -51,3 +51,31 @@ Stage Summary:
 - File deliverable: /home/z/my-project/download/INDOSARI_Akuntansi_2026_perbulan.html (~1,24 MB, syntax OK)
 - Menu Neraca & Laba Rugi kini format persis laporan Accurate Standar, per bulan, editable penuh, + tombol Paste dari Accurate
 - Script artefak: scripts/fr_module.js, scripts/update_fr.py, scripts/patch_fr_skip.py, scripts/test_fr_parsers.js, scripts/smoke_fr_browser.py, scripts/data/{lr_sep.txt,neraca_sep.txt,*.png}
+
+---
+Task ID: 3
+Agent: main (Z.ai)
+Task: (a) Ubah tema warna aplikasi menjadi merah maroon + warna penyeimbang; (b) Tambah fitur "Paste dari Accurate" di menu Hutang dan Piutang
+
+Work Log:
+- TEMA MAROON "Maroon Elegan" (scripts/apply_maroon_theme.py, baris COMBINED JSON di-skip agar data Excel embedded tak tersentuh):
+  - Primary maroon #6D0F2B — sengaja dipilih SENADA dengan fill header Excel yang sudah embedded di data (#6D0F2B) sehingga menu custom & sheet Excel kini satu tema.
+  - Maroon gelap #470A1D (sidebar, toast, gradient KPI), hover #8A1A38, light #FBE9EE/#F5D9E0, border #E0AEBB/#F0CDD6.
+  - Warna penyeimbang: GOLD (#D4A72C logo chip & icon aktif & bar laba, KPI success gradient #C9A227→#8F6E12, tombol Simpan #B8912C, teks positif #8A6A12).
+  - Latar cream hangat #F6F1E9; netral slate→stone (199 konversi kelas) untuk harmoni hangat; border #EAE2DB/#D9CEC6.
+  - Sel input sheet-table/lr-table yang tadinya biru (#dbeafe) diseragamkan jadi kuning (#fef9c3) sesuai konvensi "Sel kuning = input manual"; focus ring #6D0F2B.
+  - Total: 6 specific + 56 hex + 87 kelas Tailwind + 199 slate→stone + 4 teks UI ("Biru = omzet" → "Maroon = omzet", catatan sidebar). Verifikasi otomatis: nol warna lama tersisa di luar JSON.
+- PASTE ACCURATE PIUTANG & HUTANG (section baru 13f + perluasan dialog + render):
+  - Parser parseAccuratePiutangUtangText(text, kind): format "Daftar Piutang/Utang Usaha" — blok per pelanggan/supplier (baris tanpa angka), baris faktur = NoFaktur + Tanggal + [JT] + angka. Fleksibel: 3 angka (Jumlah/Dibayar/Sisa), 2 (Jumlah/Sisa→dibayar auto), 4+ (kolom Umur di tengah aman, ambil 3 terakhir), faktur angka murni (00009260901) vs angka ribuan (21.250.000 dibedakan), sen desimal, kurung negatif, tanggal dash-format, prefix "Pelanggan:/Supplier:/Nama:", nomor urut di depan. Header kolom dideteksi via token kunci (PU_KEYWORD_TOKENS) agar nama party yang kebetulan diawali kata "SUPPLIER" dsb. tidak ikut terskip.
+  - showPasteAccurateDialog: tipe "piutang"/"hutang" (config, parse dispatch, preview tabel faktur + total sisa, save). Save: piutang → userEdits.extras.piutangFaktur (tabel baru "Faktur Piutang Belum Lunas (per pelanggan)" di menu Piutang + tombol hapus data paste); hutang → userEdits.extras.fakturBelumLunas (menimpa 22 faktur bawaan; judul tabel jadi "hasil paste Accurate"). Mode default Replace; Append menggabung per No. Faktur.
+  - hitungUmurStatus(): umur & status TERLEWAT/BERJALAN kini dihitung DINAMIS dari jatuh tempo vs hari ini (tabel Hutang & Piutang) — sebelumnya statis dari snapshot 30 Sep.
+  - Tombol "📋 Paste dari Accurate" di kedua menu; Reset Edit kini juga membersihkan override faktur (konfirmasi diperbarui).
+  - FIX BUG (terdeteksi smoke test): tombol Reset Piutang tidak muncul bila hanya ada override faktur (hasEdit kini cek piutangBulan || piutangFaktur).
+- Test: test_piutang_hutang_parser.js BARU 39 pass/0 fail (8 skenario: format standar, 2 angka, kolom umur, faktur angka murni+sen+kurung negatif, dash-date+prefix+nomor urut, Daftar Utang, looksLikeFakturToken, hitungUmurStatus dinamis); smoke_pu_browser.py BARU 40+ checks SEMUA PASS (tema: computed style body/sidebar/logo/aktif/KPI + nol kelas sky/emerald/violet; fitur: paste piutang end-to-end → tabel+localStorage+statusBar, paste hutang → replace+reset, reset piutang, regresi render semua menu); smoke_fr_browser.py 24/24 tetap PASS; regresi test_js_parser (868 tx, Rp 174.512.855,76), pembelian, persediaan 51, FR 63, piutang-hutang 34 — semua lulus; verify_syntax OK. /tmp/rincian.txt diregenerasi dari PDF upload (sesi lama hilang).
+- Screenshot verifikasi visual: scripts/data/shot_{dashboard,piutang,hutang,labarugi}.png.
+
+Stage Summary:
+- File deliverable: /home/z/my-project/download/INDOSARI_Akuntansi_2026_perbulan.html (~1,26 MB, syntax OK)
+- Aplikasi kini bertema maroon #6D0F2B + gold penyeimbang + latar cream, senada penuh dengan header Excel embedded.
+- Menu Piutang: + tabel Faktur Piutang Belum Lunas (hasil paste) & tombol Paste dari Accurate; Menu Hutang: + tombol Paste dari Accurate (menimpa faktur bawaan); keduanya reset-able & umur/status dinamis.
+- Script artefak: scripts/apply_maroon_theme.py, scripts/test_piutang_hutang_parser.js, scripts/smoke_pu_browser.py.
