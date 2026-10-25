@@ -10,6 +10,9 @@ import { DashboardView } from "@/components/views/dashboard-view";
 import { MasterDataView } from "@/components/views/master-data-view";
 import { PlaceholderView } from "@/components/views/placeholder-view";
 import { TransactionView } from "@/components/views/transaction-view";
+import { PersediaanView } from "@/components/views/persediaan-view";
+import { PiutangHutangView } from "@/components/views/piutang-hutang-view";
+import { FRView } from "@/components/views/fr-view";
 import { toast } from "sonner";
 
 type ModuleKey =
@@ -111,9 +114,11 @@ export default function Home() {
           {activeModule === "master-data" && <MasterDataView />}
           {activeModule === "penjualan" && <TransactionView moduleType="penjualan" />}
           {activeModule === "pembelian" && <TransactionView moduleType="pembelian" />}
-          {["laba-rugi", "persediaan", "piutang", "hutang", "neraca"].includes(activeModule) && (
-            <PlaceholderView moduleKey={activeModule} />
-          )}
+          {activeModule === "persediaan" && <PersediaanView />}
+          {activeModule === "piutang" && <PiutangHutangView moduleType="piutang" />}
+          {activeModule === "hutang" && <PiutangHutangView moduleType="hutang" />}
+          {activeModule === "laba-rugi" && <FRView moduleType="laba-rugi" />}
+          {activeModule === "neraca" && <FRView moduleType="neraca" />}
         </div>
       </main>
     </div>

@@ -251,3 +251,44 @@ Stage Summary:
 - 5 modul placeholder tersisa: Laba Rugi, Persediaan, Piutang, Hutang, Neraca — akan di-port iterasi berikutnya.
 - Parser Accurate full port: 868 transaksi penjualan + pembelian dgn sen desimal, NB/NT, Giro/Tempo/Lunas keyword, multi-line product name — semua bekerja sama seperti di HTML akuntansi.
 - Script artefak: src/lib/accurate-parser.ts, src/app/api/penjualan/{route.ts, paste/route.ts}, src/app/api/pembelian/{route.ts, paste/route.ts}, src/components/views/transaction-view.tsx, scripts/test_parser_port.ts, scripts/data/{webapp_penjualan_list.png, webapp_pembelian_list.png}.
+
+---
+Task ID: 10
+Agent: main (Z.ai)
+Task: Porting 5 modul terakhir ke web app: Persediaan + Piutang + Hutang + Laba Rugi + Neraca (semua dengan parser Accurate lengkap + paste dialog)
+
+Work Log:
+- Porting 3 file parser TS baru:
+  • src/lib/accurate-persediaan.ts — parseAccuratePersediaanText (tabular format auto-detect header via PERS_FIELD_ALIASES 13 field, grab trailing numeric run, snapshot/mutasi/6-col layout fleksibel, multi-line item name wrap digabung via pendingName accumulator).
+  • src/lib/accurate-piutang-hutang.ts — parseAccuratePiutangUtangText + helpers (looksLikeFakturToken, isAmountLikeToken, looksLikeJoinedFaktur, PU_KEYWORD_TOKENS, PU_SKIP_TEXT, PU_SKIP_ANY). Format "Daftar Piutang/Utang Usaha" — blok per pelanggan/supplier + baris faktur + 3 angka terakhir = Jumlah/Dibayar/Sisa. Fallback join token utk "SI 2026 08 00012" format spasi. Plus hitungUmurStatus dinamis (jatuh tempo vs hari ini → TERLEWAT/BERJALAN).
+  • src/lib/accurate-fr.ts — parseAccurateFRText + LR_ROWS_SEP (34 baris template) + NERACA_ROWS_SEP (53 baris) + helpers (frDeepCopyRows, frSumScope, frTotalValue dengan calc khusus lk/po/jno/lb/jas/jle, fmtFRNum, frNormName, isFRReportNoise, LR_ALIAS, NERACA_ALIAS, FR_SKIP_NAMES, LR_SECTION_SCOPE). Parser: baris "Nama Akun + Angka" dipetakan ke template via nama + alias + strip suffix IDR, baris "Jumlah ..." dilewati (auto-hitung), akun tak dikenal disisipkan di bagian terdekat.
+- API routes baru (10): /api/persediaan (GET/POST/DELETE) + /api/persediaan/paste (POST), /api/piutang (GET/POST/DELETE/PUT — saldo bulanan + faktur + paste), /api/hutang (same pattern), /api/laba-rugi (GET/POST/DELETE/PUT — per-bulan save + paste FR), /api/neraca (same).
+- UI views baru (3 components, 5 modul):
+  • src/components/views/persediaan-view.tsx — filter bulan+tahun, 4 KPI (Saldo Awal/Penerimaan/Pengeluaran/Saldo Akhir auto), table 12 kolom, dialog paste dengan mode replace/append, multi-line item name merged.
+  • src/components/views/piutang-hutang-view.tsx — generic component untuk Piutang & Hutang. Filter bulan (0=Semua Bulan YTD + 12 bulan) + tahun. 4 KPI dinamis (Saldo Akhir, Penjualan Kredit/Pembelian Kredit, Pembayaran, Faktur Belum Lunas). 2 tabel: saldo bulanan (highlight bulan terpilih) + faktur (filter jatuh tempo per bulan bila bulan != 0, badge TERLEWAT/BERJALAN). Dialog paste.
+  • src/components/views/fr-view.tsx — generic untuk Laba Rugi & Neraca. Filter bulan+tahun. 4 KPI: LR (Jumlah Pendapatan, Laba Kotor, Pendapatan Operasional, LABA BERSIH); Neraca (JUMLAH ASET, JUMLAH KEWAJIBAN, Jumlah Ekuitas, JUMLAH LIAB+EKUITAS dgn auto-cek "✓ Seimbang"/"✗ Tidak Seimbang"). FR table dengan indentasi (lvl×16px padding), header row bold uppercase, total row bg kuning/grand bg gold-bevel, item row hover edit. Dialog edit akun + dialog paste dgn mode replace/append + tombol Reset ke Default.
+- Update page.tsx: wire 5 view baru (Persediaan, Piutang, Hutang, Laba Rugi, Neraca). PlaceholderView sekarang hanya fallback (tidak dipakai lagi). Total 9 modul aktif (Dashboard, Laba Rugi, Penjualan, Pembelian, Persediaan, Piutang, Hutang, Neraca, Master Data) — semua sudah jadi.
+- Smoke test agent-browser SEMUA LULUS:
+  • Persediaan paste (sample 2 item ALKOHOL+BENZOAT, format Laporan Persediaan Bulanan 6 kolom): 200, parsed=2, inserted=2. View Persediaan Sep: KPI Saldo Awal Rp 8.146.110, Penerimaan Rp 46.270.608, Pengeluaran Rp 44.000.171, Saldo Akhir Rp 10.416.547 (auto = Awal+Masuk-Keluar ✓). Table 2 row dgn akhirQty/akhirNilai computed per item.
+  • Piutang paste (sample 3 faktur: 2 TOKO MAKMUR + 1 CV SINAR JAYA dgn pembayaran parsial 5jt): 200, parsed=3, inserted=3. View Piutang YTD: Faktur Belum Lunas Rp 37.500.000 (3 faktur · 3 terlewat). Table faktur: 3 row, badge TERLEWAT semua (karena jatuh tempo sudah lewat), umur 97/71/50 hari.
+  • Hutang paste (sample 3 faktur BINTANG TIMUR 2x + BIRAN 1x, semua dgn sen desimal 8.108.108,11): 200, parsed=3, inserted=3. Dashboard auto-update: Hutang Faktur Belum Lunas Rp 16.766.216 (sum 8,108,108.11 + 8,108,108.11 + 550,000 = 16,766,216.22 ✓).
+  • Laba Rugi paste (sample 16 akun dari template September Accurate): 200, parsed=16, savedCount=16. View LR Sep: 4 KPI = Jumlah Pendapatan Rp 174.512.860, Laba Kotor Rp 34.355.002,93, Pendapatan Operasional Rp 11.122.552,45, LABA BERSIH Rp 13.967.092,45 — semua auto-hitung dari akun. FR table render dgn indentasi, header bold, total row gold-bevel, item row hover muncul tombol ✏️ Edit.
+  • Neraca paste (sample 18 akun Kas/Piutang/Persediaan/PPN/Aset Tetap/Utang/Equitas/Laba Ditahan): 200, parsed=18, savedCount=18. View Neraca Sep: 4 KPI = JUMLAH ASET Rp 921.597.914,6, JUMLAH KEWAJIBAN Rp 182.300.119,72, Jumlah Ekuitas Rp 739.297.794,88, JUMLAH LIAB+EKUITAS "✓ Seimbang" (auto-cek 921,597,914.6 = 182,300,119.72 + 739,297,794.88 ✓).
+  • Dashboard auto-update: Piutang Faktur Belum Lunas Rp 37.500.000 (3 faktur), Hutang Faktur Belum Lunas Rp 16.766.216. Total 4 KPI dashboard live.
+- Lint: src/* bersih. Syntax OK. No runtime errors di dev.log.
+
+Stage Summary:
+- Web app INDOSARI Akuntansi 2026 kini LENGKAP — 9 modul semua aktif:
+  1. Dashboard (KPI + bar chart 12 bulan)
+  2. Laba Rugi (FR format Accurate Standar per bulan, editable, paste Accurate)
+  3. Penjualan (transaksi per bulan, paste Rincian Penjualan per Barang, NB/NT badge)
+  4. Pembelian (transaksi per bulan, paste Rincian Pembelian per Barang, Giro/Tempo/Lunas detection)
+  5. Persediaan (kartu stok per bulan, paste Daftar Nilai Persediaan / Laporan Persediaan Bulanan, snapshot/mutasi format)
+  6. Piutang (saldo bulanan editable + faktur belum lunas per bulan filter, paste Daftar Piutang Usaha)
+  7. Hutang (mirror Piutang untuk supplier, paste Daftar Utang Usaha)
+  8. Neraca (FR format Accurate Standar per bulan, auto-cek seimbang Aset = Liabilitas + Ekuitas)
+  9. Master Data (CRUD barang/supplier/pelanggan + import JSON dari HTML akuntansi)
+- Semua parser Accurate full port: 868 transaksi Penjualan, Pembelian dgn sen + NB/NT + Giro/Tempo/Lunas, Persediaan tabular auto-detect, Piutang/Hutang dgn fallback join token, FR template 34+53 baris dgn auto-hitung total + insertion akun custom. Multi-cabang + multi-user aktif (3 user × 2 cabang).
+- File struktur baru: src/lib/accurate-{persediaan,piutang-hutang,fr}.ts + src/app/api/{persediaan,persediaan/paste,piutang,hutang,laba-rugi,neraca}/route.ts + src/components/views/{persediaan-view,piutang-hutang-view,fr-view}.tsx.
+- Akun login: admin1/admin123 (Admin JKT) · finance1/finance123 (FINANCE JKT) · gudang1/gudang123 (GUDANG SBY).
+- Script artefak: scripts/data/{webapp_persediaan.png, webapp_piutang.png, webapp_neraca.png}.
