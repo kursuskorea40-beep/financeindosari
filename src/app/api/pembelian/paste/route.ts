@@ -44,38 +44,43 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // Bulk insert via createMany — performant untuk serverless
   let inserted = 0;
   let skippedDup = 0;
+
+  const groups: Record<string, typeof parsed> = {};
   for (const tx of parsed) {
     const tahun = getYearFromISO(tx.tanggal);
     const bulan = getMonthFromISO(tx.tanggal);
-    try {
-      if (mode === "append") {
-        const exist = await db.transaksiPembelian.findFirst({
-          where: { cabangId, noNota: tx.noFaktur, tanggal: tx.tanggal, namaBarang: tx.namaBarang },
-        });
-        if (exist) { skippedDup++; continue; }
-      }
-      await db.transaksiPembelian.create({
-        data: {
-          cabangId,
-          bulan, tahun,
-          tanggal: tx.tanggal,
-          noNota: tx.noFaktur,
-          namaBarang: tx.namaBarang,
-          satuan: tx.satuan,
-          kuantitas: tx.kuantitas,
-          hargaSatuan: tx.hargaSatuan,
-          isLunas: tx.isLunas,
-          jatuhTempo: tx.jatuhTempo || null,
-          keterangan: tx.catatan || null,
-          userId,
-        },
-      });
-      inserted++;
-    } catch (e) {
-      skippedDup++;
-    }
+    const key = `${tahun}-${bulan}`;
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(tx);
+  }
+
+  for (const key of Object.keys(groups)) {
+    const batch = groups[key];
+    const [tahun, bulan] = key.split("-").map(n => parseInt(n, 10));
+    const isPostgres = (process.env.DATABASE_URL || "").startsWith("postgres");
+    const opts: any = {
+      data: batch.map(tx => ({
+        cabangId,
+        bulan, tahun,
+        tanggal: tx.tanggal,
+        noNota: tx.noFaktur,
+        namaBarang: tx.namaBarang,
+        satuan: tx.satuan,
+        kuantitas: tx.kuantitas,
+        hargaSatuan: tx.hargaSatuan,
+        isLunas: tx.isLunas,
+        jatuhTempo: tx.jatuhTempo || null,
+        keterangan: tx.catatan || null,
+        userId,
+      })),
+    };
+    if (mode === "append" && isPostgres) opts.skipDuplicates = true;
+    const result = await db.transaksiPembelian.createMany(opts);
+    inserted += result.count;
+    skippedDup += batch.length - result.count;
   }
 
   return NextResponse.json({

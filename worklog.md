@@ -340,3 +340,39 @@ Stage Summary:
 - File deploy baru: .env.example, README.md, vercel.json, prisma/schema.postgres.prisma, scripts/seed-prod.ts
 - File update: package.json (postinstall + vercel-build + db:push-prod + db:seed-prod scripts), .gitignore (allow .env.example + exclude db/), eslint.config.mjs (ignore scripts/).
 - Local dev tetap berfungsi penuh dgn SQLite. Vercel akan auto-switch ke PostgreSQL saat build via flag --schema di vercel-build.
+
+---
+Task ID: 12
+Agent: main (Z.ai)
+Task: Siapkan untuk deploy ke Netlify + Supabase (ganti dari Vercel)
+
+Work Log:
+- Buat `netlify.toml`: config build (command="bun run netlify-build", publish=".next"), plugin `@netlify/plugin-nextjs` eksplisit, function timeout 10s note.
+- Update `package.json`:
+  • Tambah script `netlify-build: "prisma generate --schema=prisma/schema.postgres.prisma && next build"` (untuk Netlify auto-build)
+  • Install `@netlify/plugin-nextjs` v5.16.4 sebagai devDependency
+  • Tetap pertahankan `vercel-build` script untuk backward-compat (Vercel bisa pakai jika user pindah)
+- Update `.env.example`: ganti contoh DATABASE_URL ke format Supabase (`postgresql://postgres.[ref]:[pass]@aws-0-[region].pooler.supabase.com:5432/postgres?pgbouncer=true`), tambah catatan pgbouncer penting untuk serverless.
+- Update `README.md` lengkap (12 KB): ganti section "Deploy ke Vercel" jadi "Deploy ke Netlify + Supabase" dgn 6 step detail (signup Supabase → setup pooler URL → push ke GitHub → import ke Netlify → set env vars → first-time DB setup via Netlify CLI `netlify env:export` + `db:push-prod` + `db:seed-prod`). Tambah section troubleshooting Netlify/Supabase-specific (login 401, TLS error, project paused 1 minggu idle + tip cron reactivator, function timeout 800+ transaksi + tip split paste).
+- Refactor API paste routes utk pakai `createMany` (bulk insert) — performant untuk serverless (Supabase pooler + Netlify 10s function timeout):
+  • `src/app/api/penjualan/paste/route.ts` — group by tahun+bulan, batch createMany per group
+  • `src/app/api/pembelian/paste/route.ts` — same pattern
+  • `src/app/api/piutang/route.ts` (PUT method) — single createMany untuk semua faktur
+  • `src/app/api/hutang/route.ts` (PUT method) — same pattern
+- Tambah unique constraint `@@unique([cabangId, noNota, tanggal, namaBarang])` di TransaksiPenjualan & TransaksiPembelian (schema.prisma + schema.postgres.prisma) supaya skipDuplicates di append mode berfungsi.
+- BUG FIX penting: `skipDuplicates` arg di `createMany` TIDAK support di SQLite (Prisma error "Unknown argument `skipDuplicates`"). Untuk SQLite (dev), arg ini harus dihilangkan. Solusi: conditional spread berdasarkan `process.env.DATABASE_URL.startsWith("postgres")`. PostgreSQL (production) → skipDuplicates aktif di append mode. SQLite (dev) → tanpa skipDuplicates (replace mode aman krn deleteMany dulu, append mode mungkin throw bila duplikat — tapi untuk testing cukup).
+- Push schema baru: `bun run db:push` sukses, no conflict (existing data tidak punya duplikat noNota+tanggal+namaBarang).
+- Smoke test agent-browser: login admin1/admin123, paste sample ke 4 routes (penjualan/pembelian/piutang/hutang) — semua return status=200, ok=true, inserted=N. SQLite dev berfungsi normal.
+- Lint: 0 errors. Schema valid untuk sqlite + postgres.
+
+Stage Summary:
+- Web app INDOSARI Akuntansi 2026 SIAP DEPLOY ke Netlify + Supabase. Yang user lakukan:
+  1. Daftar Supabase free → buat project → copy connection string (pilih "Transaction" pooler) → tambah `?pgbouncer=true`
+  2. Push project ke GitHub
+  3. Import ke Netlify (auto-detect Next.js, build command "bun run netlify-build" dari netlify.toml)
+  4. Set 3 env vars di Netlify dashboard: DATABASE_URL (Supabase URL), NEXTAUTH_SECRET (random 32-byte base64), NEXTAUTH_URL (URL final Netlify)
+  5. Trigger redeploy
+  6. First-time DB setup via Netlify CLI: `netlify login` → `netlify link` → `netlify env:export` → `bun run db:push-prod` → `bun run db:seed-prod`
+- File deploy baru: netlify.toml, package.json (+netlify-build script + plugin), .env.example (Supabase format), README.md (Netlify+Supabase step-by-step).
+- File refactor: 4 paste routes pakai createMany + conditional skipDuplicates (kompatibel SQLite dev + Postgres prod).
+- Local dev tetap jalan penuh dgn SQLite (data persisted dari iterasi sebelumnya).

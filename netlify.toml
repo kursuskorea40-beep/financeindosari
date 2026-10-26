@@ -1,0 +1,28 @@
+# Netlify config — INDOSARI Akuntansi 2026 web app
+# Docs: https://docs.netlify.com/configure-builds/file-based-configuration/
+
+[build]
+  # Build command: regenerate Prisma client dengan schema PostgreSQL, lalu build Next.js
+  command = "bun run netlify-build"
+  # Directory output Next.js (default untuk App Router)
+  publish = ".next"
+
+# Environment variables yang HARUS di-set di Netlify Dashboard → Site settings → Environment variables
+# (JANGAN hardcode value di sini — file ini committed ke git, value rahasia harus di dashboard)
+[build.environment]
+  NEXTAUTH_URL = "set-in-netlify-dashboard"
+  NEXTAUTH_SECRET = "set-in-netlify-dashboard"
+  DATABASE_URL = "set-in-netlify-dashboard"
+  # Bun configuration (Netlify support bun install)
+  NETLIFY_USE_BUN = "true"
+
+# Plugin Next.js official dari Netlify (auto-installed bila tidak didefinisikan,
+# tapi sebaiknya eksplisit agar build reproducible)
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Function timeout — Netlify free max 10 detik, Pro 26 detik
+# Untuk paste routes yang parse 800+ transactions (loop create), mungkin perlu upgrade Pro
+# Atau pakai createMany (sudah dioptimasi di code)
+[functions]
+  node_bundler = "esbuild"

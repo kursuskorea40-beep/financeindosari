@@ -133,6 +133,7 @@ model TransaksiPenjualan {
 
   @@index([cabangId, tahun, bulan])
   @@index([cabangId, tanggal])
+  @@unique([cabangId, noNota, tanggal, namaBarang])
 }
 
 model TransaksiPembelian {
@@ -158,6 +159,7 @@ model TransaksiPembelian {
 
   @@index([cabangId, tahun, bulan])
   @@index([cabangId, tanggal])
+  @@unique([cabangId, noNota, tanggal, namaBarang])
 }
 
 // ============================================================

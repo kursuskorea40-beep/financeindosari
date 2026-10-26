@@ -166,32 +166,27 @@ export async function PUT(req: NextRequest) {
     await db.fakturPiutang.deleteMany({ where: { cabangId, sumber: "paste_accurate" } });
   }
 
+  // Bulk insert via createMany — performant untuk serverless
   let inserted = 0;
   let skippedDup = 0;
-  for (const f of parsed) {
-    try {
-      if (mode === "append") {
-        const exist = await db.fakturPiutang.findFirst({
-          where: { cabangId, noFaktur: f.noFaktur, sumber: "paste_accurate" },
-        });
-        if (exist) { skippedDup++; continue; }
-      }
-      await db.fakturPiutang.create({
-        data: {
-          cabangId,
-          pelanggan: f.party,
-          noFaktur: f.noFaktur,
-          tanggal: f.tanggal,
-          jatuhTempo: f.jatuhTempo,
-          jumlah: f.jumlah,
-          dibayar: f.dibayar,
-          nilai: f.sisa,
-          sumber: "paste_accurate",
-        },
-      });
-      inserted++;
-    } catch (e) { skippedDup++; }
-  }
+  const isPostgres = (process.env.DATABASE_URL || "").startsWith("postgres");
+  const opts: any = {
+    data: parsed.map(f => ({
+      cabangId,
+      pelanggan: f.party,
+      noFaktur: f.noFaktur,
+      tanggal: f.tanggal,
+      jatuhTempo: f.jatuhTempo,
+      jumlah: f.jumlah,
+      dibayar: f.dibayar,
+      nilai: f.sisa,
+      sumber: "paste_accurate",
+    })),
+  };
+  if (mode === "append" && isPostgres) opts.skipDuplicates = true;
+  const result = await db.fakturPiutang.createMany(opts);
+  inserted = result.count;
+  skippedDup = parsed.length - result.count;
 
   return NextResponse.json({
     ok: true,

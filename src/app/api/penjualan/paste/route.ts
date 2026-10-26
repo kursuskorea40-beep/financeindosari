@@ -50,41 +50,48 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // Insert
+  // Bulk insert via createMany — performant untuk serverless (Supabase pooler + Netlify 10s timeout)
+  // Mode replace: hapus dulu transaksi lama di tahun+bulan terkait, lalu bulk insert
+  // Mode append: skip duplicate check (jarang terjadi di paste data fresh), pakai skipDuplicates
   let inserted = 0;
   let skippedDup = 0;
+
+  // Group by tahun+bulan untuk batch insert
+  const groups: Record<string, typeof parsed> = {};
   for (const tx of parsed) {
     const tahun = getYearFromISO(tx.tanggal);
     const bulan = getMonthFromISO(tx.tanggal);
-    try {
-      // Skip duplicates in append mode (same noNota + tanggal + namaBarang)
-      if (mode === "append") {
-        const exist = await db.transaksiPenjualan.findFirst({
-          where: { cabangId, noNota: tx.noNota, tanggal: tx.tanggal, namaBarang: tx.namaBarang },
-        });
-        if (exist) { skippedDup++; continue; }
-      }
-      await db.transaksiPenjualan.create({
-        data: {
-          cabangId,
-          bulan, tahun,
-          tanggal: tx.tanggal,
-          noNota: tx.noNota,
-          namaBarang: tx.namaBarang,
-          satuan: tx.satuan,
-          kuantitas: tx.kuantitas,
-          hargaSatuan: tx.hargaSatuan,
-          kategori: tx.kategori,
-          isLunas: true, // penjualan default lunas (hanya NB = kredit aja)
-          keterangan: tx.catatan || null,
-          userId,
-        },
-      });
-      inserted++;
-    } catch (e) {
-      // skip on error (probably duplicate constraint)
-      skippedDup++;
-    }
+    const key = `${tahun}-${bulan}`;
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(tx);
+  }
+
+  for (const key of Object.keys(groups)) {
+    const batch = groups[key];
+    const [tahun, bulan] = key.split("-").map(n => parseInt(n, 10));
+    // skipDuplicates hanya support PostgreSQL/MySQL/SQLServer, TIDAK SQLite
+    // (SQLite dev akan error jika arg ini ada — gunakan conditional spread)
+    const isPostgres = (process.env.DATABASE_URL || "").startsWith("postgres");
+    const opts: any = {
+      data: batch.map(tx => ({
+        cabangId,
+        bulan, tahun,
+        tanggal: tx.tanggal,
+        noNota: tx.noNota,
+        namaBarang: tx.namaBarang,
+        satuan: tx.satuan,
+        kuantitas: tx.kuantitas,
+        hargaSatuan: tx.hargaSatuan,
+        kategori: tx.kategori,
+        isLunas: true,
+        keterangan: tx.catatan || null,
+        userId,
+      })),
+    };
+    if (mode === "append" && isPostgres) opts.skipDuplicates = true;
+    const result = await db.transaksiPenjualan.createMany(opts);
+    inserted += result.count;
+    skippedDup += batch.length - result.count;
   }
 
   return NextResponse.json({

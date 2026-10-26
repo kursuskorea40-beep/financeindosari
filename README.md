@@ -6,7 +6,8 @@ Web app multi-cabang + multi-user untuk akuntansi INDOSARI. 9 modul lengkap deng
 
 - **Framework**: Next.js 16 (App Router, Turbopack)
 - **Language**: TypeScript 5
-- **Database**: Prisma 6 (SQLite untuk dev, PostgreSQL untuk production)
+- **Database**: Prisma 6 (SQLite untuk dev, PostgreSQL via Supabase untuk production)
+- **Hosting**: Netlify (free tier)
 - **Auth**: NextAuth.js v4 (Credentials provider, JWT session)
 - **UI**: Tailwind CSS 4 + shadcn/ui (New York)
 - **State**: TanStack Query (server), React useState (client)
@@ -43,13 +44,13 @@ bun install
 # 2. Setup env (salin template)
 cp .env.example .env
 
-# 3. Setup database (SQLite, no setup needed)
+# 3. Setup database (SQLite, no setup needed — file: db/custom.db)
 bun run db:push
 
 # 4. Seed data awal (3 user + 2 cabang + settings + master data dari HTML akuntansi)
 bun run db:seed
 
-# 5. Run dev server (auto-start oleh sistem, atau manual)
+# 5. Run dev server
 bun run dev
 ```
 
@@ -57,111 +58,126 @@ Buka `http://localhost:3000`, login `admin1/admin123`.
 
 ---
 
-## Deploy ke Vercel (Production)
+## Deploy ke Netlify + Supabase (Production)
 
-### Step 1: Setup Database PostgreSQL
+### Step 1: Setup Supabase (Database PostgreSQL)
 
-Pilih salah satu (semua free tier):
+1. Buka https://supabase.com → daftar akun gratis (Google/GitHub)
+2. Klik **New Project** → isi:
+   - **Name**: `indosari-akuntansi`
+   - **Database Password**: buat password kuat (CATAT — tidak bisa di-reset tanpa ini!)
+   - **Region**: Singapore (paling dekat dari Indonesia)
+   - **Plan**: Free
+3. Tunggu 2 menit sampai project jadi
+4. Buka project → **Settings** (gearing icon kiri bawah) → **Database**
+5. Di tab **Connection string**, pilih **"URI"** → copy connection string (format:
+   `postgresql://postgres.[project-ref]:[password]@aws-0-[region].pooler.supabase.com:5432/postgres`)
+6. Tambahkan `?pgbouncer=true` di akhir URL (penting! untuk serverless Netlify):
+   ```
+   postgresql://postgres.[ref]:[pass]@aws-0-[region].pooler.supabase.com:5432/postgres?pgbouncer=true
+   ```
+   Ini jadi nilai `DATABASE_URL` di Netlify nanti.
 
-**Opsi A: Vercel Postgres** (paling mudah, integrasi native)
-1. Buka https://vercel.com/dashboard → New Project → pilih repo ini
-2. Klik "Storage" tab → "Create Database" → "Postgres" (free, 256 MB)
-3. Vercel otomatis set env vars: `POSTGRES_URL`, `POSTGRES_PRISMA_URL`, dll.
-4. Gunakan `POSTGRES_PRISMA_URL` sebagai `DATABASE_URL` di Vercel env vars
+**Catatan Supabase free:**
+- 500 MB database (cukup untuk bertahun-tahun data INDOSARI)
+- Project **paused otomatis setelah 1 minggu tidak ada aktivitas** — login ke dashboard Supabase untuk reactivate (gratis, 1 klik)
+- 50k monthly active users (auth) — Anda pakai 3 user, jauh dari limit
 
-**Opsi B: Neon Postgres** (recommended untuk Next.js, serverless-friendly)
-1. Daftar di https://neon.tech (free 0.5 GB)
-2. Create new project → copy connection string
-3. Set di Vercel env vars: `DATABASE_URL=postgresql://user:pass@ep-xxx.region.aws.neon.tech/dbname?sslmode=require`
-   - Penting: pastikan `?sslmode=require` ada di akhir
-
-**Opsi C: Supabase** (alternatif, free 500 MB)
-1. Daftar di https://supabase.com
-2. Create new project → Settings → Database → Connection string (URI)
-3. Set di Vercel env vars
-
-### Step 2: Set Environment Variables di Vercel
-
-Buka Vercel Project → Settings → Environment Variables, tambah:
-
-| Key | Value | Environment |
-|---|---|---|
-| `DATABASE_URL` | `postgresql://...?sslmode=require` (dari Neon/Vercel Postgres) | Production + Preview |
-| `NEXTAUTH_SECRET` | Random 32-byte base64 string (generate via `openssl rand -base64 32` atau https://generate-secret.vercel.app) | Production + Preview |
-| `NEXTAUTH_URL` | `https://nama-project.vercel.app` (URL final Vercel setelah pertama deploy) | Production |
-
-### Step 3: Push ke GitHub
+### Step 2: Push Project ke GitHub
 
 ```bash
-# Inisialisasi git (kalau belum)
+# Inisialisasi git
 git init
 git add .
-git commit -m "Initial commit — INDOSARI Akuntansi web app"
+git commit -m "Initial commit — INDOSARI Akuntansi web app (Netlify + Supabase)"
 
-# Buat repo baru di GitHub, lalu push
+# Buat repo baru di GitHub (buka https://github.com/new), lalu push
 git remote add origin https://github.com/USERNAME/indosari-akuntansi.git
 git branch -M main
 git push -u origin main
 ```
 
-### Step 4: Import ke Vercel
+### Step 3: Import ke Netlify
 
-1. Buka https://vercel.com/new
-2. Import repository GitHub Anda
-3. Framework Preset: **Next.js** (auto-detected)
-4. Build & Output Settings:
-   - Install Command: `bun install` (atau `npm install` bila tidak pakai bun)
-   - Build Command: `bun run vercel-build` (sudah otomatis dari `vercel.json`)
-5. Klik **Deploy** — tunggu 2-3 menit untuk build pertama
+1. Buka https://app.netlify.com/start → login (Google/GitHub)
+2. Klik **Add new site** → **Import an existing project**
+3. Pilih repo GitHub `indosari-akuntansi`
+4. Build settings (auto-detected dari `netlify.toml`, jangan diubah):
+   - Base directory: (kosong)
+   - Build command: `bun run netlify-build`
+   - Publish directory: `.next`
+5. Klik **Deploy site** — tunggu 3-5 menit untuk build pertama
+6. Setelah selesai, akan dapat URL sementara: `https://indosari-akuntansi-[hash].netlify.app`
 
-Build process:
-1. `bun install` → trigger `postinstall: prisma generate` (generate client dgn schema postgres dari `prisma/schema.postgres.prisma` via flag `--schema` di `vercel-build`)
-2. `vercel-build` script: `prisma generate --schema=prisma/schema.postgres.prisma && next build`
-3. Deployed!
+### Step 4: Set Environment Variables di Netlify
+
+1. Buka site Netlify Anda → **Site settings** → **Environment variables**
+2. Tambah 3 variabel (klik **Add a variable** → **All environments** untuk masing-masing):
+
+| Key | Value | Notes |
+|---|---|---|
+| `DATABASE_URL` | `postgresql://postgres.[ref]:[pass]@aws-0-[region].pooler.supabase.com:5432/postgres?pgbouncer=true` | Dari Step 1. **Penting**: `?pgbouncer=true` harus ada |
+| `NEXTAUTH_SECRET` | Random 32-byte base64 string | Generate via `openssl rand -base64 32` di terminal, atau https://generate-secret.vercel.app/32 |
+| `NEXTAUTH_URL` | `https://indosari-akuntansi-[hash].netlify.app` | URL final Netlify Anda (ganti dgn domain asli) |
+
+3. Setelah 3 variabel ter-set, **Trigger redeploy**: Site overview → Production: klik tombol ke-3 (deploy list) → **Trigger rebuild**
 
 ### Step 5: First-time Database Setup
 
-Setelah deploy pertama sukses, setup database production. Pilih salah satu:
+Setelah redeploy sukses, setup database Supabase dengan tabel + seed data:
 
-**Opsi 1: Lewat Vercel CLI** (recommended)
+**Opsi A (recommended): Pakai Vercel CLI** — wait, kita pakai Netlify. Pakai Netlify CLI:
+
 ```bash
-# Install Vercel CLI (one-time)
-npm i -g vercel
+# Install Netlify CLI (one-time)
+npm i -g netlify-cli
 
-# Pull env vars dari Vercel ke local .env
-vercel env pull .env.production.local
+# Login (browser akan muncul)
+netlify login
 
-# Run db push ke production (membuat semua tabel)
+# Link ke site Anda
+netlify link  # pilih dari list
+
+# Pull env vars ke local .env.production.local
+netlify env:export --file .env.production.local
+
+# Run db:push-prod (membuat semua tabel di Supabase)
 bun run db:push-prod
 
-# Seed data awal (3 user + 2 cabang + settings)
+# Seed data awal (3 user + 2 cabang + 4 settings)
 bun run db:seed-prod
+
+# Hapus file env temporary (security)
+rm .env.production.local
 ```
 
-**Opsi 2: Lewat Vercel Dashboard console**
-1. Buka Vercel Project → Storage → pilih database → "Query Console"
-2. Copy SQL dari `prisma/migrations/init.sql` (atau export dari local SQLite via `prisma migrate diff`)
-3. Jalankan manual
-
-Setelah seeding, login dengan `admin1/admin123` di URL production Anda.
+**Opsi B (manual via Supabase SQL Editor)**:
+1. Buka Supabase Dashboard → SQL Editor (kiri)
+2. Copy SQL hasil `prisma migrate diff` (jalankan lokal untuk generate):
+   ```bash
+   bunx prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.postgres.prisma --script
+   ```
+3. Paste ke SQL Editor → Run
+4. Untuk seed: jalankan scripts/seed-prod.ts locally dgn DATABASE_URL=Supabase URL
 
 ### Step 6: Update NEXTAUTH_URL
 
-Setelah URL production diketahui (cth: `https://indosari-akuntansi.vercel.app`), update env var:
-- Vercel Project → Settings → Environment Variables → `NEXTAUTH_URL` → set value ke URL production Anda.
+Setelah punya domain final (Netlify akan generate `*.netlify.app`), update:
+- Netlify → Site settings → Environment variables → `NEXTAUTH_URL` → set ke URL final Anda
+- (Optional) Pasang custom domain di Netlify → Site settings → Domain management → Add domain
 
 ---
 
-## Postgres Schema Note
+## Local Dev vs Production Schema
 
 Project ini mempunyai 2 file schema Prisma:
 
 - `prisma/schema.prisma` — SQLite (untuk local dev, file `db/custom.db`)
-- `prisma/schema.postgres.prisma` — PostgreSQL (untuk Vercel/production)
+- `prisma/schema.postgres.prisma` — PostgreSQL (untuk Netlify/production via Supabase)
 
-Keduanya identik kecuali `provider` field. Build Vercel otomatis pakai versi postgres via flag `--schema` di `vercel-build` script.
+Build Netlify otomatis pakai versi postgres via flag `--schema` di `netlify-build` script (lihat `package.json`).
 
-Local dev tetap pakai SQLite — tidak perlu install PostgreSQL lokal.
+Local dev tetap pakai SQLite — tidak perlu install PostgreSQL lokal. Kode aplikasi sama, cuma connection string yg beda.
 
 ---
 
@@ -171,8 +187,8 @@ Local dev tetap pakai SQLite — tidak perlu install PostgreSQL lokal.
 .
 ├── prisma/
 │   ├── schema.prisma              # SQLite (dev)
-│   ├── schema.postgres.prisma     # PostgreSQL (Vercel)
-│   └── migrations/                # (opsional, bila pakai prisma migrate)
+│   ├── schema.postgres.prisma     # PostgreSQL (Netlify/Supabase)
+│   └── migrations/                # (opsional)
 ├── src/
 │   ├── app/
 │   │   ├── api/                   # API routes (Next.js App Router)
@@ -202,7 +218,7 @@ Local dev tetap pakai SQLite — tidak perlu install PostgreSQL lokal.
 │   │       ├── persediaan-view.tsx
 │   │       ├── piutang-hutang-view.tsx     # Generic untuk Piutang + Hutang
 │   │       ├── fr-view.tsx                 # Generic untuk Laba Rugi + Neraca
-│   │       └── placeholder-view.tsx       # (tidak dipakai lagi, semua modul sudah aktif)
+│   │       └── placeholder-view.tsx       # (tidak dipakai lagi)
 │   └── lib/
 │       ├── accurate-parser.ts             # Parser Penjualan + Pembelian
 │       ├── accurate-persediaan.ts          # Parser Persediaan
@@ -213,14 +229,15 @@ Local dev tetap pakai SQLite — tidak perlu install PostgreSQL lokal.
 │       └── utils.ts                       # shadcn helpers
 ├── scripts/
 │   ├── seed.ts                   # Local seed (SQLite)
-│   ├── seed-prod.ts              # Production seed (Postgres)
+│   ├── seed-prod.ts              # Production seed (Supabase/Postgres)
 │   ├── extract_master_for_seed.py # Extract master data dari HTML akuntansi
-│   └── data/                     # Akuntansi master export + screenshots
+│   └── data/                     # Master export JSON + screenshots
 ├── public/
 ├── .env.example                  # Template env var (committed)
 ├── .env                          # Local env (NOT committed)
 ├── .gitignore
-├── vercel.json                   # Vercel build config
+├── netlify.toml                  # Netlify build config
+├── vercel.json                   # (legacy, untuk backward-compat bila pindah ke Vercel)
 ├── package.json
 └── README.md
 ```
@@ -231,45 +248,50 @@ Local dev tetap pakai SQLite — tidak perlu install PostgreSQL lokal.
 
 ### Login gagal di production (401 Unauthorized)
 
-Penyebab: `NEXTAUTH_SECRET` belum di-set di Vercel env vars, atau JWT tidak ter-decrypt.
+**Penyebab**: `NEXTAUTH_SECRET` belum di-set di Netlify env vars, atau value beda antara build dan runtime.
 
-Fix:
-1. Vercel Project → Settings → Environment Variables
-2. Tambah `NEXTAUTH_SECRET` (random 32-byte base64, generate via `openssl rand -base64 32`)
-3. Redeploy (Vercel Dashboard → Deployments → Redeploy)
+**Fix**:
+1. Netlify → Site settings → Environment variables → tambah `NEXTAUTH_SECRET` (random 32-byte base64)
+2. Trigger redeploy
 
-### Database connection error di Vercel logs
+### Database connection error: "connection refused" / "TLS error"
 
-Penyebab: `DATABASE_URL` salah format atau SSL tidak diaktifkan.
+**Penyebab**: Connection string Supabase salah format, atau `?pgbouncer=true` kurang.
 
-Fix untuk Neon:
-- Pastikan URL diakhiri `?sslmode=require`
-- Cek di Neon dashboard → connection string sudah benar
+**Fix**:
+- Pastikan URL format: `postgresql://postgres.[ref]:[pass]@aws-0-[region].pooler.supabase.com:5432/postgres?pgbouncer=true`
+- Cek di Supabase Dashboard → Settings → Database → Connection string → pilih "Transaction" pooler (bukan "Session")
 
-Fix untuk Vercel Postgres:
-- Gunakan `POSTGRES_PRISMA_URL` (bukan `POSTGRES_URL` — Prisma butuh format khusus)
+### Supabase project paused (akses tiba-tiba 500/error)
+
+**Penyebab**: Supabase free auto-pause setelah 1 minggu tidak ada aktivitas database.
+
+**Fix**:
+1. Buka Supabase Dashboard → login
+2. Pilih project Anda → klik **Restore project** (1 klik, gratis, ~30 detik)
+3. Setelah restore, app langsung jalan lagi
+
+**Tip**: Setup cron job gratis (Upstash QStash / cron-job.org) untuk hit endpoint `/api/dashboard` setiap 5 hari → project tidak pernah paused.
 
 ### Prisma client error "Unknown provider"
 
-Penyebab: client di-generate dgn schema salah (sqlite padahal database postgres).
+**Penyebab**: Client di-generate dgn schema salah.
 
-Fix:
-- Pastikan `vercel-build` script berjalan: `prisma generate --schema=prisma/schema.postgres.prisma && next build`
-- Cek log Vercel saat build, harus ada "Generated Prisma Client" di step build
+**Fix**: Pastikan `netlify-build` script berjalan: `prisma generate --schema=prisma/schema.postgres.prisma && next build`. Lihat di Netlify deploy log, harus ada "Generated Prisma Client" di step build.
 
-### Build fail di Vercel: "cannot find @prisma/client"
+### Build fail: "Function timeout exceeded" (paste 800+ transaksi)
 
-Penyebab: postinstall tidak menjalankan `prisma generate`.
+**Penyebab**: Netlify free function timeout = 10 detik. Bulk paste 868 transaksi loop-create bisa lebih dari 10s.
 
-Fix:
-- Pastikan `package.json` punya `"postinstall": "prisma generate"`
-- Vercel auto-runs postinstall after `bun install`
+**Fix**: Sudah dioptimasi di kode — pakai `createMany` (batch insert). Bila masih timeout:
+- Split paste jadi batch kecil (per grup produk)
+- Atau upgrade Netlify Pro ($19/bln, timeout 26 detik)
 
 ---
 
 ## Development Notes
 
-- Dev server: `bun run dev` (auto-start oleh sistem di port 3000)
+- Dev server: `bun run dev` (port 3000)
 - Database local: file `db/custom.db` (auto-created saat `bun run db:push`)
 - Lint: `bun run lint` (ESLint + Next.js rules)
 - Reset database local: `rm db/custom.db && bun run db:push && bun run db:seed`
