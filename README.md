@@ -69,14 +69,19 @@ Buka `http://localhost:3000`, login `admin1/admin123`.
    - **Region**: Singapore (paling dekat dari Indonesia)
    - **Plan**: Free
 3. Tunggu 2 menit sampai project jadi
-4. Buka project → **Settings** (gearing icon kiri bawah) → **Database**
-5. Di tab **Connection string**, pilih **"URI"** → copy connection string (format:
-   `postgresql://postgres.[project-ref]:[password]@aws-0-[region].pooler.supabase.com:5432/postgres`)
-6. Tambahkan `?pgbouncer=true` di akhir URL (penting! untuk serverless Netlify):
+4. Buka project → klik tombol **"Connect"** di pojok kanan atas dashboard
+5. Di modal popup, pilih tab **"ORMs"** → pilih **"Prisma"**
+6. Supabase akan generate 2 connection string (copy keduanya):
    ```
-   postgresql://postgres.[ref]:[pass]@aws-0-[region].pooler.supabase.com:5432/postgres?pgbouncer=true
+   DATABASE_URL="postgresql://postgres.[project-ref]:[PASSWORD]@aws-0-[region].pooler.supabase.com:6543/postgres?pgbouncer=true"
+   DIRECT_URL="postgresql://postgres.[project-ref]:[PASSWORD]@aws-0-[region].pooler.supabase.com:5432/postgres"
    ```
-   Ini jadi nilai `DATABASE_URL` di Netlify nanti.
+7. Ganti `[PASSWORD]` di kedua URL dengan password database yang Anda buat di Step 2 di atas
+8. Simpan kedua URL — ini jadi nilai `DATABASE_URL` dan `DIRECT_URL` di Netlify nanti
+
+**Kenapa 2 URL?**
+- `DATABASE_URL` (port 6543, transaction pooler, `?pgbouncer=true`) → untuk **runtime app** (query cepat, serverless-friendly)
+- `DIRECT_URL` (port 5432, session pooler) → untuk **migrations / db push** (pgbouncer tidak support beberapa operasi)
 
 **Catatan Supabase free:**
 - 500 MB database (cukup untuk bertahun-tahun data INDOSARI)
@@ -112,15 +117,16 @@ git push -u origin main
 ### Step 4: Set Environment Variables di Netlify
 
 1. Buka site Netlify Anda → **Site settings** → **Environment variables**
-2. Tambah 3 variabel (klik **Add a variable** → **All environments** untuk masing-masing):
+2. Tambah 4 variabel (klik **Add a variable** → **All environments** untuk masing-masing):
 
 | Key | Value | Notes |
 |---|---|---|
-| `DATABASE_URL` | `postgresql://postgres.[ref]:[pass]@aws-0-[region].pooler.supabase.com:5432/postgres?pgbouncer=true` | Dari Step 1. **Penting**: `?pgbouncer=true` harus ada |
+| `DATABASE_URL` | `postgresql://postgres.[ref]:[pass]@aws-0-[region].pooler.supabase.com:6543/postgres?pgbouncer=true` | Dari Supabase Connect → Prisma (transaction pooler, port 6543) |
+| `DIRECT_URL` | `postgresql://postgres.[ref]:[pass]@aws-0-[region].pooler.supabase.com:5432/postgres` | Dari Supabase Connect → Prisma (session pooler, port 5432). Tanpa `?pgbouncer=true` |
 | `NEXTAUTH_SECRET` | Random 32-byte base64 string | Generate via `openssl rand -base64 32` di terminal, atau https://generate-secret.vercel.app/32 |
 | `NEXTAUTH_URL` | `https://indosari-akuntansi-[hash].netlify.app` | URL final Netlify Anda (ganti dgn domain asli) |
 
-3. Setelah 3 variabel ter-set, **Trigger redeploy**: Site overview → Production: klik tombol ke-3 (deploy list) → **Trigger rebuild**
+3. Setelah 4 variabel ter-set, **Trigger redeploy**: Site overview → Production: klik tombol ke-3 (deploy list) → **Trigger rebuild**
 
 ### Step 5: First-time Database Setup
 
