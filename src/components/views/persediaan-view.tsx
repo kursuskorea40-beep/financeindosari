@@ -40,7 +40,7 @@ interface ApiResponse {
   summary: Summary;
 }
 
-export function PersediaanView() {
+export function PersediaanView({ cabangId }: { cabangId?: string }) {
   const { data: session } = useSession();
   const now = new Date();
   const [bulan, setBulan] = useState<number>(now.getMonth() + 1);
@@ -48,13 +48,13 @@ export function PersediaanView() {
   const [showPaste, setShowPaste] = useState(false);
 
   const { data, isLoading } = useQuery<ApiResponse>({
-    queryKey: ["persediaan", bulan, tahun, (session?.user as any)?.cabangId],
+    queryKey: ["persediaan", bulan, tahun, cabangId],
     queryFn: async () => {
-      const res = await fetch(`/api/persediaan?bulan=${bulan}&tahun=${tahun}`);
+      const res = await fetch(`/api/persediaan?bulan=${bulan}fetch(`/api/persediaan?bulan=${bulan}&tahun=${tahun}`)tahun=${tahun}${cabangId ? `&cabangId=${cabangId}` : ""}`);
       if (!res.ok) throw new Error("Gagal load persediaan");
       return res.json();
     },
-    enabled: !!(session?.user as any)?.cabangId,
+    enabled: !!cabangId,
   });
 
   const items = data?.items || [];
@@ -197,7 +197,7 @@ function PastePersediaanDialog({ bulan, tahun, onClose }: { bulan: number; tahun
       const res = await fetch("/api/persediaan/paste", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, mode, bulan, tahun }),
+        body: JSON.stringify({ text, mode, bulan, tahun, cabangId }),
       });
       if (!res.ok) {
         const err = await res.json();

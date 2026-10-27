@@ -24,7 +24,7 @@ interface ApiResponse {
   isDefault: boolean;
 }
 
-export function FRView({ moduleType }: { moduleType: ModuleType }) {
+export function FRView({ moduleType, cabangId }: { moduleType: ModuleType; cabangId?: string }) {
   const { data: session } = useSession();
   const isLR = moduleType === "laba-rugi";
   const moduleName = isLR ? "Laba Rugi" : "Neraca";
@@ -37,13 +37,13 @@ export function FRView({ moduleType }: { moduleType: ModuleType }) {
   const [editing, setEditing] = useState<{ row: FRRow; idx: number } | null>(null);
 
   const { data, isLoading } = useQuery<ApiResponse>({
-    queryKey: [moduleType, bulan, tahun, (session?.user as any)?.cabangId],
+    queryKey: [moduleType, bulan, tahun, cabangId],
     queryFn: async () => {
-      const res = await fetch(`/api/${moduleType}?bulan=${bulan}&tahun=${tahun}`);
+      const res = await fetch(`/api/${moduleType}?bulan=${bulan}fetch(`/api/${moduleType}?bulan=${bulan}&tahun=${tahun}`)tahun=${tahun}${cabangId ? `&cabangId=${cabangId}` : ""}`);
       if (!res.ok) throw new Error(`Gagal load ${moduleType}`);
       return res.json();
     },
-    enabled: !!(session?.user as any)?.cabangId,
+    enabled: !!cabangId,
   });
 
   const rows = data?.rows || [];
@@ -280,7 +280,7 @@ function PasteFRDialog({ moduleType, bulan, tahun, onClose }: {
       const res = await fetch(`/api/${moduleType}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, mode, bulan, tahun }),
+        body: JSON.stringify({ text, mode, bulan, tahun, cabangId }),
       });
       if (!res.ok) {
         const err = await res.json();

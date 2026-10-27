@@ -58,7 +58,7 @@ interface ApiResponse {
   summary: Summary;
 }
 
-export function PiutangHutangView({ moduleType }: { moduleType: ModuleType }) {
+export function PiutangHutangView({ moduleType, cabangId }: { moduleType: ModuleType; cabangId?: string }) {
   const { data: session } = useSession();
   const isPiu = moduleType === "piutang";
   const moduleName = isPiu ? "Piutang" : "Hutang";
@@ -72,13 +72,13 @@ export function PiutangHutangView({ moduleType }: { moduleType: ModuleType }) {
   const [showPaste, setShowPaste] = useState(false);
 
   const { data, isLoading } = useQuery<ApiResponse>({
-    queryKey: [moduleType, bulan, tahun, (session?.user as any)?.cabangId],
+    queryKey: [moduleType, bulan, tahun, cabangId],
     queryFn: async () => {
-      const res = await fetch(`/api/${moduleType}?bulan=${bulan}&tahun=${tahun}`);
+      const res = await fetch(`/api/${moduleType}?bulan=${bulan}fetch(`/api/${moduleType}?bulan=${bulan}&tahun=${tahun}`)tahun=${tahun}${cabangId ? `&cabangId=${cabangId}` : ""}`);
       if (!res.ok) throw new Error(`Gagal load ${moduleType}`);
       return res.json();
     },
-    enabled: !!(session?.user as any)?.cabangId,
+    enabled: !!cabangId,
   });
 
   const saldoBulanan = data?.saldoBulanan || [];
@@ -273,7 +273,7 @@ function PastePiutangHutangDialog({ moduleType, onClose }: { moduleType: ModuleT
       const res = await fetch(`/api/${moduleType}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, mode }),
+        body: JSON.stringify({ text, mode, cabangId }),
       });
       if (!res.ok) {
         const err = await res.json();

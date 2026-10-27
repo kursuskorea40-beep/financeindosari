@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSession, signIn, signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,6 +42,26 @@ export default function Home() {
   const { data: session, status } = useSession();
   const [activeModule, setActiveModule] = useState<ModuleKey>("dashboard");
 
+  const [activeModule, setActiveModule] = useState<ModuleKey>("dashboard");
+  const [selectedCabangId, setSelectedCabangId] = useState<string>("");
+  const [cabangList, setCabangList] = useState<{id:string;nama:string;kode:string}[]>([]);
+
+  const user = session?.user as any;
+
+  useEffect(() => {
+    if (session && user?.cabangId && !selectedCabangId) {
+      setSelectedCabangId(user.cabangId);
+    }
+  }, [session, user?.cabangId, selectedCabangId]);
+
+  useEffect(() => {
+    if (user?.role === "ADMIN" || user?.role === "FINANCE") {
+      fetch("/api/cabang").then(r => r.json()).then(data => {
+        if (Array.isArray(data)) setCabangList(data);
+      }).catch(() => {});
+    }
+  }, [user?.role]);
+
   if (status === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#F6F1E9]">
@@ -54,7 +74,9 @@ export default function Home() {
     return <LoginForm />;
   }
 
-  const user = session.user as any;
+  const canSwitchCabang = user.role === "ADMIN" || user.role === "FINANCE";
+  const activeCabangId = canSwitchCabang ? (selectedCabangId || user.cabangId || "") : (user.cabangId || "");
+
   return (
     <div className="flex min-h-screen bg-[#F6F1E9]">
       {/* Sidebar */}
@@ -103,22 +125,38 @@ export default function Home() {
               {SIDEBAR_ITEMS.find(i => i.key === activeModule)?.desc}
             </p>
           </div>
-          <div className="text-xs text-[#78716C]">
-            Login sebagai: <span className="font-medium text-[#6D0F2B]">{user.name}</span>
-            {" · "}
-            <span className="font-medium">{user.cabangNama}</span>
+          <div className="flex items-center gap-3">
+            {canSwitchCabang && cabangList.length > 0 && (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-[#78716C]">Cabang:</span>
+                <select
+                  value={selectedCabangId}
+                  onChange={(e) => setSelectedCabangId(e.target.value)}
+                  className="h-8 px-2 text-xs border border-[#D6D3D1] rounded-md bg-white"
+                >
+                  {cabangList.map(c => (
+                    <option key={c.id} value={c.id}>{c.nama}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            <div className="text-xs text-[#78716C]">
+              Login: <span className="font-medium text-[#6D0F2B]">{user.name}</span>
+              {" · "}
+              <span className="font-medium">{user.cabangNama}</span>
+            </div>
           </div>
         </header>
         <div className="p-6">
-          {activeModule === "dashboard" && <DashboardView />}
-          {activeModule === "master-data" && <MasterDataView />}
-          {activeModule === "penjualan" && <TransactionView moduleType="penjualan" />}
-          {activeModule === "pembelian" && <TransactionView moduleType="pembelian" />}
-          {activeModule === "persediaan" && <PersediaanView />}
-          {activeModule === "piutang" && <PiutangHutangView moduleType="piutang" />}
-          {activeModule === "hutang" && <PiutangHutangView moduleType="hutang" />}
-          {activeModule === "laba-rugi" && <FRView moduleType="laba-rugi" />}
-          {activeModule === "neraca" && <FRView moduleType="neraca" />}
+          {activeModule === "dashboard" && <DashboardView key={activeCabangId} cabangId={activeCabangId} />}
+          {activeModule === "master-data" && <MasterDataView key={activeCabangId} cabangId={activeCabangId} />}
+          {activeModule === "penjualan" && <TransactionView key={activeCabangId} moduleType="penjualan" cabangId={activeCabangId} />}
+          {activeModule === "pembelian" && <TransactionView key={activeCabangId} moduleType="pembelian" cabangId={activeCabangId} />}
+          {activeModule === "persediaan" && <PersediaanView key={activeCabangId} cabangId={activeCabangId} />}
+          {activeModule === "piutang" && <PiutangHutangView key={activeCabangId} moduleType="piutang" cabangId={activeCabangId} />}
+          {activeModule === "hutang" && <PiutangHutangView key={activeCabangId} moduleType="hutang" cabangId={activeCabangId} />}
+          {activeModule === "laba-rugi" && <FRView key={activeCabangId} moduleType="laba-rugi" cabangId={activeCabangId} />}
+          {activeModule === "neraca" && <FRView key={activeCabangId} moduleType="neraca" cabangId={activeCabangId} />}
         </div>
       </main>
     </div>

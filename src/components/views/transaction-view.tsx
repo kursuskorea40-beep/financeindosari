@@ -53,7 +53,7 @@ interface Props {
   moduleType: ModuleType;
 }
 
-export function TransactionView({ moduleType }: Props) {
+export function TransactionView({ moduleType, cabangId }: Props & { cabangId?: string }) {
   const { data: session } = useSession();
   const isJual = moduleType === "penjualan";
   const moduleName = isJual ? "Penjualan" : "Pembelian";
@@ -75,7 +75,7 @@ export function TransactionView({ moduleType }: Props) {
   const { data, isLoading } = useQuery<ApiResponse>({
     queryKey,
     queryFn: async () => {
-      const url = `/api/${moduleType}?bulan=${bulan}&tahun=${tahun}${search ? `&q=${encodeURIComponent(search)}` : ""}`;
+      const url = `/api/${moduleType}?bulan=${bulan}&tahun=${tahun}${search ? `&q=${encodeURIComponent(search)}` : ""}${cabangId ? `&cabangId=${cabangId}` : ""}`;
       const res = await fetch(url);
       if (!res.ok) throw new Error(`Gagal load ${moduleType}`);
       return res.json();
@@ -507,7 +507,7 @@ function PasteDialog({ moduleType, onClose, onSuccess }: {
       const res = await fetch(`/api/${moduleType}/paste`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, mode }),
+        body: JSON.stringify({ text, mode, cabangId }),
       });
       if (!res.ok) {
         const err = await res.json();

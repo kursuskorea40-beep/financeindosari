@@ -11,11 +11,11 @@ function fmtIDR(n: number): string {
   return new Intl.NumberFormat("id-ID", { maximumFractionDigits: 0 }).format(n || 0);
 }
 
-export function DashboardView() {
+export function DashboardView({ cabangId }: { cabangId?: string }) {
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["dashboard"],
+    queryKey: ["dashboard", cabangId],
     queryFn: async () => {
-      const res = await fetch("/api/dashboard");
+      const res = await fetch(`/api/dashboard${cabangId ? `?cabangId=${cabangId}` : ""}`);
       if (!res.ok) throw new Error("Failed to fetch dashboard");
       return res.json();
     },

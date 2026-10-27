@@ -28,7 +28,7 @@ interface MasterItem {
   telp?: string;
 }
 
-export function MasterDataView() {
+export function MasterDataView({ cabangId }: { cabangId?: string }) {
   const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState<MasterType>("barang");
   const [search, setSearch] = useState("");
@@ -40,7 +40,7 @@ export function MasterDataView() {
   const { data, isLoading } = useQuery({
     queryKey,
     queryFn: async () => {
-      const res = await fetch(`/api/master/${activeTab}`);
+      const res = await fetch(`/api/master/${activeTab}${cabangId ? `?cabangId=${cabangId}` : ""}`);
       if (!res.ok) throw new Error(`Gagal load ${activeTab}`);
       return res.json();
     },
