@@ -74,7 +74,7 @@ export function PiutangHutangView({ moduleType, cabangId }: { moduleType: Module
   const { data, isLoading } = useQuery<ApiResponse>({
     queryKey: [moduleType, bulan, tahun, cabangId],
     queryFn: async () => {
-      const res = await fetch(`/api/${moduleType}?bulan=${bulan}&tahun=${tahun}${cabangId ? `&cabangId=${cabangId}` : ""}`);
+      const res = await fetch(`/api/${moduleType}?bulan=${bulan}&tahun=${tahun}`);
       if (!res.ok) throw new Error(`Gagal load ${moduleType}`);
       return res.json();
     },
@@ -273,7 +273,7 @@ function PastePiutangHutangDialog({ moduleType, onClose }: { moduleType: ModuleT
       const res = await fetch(`/api/${moduleType}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, mode, cabangId }),
+        body: JSON.stringify({ text, mode }),
       });
       if (!res.ok) {
         const err = await res.json();

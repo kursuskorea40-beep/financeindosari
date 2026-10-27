@@ -40,7 +40,7 @@ export function MasterDataView({ cabangId }: { cabangId?: string }) {
   const { data, isLoading } = useQuery({
     queryKey,
     queryFn: async () => {
-      const res = await fetch(`/api/master/${activeTab}${cabangId ? `?cabangId=${cabangId}` : ""}`);
+      const res = await fetch(`/api/master/${activeTab}`);
       if (!res.ok) throw new Error(`Gagal load ${activeTab}`);
       return res.json();
     },

@@ -39,7 +39,7 @@ export function FRView({ moduleType, cabangId }: { moduleType: ModuleType; caban
   const { data, isLoading } = useQuery<ApiResponse>({
     queryKey: [moduleType, bulan, tahun, cabangId],
     queryFn: async () => {
-      const res = await fetch(`/api/${moduleType}?bulan=${bulan}&tahun=${tahun}${cabangId ? `&cabangId=${cabangId}` : ""}`);
+      const res = await fetch(`/api/${moduleType}?bulan=${bulan}&tahun=${tahun}`);
       if (!res.ok) throw new Error(`Gagal load ${moduleType}`);
       return res.json();
     },

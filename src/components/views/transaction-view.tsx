@@ -74,7 +74,7 @@ export function TransactionView({ moduleType, cabangId }: Props & { cabangId?: s
   const { data, isLoading } = useQuery<ApiResponse>({
     queryKey,
     queryFn: async () => {
-      const url = `/api/${moduleType}?bulan=${bulan}&tahun=${tahun}${search ? `&q=${encodeURIComponent(search)}` : ""}${cabangId ? `&cabangId=${cabangId}` : ""}`;
+      const url = `/api/${moduleType}?bulan=${bulan}&tahun=${tahun}${search ? `&q=${encodeURIComponent(search)}` : ""}`;
       const res = await fetch(url);
       if (!res.ok) throw new Error(`Gagal load ${moduleType}`);
       return res.json();
@@ -506,7 +506,7 @@ function PasteDialog({ moduleType, onClose, onSuccess }: {
       const res = await fetch(`/api/${moduleType}/paste`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, mode, cabangId }),
+        body: JSON.stringify({ text, mode }),
       });
       if (!res.ok) {
         const err = await res.json();
