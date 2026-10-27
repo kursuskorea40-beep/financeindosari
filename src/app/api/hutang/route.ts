@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const cabangId = req.nextUrl.searchParams.get("cabangId") || (session.user as any).cabangId;
-  // cabangId optional — bila kosong, tampilkan SEMUA data (shared view)
+  if (!cabangId) return NextResponse.json({ error: "cabangId tidak ditemukan. Logout lalu login lagi." }, { status: 400 })
   const now = new Date();
   const tahun = parseInt(req.nextUrl.searchParams.get("tahun") || "") || now.getFullYear();
   const bulan = parseInt(req.nextUrl.searchParams.get("bulan") || "") || 0;
@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
   if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const body = await req.json();
   const cabangId = body.cabangId || (session.user as any).cabangId;
-  // cabangId optional — bila kosong, tampilkan SEMUA data (shared view)
+  if (!cabangId) return NextResponse.json({ error: "cabangId tidak ditemukan. Logout lalu login lagi." }, { status: 400 })
 
   if (body.isFaktur) {
     if (body.id) {
@@ -141,7 +141,7 @@ export async function PUT(req: NextRequest) {
   if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const body = await req.json();
   const cabangId = body.cabangId || (session.user as any).cabangId;
-  // cabangId optional — bila kosong, tampilkan SEMUA data (shared view)
+  if (!cabangId) return NextResponse.json({ error: "cabangId tidak ditemukan. Logout lalu login lagi." }, { status: 400 })
   const text = body.text || "";
   if (!text.trim()) return NextResponse.json({ error: "text kosong" }, { status: 400 });
   const mode = body.mode === "append" ? "append" : "replace";
