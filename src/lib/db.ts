@@ -3,8 +3,8 @@
 // Force override bila .env bake SQLite URL atau Netlify env vars tidak terbaca
 // ============================================================
 if (process.env.NODE_ENV === 'production') {
-  process.env.DATABASE_URL = "postgresql://postgres.dpzegmrezhtbsttdibsq:%40Babadan0107@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres";
-  process.env.DIRECT_URL = "postgresql://postgres.dpzegmrezhtbsttdibsq:%40Babadan0107@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres";
+  process.env.DATABASE_URL = "postgresql://postgres.ywsenwsxwxojvanfanne:%40Indosari123@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres";
+  process.env.DIRECT_URL = "postgresql://postgres.ywsenwsxwxojvanfanne:%40Indosari123@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres";
 }
 // ============================================================
 
