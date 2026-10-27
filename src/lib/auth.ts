@@ -11,7 +11,7 @@ if (!process.env.NEXTAUTH_SECRET) {
   process.env.NEXTAUTH_SECRET = "POdDwigIRWCf0rZfhwIj6x8yvMB86YqBVkPXR3PO5ok=";
 }
 if (!process.env.NEXTAUTH_URL) {
-  process.env.NEXTAUTH_URL = "https://indosari.netlify.app";
+  process.env.NEXTAUTH_URL = "https://indosarie.netlify.app";
 }
 // ============================================================
 
