@@ -8,13 +8,13 @@ export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const cabangId = req.nextUrl.searchParams.get("cabangId") || (session.user as any).cabangId;
-  if (!cabangId) return NextResponse.json({ error: "cabang required" }, { status: 400 });
+  // cabangId optional — bila kosong, tampilkan SEMUA data (shared view)
   const now = new Date();
   const tahun = parseInt(req.nextUrl.searchParams.get("tahun") || "") || now.getFullYear();
   const bulan = parseInt(req.nextUrl.searchParams.get("bulan") || "") || 0;
 
-  const saldoRows = await db.utangBulan.findMany({ where: { cabangId, tahun }, orderBy: [{ bulan: "asc" }] });
-  const allFaktur = await db.fakturHutang.findMany({ where: { cabangId } });
+  const saldoRows = await db.utangBulan.findMany({ where: { tahun }, orderBy: [{ bulan: "asc" }] });
+  const allFaktur = await db.fakturHutang.findMany({ where: {} });
 
   const saldo12: { bulan: number; saldoAwal: number; penyesuaianAwal: number; pembelian: number; pembayaran: number; saldoAkhir: number }[] = [];
   for (let m = 1; m <= 12; m++) {
@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
   if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const body = await req.json();
   const cabangId = body.cabangId || (session.user as any).cabangId;
-  if (!cabangId) return NextResponse.json({ error: "cabang required" }, { status: 400 });
+  // cabangId optional — bila kosong, tampilkan SEMUA data (shared view)
 
   if (body.isFaktur) {
     if (body.id) {
@@ -124,11 +124,11 @@ export async function DELETE(req: NextRequest) {
   const all = req.nextUrl.searchParams.get("all");
   const cabangId = (session.user as any).cabangId;
   if (all === "faktur") {
-    await db.fakturHutang.deleteMany({ where: { cabangId, sumber: "paste_accurate" } });
+    await db.fakturHutang.deleteMany({ where: { sumber: "paste_accurate" } });
     return NextResponse.json({ ok: true });
   }
   if (all === "saldo") {
-    await db.utangBulan.deleteMany({ where: { cabangId } });
+    await db.utangBulan.deleteMany({ where: {} });
     return NextResponse.json({ ok: true });
   }
   if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
@@ -141,7 +141,7 @@ export async function PUT(req: NextRequest) {
   if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const body = await req.json();
   const cabangId = body.cabangId || (session.user as any).cabangId;
-  if (!cabangId) return NextResponse.json({ error: "cabang required" }, { status: 400 });
+  // cabangId optional — bila kosong, tampilkan SEMUA data (shared view)
   const text = body.text || "";
   if (!text.trim()) return NextResponse.json({ error: "text kosong" }, { status: 400 });
   const mode = body.mode === "append" ? "append" : "replace";
@@ -152,7 +152,7 @@ export async function PUT(req: NextRequest) {
   }
 
   if (mode === "replace") {
-    await db.fakturHutang.deleteMany({ where: { cabangId, sumber: "paste_accurate" } });
+    await db.fakturHutang.deleteMany({ where: { sumber: "paste_accurate" } });
   }
 
   // Bulk insert via createMany — performant untuk serverless

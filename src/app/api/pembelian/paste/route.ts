@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
   if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const body = await req.json();
   const cabangId = body.cabangId || (session.user as any).cabangId;
-  if (!cabangId) return NextResponse.json({ error: "cabang required" }, { status: 400 });
+  // cabangId optional — bila kosong, tampilkan SEMUA data (shared view)
   const text = body.text || "";
   if (!text.trim()) return NextResponse.json({ error: "text kosong" }, { status: 400 });
   const mode = body.mode === "replace" ? "replace" : "append";
@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
       const monthsInPaste = new Set(byYear[+yr].map(t => getMonthFromISO(t.tanggal)));
       for (const m of monthsInPaste) {
         await db.transaksiPembelian.deleteMany({
-          where: { cabangId, tahun: +yr, bulan: m },
+          where: { tahun: +yr, bulan: m },
         });
       }
     }

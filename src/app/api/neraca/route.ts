@@ -8,12 +8,12 @@ export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const cabangId = req.nextUrl.searchParams.get("cabangId") || (session.user as any).cabangId;
-  if (!cabangId) return NextResponse.json({ error: "cabang required" }, { status: 400 });
+  // cabangId optional — bila kosong, tampilkan SEMUA data (shared view)
   const now = new Date();
   const tahun = parseInt(req.nextUrl.searchParams.get("tahun") || "") || now.getFullYear();
   const bulan = parseInt(req.nextUrl.searchParams.get("bulan") || "") || now.getMonth() + 1;
 
-  const dbRows = await db.neracaBulan.findMany({ where: { cabangId, tahun, bulan } });
+  const dbRows = await db.neracaBulan.findMany({ where: { tahun, bulan } });
   let rows: FRRow[];
   if (dbRows.length > 0) {
     const templateRows = frDeepCopyRows(NERACA_ROWS_SEP);
@@ -49,14 +49,14 @@ export async function POST(req: NextRequest) {
   if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const body = await req.json();
   const cabangId = body.cabangId || (session.user as any).cabangId;
-  if (!cabangId) return NextResponse.json({ error: "cabang required" }, { status: 400 });
+  // cabangId optional — bila kosong, tampilkan SEMUA data (shared view)
   const bulan = parseInt(body.bulan);
   const tahun = parseInt(body.tahun);
   if (!bulan || !tahun) return NextResponse.json({ error: "bulan & tahun required" }, { status: 400 });
 
   if (Array.isArray(body.rows)) {
     const rows: FRRow[] = body.rows;
-    await db.neracaBulan.deleteMany({ where: { cabangId, tahun, bulan } });
+    await db.neracaBulan.deleteMany({ where: { tahun, bulan } });
     for (const r of rows) {
       if (r.t !== "item" || !r.name) continue;
       await db.neracaBulan.upsert({
@@ -91,7 +91,7 @@ export async function DELETE(req: NextRequest) {
   const bulan = req.nextUrl.searchParams.get("bulan");
   const tahun = req.nextUrl.searchParams.get("tahun");
   if (!bulan || !tahun) return NextResponse.json({ error: "bulan & tahun required" }, { status: 400 });
-  await db.neracaBulan.deleteMany({ where: { cabangId, bulan: parseInt(bulan), tahun: parseInt(tahun) } });
+  await db.neracaBulan.deleteMany({ where: { bulan: parseInt(bulan), tahun: parseInt(tahun) } });
   return NextResponse.json({ ok: true });
 }
 
@@ -100,7 +100,7 @@ export async function PUT(req: NextRequest) {
   if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const body = await req.json();
   const cabangId = body.cabangId || (session.user as any).cabangId;
-  if (!cabangId) return NextResponse.json({ error: "cabang required" }, { status: 400 });
+  // cabangId optional — bila kosong, tampilkan SEMUA data (shared view)
   const text = body.text || "";
   if (!text.trim()) return NextResponse.json({ error: "text kosong" }, { status: 400 });
   const bulan = parseInt(body.bulan);
@@ -114,14 +114,14 @@ export async function PUT(req: NextRequest) {
   }
 
   if (mode === "replace") {
-    await db.neracaBulan.deleteMany({ where: { cabangId, tahun, bulan } });
+    await db.neracaBulan.deleteMany({ where: { tahun, bulan } });
   } else {
-    const existing = await db.neracaBulan.findMany({ where: { cabangId, tahun, bulan } });
+    const existing = await db.neracaBulan.findMany({ where: { tahun, bulan } });
     const existingRows: FRRow[] = existing.map(d => ({
       t: "item", name: d.akun, lvl: 1, sc: [d.kategori || "aset"], v: d.nilai, custom: d.isCustom,
     }));
     const merged = frMergeRows(existingRows, parsed);
-    await db.neracaBulan.deleteMany({ where: { cabangId, tahun, bulan } });
+    await db.neracaBulan.deleteMany({ where: { tahun, bulan } });
     for (const r of merged) {
       if (r.t !== "item" || !r.name) continue;
       await db.neracaBulan.create({

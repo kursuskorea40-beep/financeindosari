@@ -15,15 +15,15 @@ export async function GET(req: NextRequest) {
   }
 
   // Aggregate transactions by month (Jan-Dec)
-  const allTxJual = await db.transaksiPenjualan.findMany({ where: { cabangId, tahun } });
-  const allTxBeli = await db.transaksiPembelian.findMany({ where: { cabangId, tahun } });
-  const piutangRows = await db.piutangBulan.findMany({ where: { cabangId, tahun } });
-  const utangRows = await db.utangBulan.findMany({ where: { cabangId, tahun } });
-  const fakturPiu = await db.fakturPiutang.findMany({ where: { cabangId } });
-  const fakturHut = await db.fakturHutang.findMany({ where: { cabangId } });
-  const masterBarangCount = await db.masterBarang.count({ where: { cabangId } });
-  const masterSupplierCount = await db.masterSupplier.count({ where: { cabangId } });
-  const masterPelangganCount = await db.masterPelanggan.count({ where: { cabangId } });
+  const allTxJual = await db.transaksiPenjualan.findMany({ where: { tahun } });
+  const allTxBeli = await db.transaksiPembelian.findMany({ where: { tahun } });
+  const piutangRows = await db.piutangBulan.findMany({ where: { tahun } });
+  const utangRows = await db.utangBulan.findMany({ where: { tahun } });
+  const fakturPiu = await db.fakturPiutang.findMany({ where: {} });
+  const fakturHut = await db.fakturHutang.findMany({ where: {} });
+  const masterBarangCount = await db.masterBarang.count({ where: {} });
+  const masterSupplierCount = await db.masterSupplier.count({ where: {} });
+  const masterPelangganCount = await db.masterPelanggan.count({ where: {} });
 
   // Monthly aggregates for chart
   const monthly: { bulan: number; jual: number; beli: number }[] = [];

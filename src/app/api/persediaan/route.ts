@@ -8,13 +8,13 @@ export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const cabangId = req.nextUrl.searchParams.get("cabangId") || (session.user as any).cabangId;
-  if (!cabangId) return NextResponse.json([]);
+  // cabangId optional — bila kosong, tampilkan SEMUA data (shared view)
   const now = new Date();
   const tahun = parseInt(req.nextUrl.searchParams.get("tahun") || "") || now.getFullYear();
   const bulan = parseInt(req.nextUrl.searchParams.get("bulan") || "") || now.getMonth() + 1;
 
   const items = await db.persediaanBulan.findMany({
-    where: { cabangId, tahun, bulan },
+    where: { tahun, bulan },
     orderBy: [{ kode: "asc" }],
   });
 
@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
   if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const body = await req.json();
   const cabangId = body.cabangId || (session.user as any).cabangId;
-  if (!cabangId) return NextResponse.json({ error: "cabang required" }, { status: 400 });
+  // cabangId optional — bila kosong, tampilkan SEMUA data (shared view)
 
   // Upsert by (cabangId, tahun, bulan, kode)
   const result = await db.persediaanBulan.upsert({

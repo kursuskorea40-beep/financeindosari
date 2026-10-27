@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
   if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const body = await req.json();
   const cabangId = body.cabangId || (session.user as any).cabangId;
-  if (!cabangId) return NextResponse.json({ error: "cabang required" }, { status: 400 });
+  // cabangId optional — bila kosong, tampilkan SEMUA data (shared view)
   const mode = body.mode === "replace" ? "replace" : "merge";
   const mb = Array.isArray(body.masterBarang) ? body.masterBarang : [];
   const ms = Array.isArray(body.masterSupplier) ? body.masterSupplier : [];
@@ -18,9 +18,9 @@ export async function POST(req: NextRequest) {
 
   // Replace mode: clear existing
   if (mode === "replace") {
-    await db.masterBarang.deleteMany({ where: { cabangId } });
-    await db.masterSupplier.deleteMany({ where: { cabangId } });
-    await db.masterPelanggan.deleteMany({ where: { cabangId } });
+    await db.masterBarang.deleteMany({ where: {} });
+    await db.masterSupplier.deleteMany({ where: {} });
+    await db.masterPelanggan.deleteMany({ where: {} });
   }
 
   let addedBarang = 0, addedSupplier = 0, addedPelanggan = 0;

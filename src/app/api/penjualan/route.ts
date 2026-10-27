@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
   const tahunParam = req.nextUrl.searchParams.get("tahun");
   const bulanParam = req.nextUrl.searchParams.get("bulan");
   const q = req.nextUrl.searchParams.get("q") || "";
-  if (!cabangId) return NextResponse.json([]);
+  // cabangId optional — bila kosong, tampilkan SEMUA data (shared view)
 
   // Default: bulan = current month, tahun = current year
   const now = new Date();
@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
 
   // Query all year's transactions then filter (so summary can use same data)
   const all = await db.transaksiPenjualan.findMany({
-    where: { cabangId, tahun },
+    where: { tahun },
     orderBy: [{ tanggal: "asc" }, { noNota: "asc" }],
   });
 
@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
   if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const body = await req.json();
   const cabangId = body.cabangId || (session.user as any).cabangId;
-  if (!cabangId) return NextResponse.json({ error: "cabang required" }, { status: 400 });
+  // cabangId optional — bila kosong, tampilkan SEMUA data (shared view)
   const userId = (session.user as any).id;
 
   const tanggal = body.tanggal;

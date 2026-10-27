@@ -7,9 +7,9 @@ export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const cabangId = req.nextUrl.searchParams.get("cabangId") || (session.user as any).cabangId;
-  if (!cabangId) return NextResponse.json([]);
+  // cabangId optional — bila kosong, tampilkan SEMUA data (shared view)
   const items = await db.masterSupplier.findMany({
-    where: { cabangId },
+    where: {},
     orderBy: [{ nama: "asc" }],
   });
   return NextResponse.json(items);
@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
   if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const body = await req.json();
   const cabangId = body.cabangId || (session.user as any).cabangId;
-  if (!cabangId) return NextResponse.json({ error: "cabang required" }, { status: 400 });
+  // cabangId optional — bila kosong, tampilkan SEMUA data (shared view)
   const result = await db.masterSupplier.upsert({
     where: { cabangId_nama: { cabangId, nama: body.nama || "" } },
     update: { alamat: body.alamat || "", telp: body.telp || "" },
