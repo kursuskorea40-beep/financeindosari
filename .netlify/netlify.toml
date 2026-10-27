@@ -1,0 +1,87 @@
+headersOrigin = "inline"
+redirectsOrigin = "inline"
+
+[functions]
+
+[functions."*"]
+node_bundler = "esbuild"
+
+[[plugins]]
+origin = "config"
+package = "@netlify/plugin-nextjs"
+
+[plugins.inputs]
+
+[build]
+publish = "/home/z/my-project/.next"
+publishOrigin = "config"
+commandOrigin = "config"
+command = "npm run netlify-build"
+installCommand = "npm install"
+
+[build.environment]
+NODE_VERSION = "20"
+DATABASE_URL = "postgresql://postgres.dpzegmrezhtbsttdibsq:%40Babadan0107@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
+DIRECT_URL = "postgresql://postgres.dpzegmrezhtbsttdibsq:%40Babadan0107@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres"
+NEXTAUTH_SECRET = "POdDwigIRWCf0rZfhwIj6x8yvMB86YqBVkPXR3PO5ok="
+NEXTAUTH_URL = "https://indosarie.netlify.app"
+
+[build.processing]
+
+[build.processing.css]
+
+[build.processing.html]
+
+[build.processing.images]
+
+[build.processing.js]
+
+[build.services]
+
+[[headers]]
+for = "/_next/static/*"
+
+[headers.values]
+Cache-Control = "public, max-age=31536000, immutable"
+
+[[redirects]]
+from = "/_next/image"
+to = "/.netlify/images?url=:url&w=:width&q=:quality"
+status = 200.0
+force = false
+
+[redirects.query]
+url = ":url"
+w = ":width"
+q = ":quality"
+
+[redirects.conditions]
+
+[redirects.headers]
+
+[[redirects]]
+from = "/_ipx/*"
+to = "/.netlify/images?url=:url&w=:width&q=:quality"
+status = 200.0
+force = false
+
+[redirects.query]
+url = ":url"
+w = ":width"
+q = ":quality"
+
+[redirects.conditions]
+
+[redirects.headers]
+
+[[redirects]]
+from = "/_next/image"
+to = "/.netlify/images"
+status = 200.0
+force = false
+
+[redirects.query]
+
+[redirects.conditions]
+
+[redirects.headers]

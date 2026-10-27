@@ -4,13 +4,10 @@ import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 
 // ============================================================
-// HARDCODED ENV VARS FALLBACK — untuk Netlify production
-// (bila Netlify dashboard env vars tidak terbaca saat runtime)
+// HARDCODED ENV VARS — PRODUCTION ONLY
 // ============================================================
-if (!process.env.NEXTAUTH_SECRET) {
+if (process.env.NODE_ENV === 'production') {
   process.env.NEXTAUTH_SECRET = "POdDwigIRWCf0rZfhwIj6x8yvMB86YqBVkPXR3PO5ok=";
-}
-if (!process.env.NEXTAUTH_URL) {
   process.env.NEXTAUTH_URL = "https://indosarie.netlify.app";
 }
 // ============================================================

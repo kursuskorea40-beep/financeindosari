@@ -1,12 +1,9 @@
 // ============================================================
-// HARDCODED ENV VARS FALLBACK — untuk Netlify production
-// (bila Netlify dashboard env vars tidak terbaca saat runtime)
-// Set SEBELUM Prisma client initialize
+// HARDCODED ENV VARS — PRODUCTION ONLY
+// Force override bila .env bake SQLite URL atau Netlify env vars tidak terbaca
 // ============================================================
-if (!process.env.DATABASE_URL) {
-  process.env.DATABASE_URL = "postgresql://postgres.dpzegmrezhtbsttdibsq:%40Babadan0107@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true";
-}
-if (!process.env.DIRECT_URL) {
+if (process.env.NODE_ENV === 'production') {
+  process.env.DATABASE_URL = "postgresql://postgres.dpzegmrezhtbsttdibsq:%40Babadan0107@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres";
   process.env.DIRECT_URL = "postgresql://postgres.dpzegmrezhtbsttdibsq:%40Babadan0107@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres";
 }
 // ============================================================
