@@ -74,7 +74,7 @@ export function PiutangHutangView({ moduleType, cabangId }: { moduleType: Module
   const { data, isLoading } = useQuery<ApiResponse>({
     queryKey: [moduleType, bulan, tahun, cabangId],
     queryFn: async () => {
-      const res = await fetch(`/api/${moduleType}?bulan=${bulan}fetch(`/api/${moduleType}?bulan=${bulan}&tahun=${tahun}`)tahun=${tahun}${cabangId ? `&cabangId=${cabangId}` : ""}`);
+      const res = await fetch(`/api/${moduleType}?bulan=${bulan}&tahun=${tahun}${cabangId ? `&cabangId=${cabangId}` : ""}`);
       if (!res.ok) throw new Error(`Gagal load ${moduleType}`);
       return res.json();
     },

@@ -58,7 +58,6 @@ export function TransactionView({ moduleType, cabangId }: Props & { cabangId?: s
   const isJual = moduleType === "penjualan";
   const moduleName = isJual ? "Penjualan" : "Pembelian";
   const moduleIcon = isJual ? "💵" : "🛒";
-  const cabangId = (session?.user as any)?.cabangId;
 
   // Filter state
   const now = new Date();

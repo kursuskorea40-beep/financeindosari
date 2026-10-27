@@ -42,7 +42,6 @@ export default function Home() {
   const { data: session, status } = useSession();
   const [activeModule, setActiveModule] = useState<ModuleKey>("dashboard");
 
-  const [activeModule, setActiveModule] = useState<ModuleKey>("dashboard");
   const [selectedCabangId, setSelectedCabangId] = useState<string>("");
   const [cabangList, setCabangList] = useState<{id:string;nama:string;kode:string}[]>([]);
 

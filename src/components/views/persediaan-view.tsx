@@ -50,7 +50,7 @@ export function PersediaanView({ cabangId }: { cabangId?: string }) {
   const { data, isLoading } = useQuery<ApiResponse>({
     queryKey: ["persediaan", bulan, tahun, cabangId],
     queryFn: async () => {
-      const res = await fetch(`/api/persediaan?bulan=${bulan}fetch(`/api/persediaan?bulan=${bulan}&tahun=${tahun}`)tahun=${tahun}${cabangId ? `&cabangId=${cabangId}` : ""}`);
+      const res = await fetch(`/api/persediaan?bulan=${bulan}&tahun=${tahun}${cabangId ? `&cabangId=${cabangId}` : ""}`);
       if (!res.ok) throw new Error("Gagal load persediaan");
       return res.json();
     },
