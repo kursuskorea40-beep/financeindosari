@@ -3,8 +3,20 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 
+// ============================================================
+// HARDCODED ENV VARS FALLBACK — untuk Netlify production
+// (bila Netlify dashboard env vars tidak terbaca saat runtime)
+// ============================================================
+if (!process.env.NEXTAUTH_SECRET) {
+  process.env.NEXTAUTH_SECRET = "POdDwigIRWCf0rZfhwIj6x8yvMB86YqBVkPXR3PO5ok=";
+}
+if (!process.env.NEXTAUTH_URL) {
+  process.env.NEXTAUTH_URL = "https://indosari.netlify.app";
+}
+// ============================================================
+
 export const authOptions: NextAuthOptions = {
-  secret: process.env.NEXTAUTH_SECRET || "indosari-akuntansi-2026-secret-key-change-in-prod",
+  secret: process.env.NEXTAUTH_SECRET,
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
