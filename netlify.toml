@@ -1,28 +1,25 @@
 # Netlify config — INDOSARI Akuntansi 2026 web app
-# Docs: https://docs.netlify.com/configure-builds/file-based-configuration/
+# Env vars HARDCODED di sini agar pasti terbaca (dashboard UI bermasalah)
 
 [build]
-  # Build command: regenerate Prisma client dengan schema PostgreSQL, lalu build Next.js
-  command = "bun run netlify-build"
-  # Directory output Next.js (default untuk App Router)
+  command = "npm run netlify-build"
   publish = ".next"
+  installCommand = "npm install"
 
-# Environment variables yang HARUS di-set di Netlify Dashboard → Site settings → Environment variables
-# (JANGAN hardcode value di sini — file ini committed ke git, value rahasia harus di dashboard)
-[build.environment]
-  NEXTAUTH_URL = "set-in-netlify-dashboard"
-  NEXTAUTH_SECRET = "set-in-netlify-dashboard"
-  DATABASE_URL = "set-in-netlify-dashboard"
-  # Bun configuration (Netlify support bun install)
-  NETLIFY_USE_BUN = "true"
-
-# Plugin Next.js official dari Netlify (auto-installed bila tidak didefinisikan,
-# tapi sebaiknya eksplisit agar build reproducible)
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
-# Function timeout — Netlify free max 10 detik, Pro 26 detik
-# Untuk paste routes yang parse 800+ transactions (loop create), mungkin perlu upgrade Pro
-# Atau pakai createMany (sudah dioptimasi di code)
 [functions]
   node_bundler = "esbuild"
+
+# ============================================================
+# ENVIRONMENT VARIABLES — HARDCODED
+# (Bila sudah jalan, bisa pindahkan ke Netlify dashboard
+#  dan hapus dari sini untuk keamanan lebih baik)
+# ============================================================
+[build.environment]
+  NODE_VERSION = "20"
+  DATABASE_URL = "postgresql://postgres.dpzegmrezhtbsttdibsq:%40Babadan0107@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
+  DIRECT_URL = "postgresql://postgres.dpzegmrezhtbsttdibsq:%40Babadan0107@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres"
+  NEXTAUTH_SECRET = "POdDwigIRWCf0rZfhwIj6x8yvMB86YqBVkPXR3PO5ok="
+  NEXTAUTH_URL = "https://indosari.netlify.app"
