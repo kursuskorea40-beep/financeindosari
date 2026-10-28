@@ -21,7 +21,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "Tidak ada data terparse.", parsedCount: 0 }, { status: 422 });
     }
 
-    // Get all tahun+bulan combinations from parsed data
     const byYear: Record<number, typeof parsed> = {};
     for (const tx of parsed) {
       const yr = getYearFromISO(tx.tanggal);
@@ -29,51 +28,52 @@ export async function POST(req: NextRequest) {
       byYear[yr].push(tx);
     }
 
-    // In replace mode: delete ALL records for affected tahun+bulan (across ALL cabangs)
+    // Replace mode: delete old data for affected year+bulan
     if (mode === "replace") {
       for (const yr of Object.keys(byYear)) {
         const monthsInPaste = new Set(byYear[+yr].map(t => getMonthFromISO(t.tanggal)));
         for (const m of monthsInPaste) {
-          const delResult = await db.transaksiPenjualan.deleteMany({
-            where: { tahun: +yr, bulan: m },
-          });
-          console.log(`Replace: deleted ${delResult.count} records for tahun=${yr}, bulan=${m}`);
+          await db.transaksiPenjualan.deleteMany({ where: { tahun: +yr, bulan: m } });
         }
       }
     }
 
-    // Insert new records one by one (skip duplicates manually)
+    // Batch insert via createMany — FAST (1 DB call per group, not per record)
+    // skipDuplicates: true — skip records that violate unique constraint (idempotent)
     let inserted = 0;
     let skippedDup = 0;
+
+    const groups: Record<string, typeof parsed> = {};
     for (const tx of parsed) {
       const tahun = getYearFromISO(tx.tanggal);
       const bulan = getMonthFromISO(tx.tanggal);
-      try {
-        await db.transaksiPenjualan.create({
-          data: {
-            cabangId,
-            bulan, tahun,
-            tanggal: tx.tanggal,
-            noNota: tx.noNota,
-            namaBarang: tx.namaBarang,
-            satuan: tx.satuan,
-            kuantitas: tx.kuantitas,
-            hargaSatuan: tx.hargaSatuan,
-            kategori: tx.kategori,
-            isLunas: true,
-            keterangan: tx.catatan || null,
-            userId,
-          },
-        });
-        inserted++;
-      } catch (e: any) {
-        // Skip duplicates (unique constraint violation)
-        if (e.code === 'P2002') {
-          skippedDup++;
-        } else {
-          throw e; // Re-throw other errors
-        }
-      }
+      const key = `${tahun}-${bulan}`;
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(tx);
+    }
+
+    for (const key of Object.keys(groups)) {
+      const batch = groups[key];
+      const [tahun, bulan] = key.split("-").map(n => parseInt(n, 10));
+      const result = await db.transaksiPenjualan.createMany({
+        data: batch.map(tx => ({
+          cabangId,
+          bulan, tahun,
+          tanggal: tx.tanggal,
+          noNota: tx.noNota,
+          namaBarang: tx.namaBarang,
+          satuan: tx.satuan,
+          kuantitas: tx.kuantitas,
+          hargaSatuan: tx.hargaSatuan,
+          kategori: tx.kategori,
+          isLunas: true,
+          keterangan: tx.catatan || null,
+          userId,
+        })),
+        skipDuplicates: true, // ALWAYS skip duplicates (both replace + append modes)
+      });
+      inserted += result.count;
+      skippedDup += batch.length - result.count;
     }
 
     return NextResponse.json({
