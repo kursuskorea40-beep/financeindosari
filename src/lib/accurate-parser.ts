@@ -88,9 +88,9 @@ export function parseAccurateTransaction(line: string, currentItem: string | nul
   if (!tanggal) return null;
   let rest = m[3].trim();
   let keterangan = "";
-  const ketMatch = rest.match(/^(NB\.\s*\d+|NT\.\s*\d+)\s+(.*)/);
+  const ketMatch = rest.match(/^([NA][BT][.,\s]?\s*\d+)\s+(.*)/);
   if (ketMatch) {
-    keterangan = ketMatch[1].replace(/\s+/g, "");
+    keterangan = ketMatch[1].replace(/[\s.,]+/g, "");
     rest = ketMatch[2].trim();
   }
   const m2 = rest.match(/^([\d.,]+)\s+(\S+)\s+([\d.,]+)$/);

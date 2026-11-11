@@ -8,7 +8,7 @@ import { db } from "@/lib/db";
 // ============================================================
 if (process.env.NODE_ENV === 'production') {
   process.env.NEXTAUTH_SECRET = "POdDwigIRWCf0rZfhwIj6x8yvMB86YqBVkPXR3PO5ok=";
-  process.env.NEXTAUTH_URL = "https://indosarie.netlify.app";
+  process.env.NEXTAUTH_URL = "https://financeindosari.netlify.app";
 }
 // ============================================================
 
@@ -75,4 +75,3 @@ export const authOptions: NextAuthOptions = {
   },
 };
 
-export { authOptions };

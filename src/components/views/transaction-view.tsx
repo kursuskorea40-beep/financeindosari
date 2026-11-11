@@ -61,8 +61,8 @@ export function TransactionView({ moduleType, cabangId }: Props & { cabangId?: s
 
   // Filter state
   const now = new Date();
-  const [bulan, setBulan] = useState<number>(now.getMonth() + 1);
-  const [tahun, setTahun] = useState<number>(now.getFullYear());
+  const [bulan, setBulan] = useState<number>(0);
+  const [tahun, setTahun] = useState<number>(Math.max(2026, now.getFullYear()));
   const [search, setSearch] = useState("");
 
   // Modal state
@@ -79,7 +79,7 @@ export function TransactionView({ moduleType, cabangId }: Props & { cabangId?: s
       if (!res.ok) throw new Error(`Gagal load ${moduleType}`);
       return res.json();
     },
-    enabled: !!cabangId,
+    enabled: true,
   });
 
   // Year options (current year ± 2)

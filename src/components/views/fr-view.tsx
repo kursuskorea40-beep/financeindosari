@@ -32,7 +32,7 @@ export function FRView({ moduleType, cabangId }: { moduleType: ModuleType; caban
 
   const now = new Date();
   const [bulan, setBulan] = useState<number>(now.getMonth() + 1);
-  const [tahun, setTahun] = useState<number>(now.getFullYear());
+  const [tahun, setTahun] = useState<number>(Math.max(2026, now.getFullYear()));
   const [showPaste, setShowPaste] = useState(false);
   const [editing, setEditing] = useState<{ row: FRRow; idx: number } | null>(null);
 
@@ -43,7 +43,7 @@ export function FRView({ moduleType, cabangId }: { moduleType: ModuleType; caban
       if (!res.ok) throw new Error(`Gagal load ${moduleType}`);
       return res.json();
     },
-    enabled: !!cabangId,
+    enabled: true,
   });
 
   const rows = data?.rows || [];
@@ -280,7 +280,7 @@ function PasteFRDialog({ moduleType, bulan, tahun, onClose }: {
       const res = await fetch(`/api/${moduleType}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, mode, bulan, tahun, cabangId }),
+        body: JSON.stringify({ text, mode, bulan, tahun }),
       });
       if (!res.ok) {
         const err = await res.json();

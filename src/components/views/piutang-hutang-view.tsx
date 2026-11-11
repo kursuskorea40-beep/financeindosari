@@ -68,7 +68,7 @@ export function PiutangHutangView({ moduleType, cabangId }: { moduleType: Module
 
   const now = new Date();
   const [bulan, setBulan] = useState<number>(0); // 0 = YTD
-  const [tahun, setTahun] = useState<number>(now.getFullYear());
+  const [tahun, setTahun] = useState<number>(Math.max(2026, now.getFullYear()));
   const [showPaste, setShowPaste] = useState(false);
 
   const { data, isLoading } = useQuery<ApiResponse>({
@@ -78,7 +78,7 @@ export function PiutangHutangView({ moduleType, cabangId }: { moduleType: Module
       if (!res.ok) throw new Error(`Gagal load ${moduleType}`);
       return res.json();
     },
-    enabled: !!cabangId,
+    enabled: true,
   });
 
   const saldoBulanan = data?.saldoBulanan || [];

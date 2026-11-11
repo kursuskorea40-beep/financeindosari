@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
   const tahun = parseInt(req.nextUrl.searchParams.get("tahun") || "") || now.getFullYear();
   const bulan = parseInt(req.nextUrl.searchParams.get("bulan") || "") || now.getMonth() + 1;
 
-  const dbRows = await db.neracaBulan.findMany({ where: { tahun, bulan } });
+  const dbRows = await db.neracaBulan.findMany({ where: { tahun, bulan, cabangId } });
   let rows: FRRow[];
   if (dbRows.length > 0) {
     const templateRows = frDeepCopyRows(NERACA_ROWS_SEP);
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
 
   if (Array.isArray(body.rows)) {
     const rows: FRRow[] = body.rows;
-    await db.neracaBulan.deleteMany({ where: { tahun, bulan } });
+    await db.neracaBulan.deleteMany({ where: { tahun, bulan, cabangId } });
     for (const r of rows) {
       if (r.t !== "item" || !r.name) continue;
       await db.neracaBulan.upsert({
@@ -91,7 +91,7 @@ export async function DELETE(req: NextRequest) {
   const bulan = req.nextUrl.searchParams.get("bulan");
   const tahun = req.nextUrl.searchParams.get("tahun");
   if (!bulan || !tahun) return NextResponse.json({ error: "bulan & tahun required" }, { status: 400 });
-  await db.neracaBulan.deleteMany({ where: { bulan: parseInt(bulan), tahun: parseInt(tahun) } });
+  await db.neracaBulan.deleteMany({ where: { bulan: parseInt(bulan), tahun: parseInt(tahun), cabangId } });
   return NextResponse.json({ ok: true });
 }
 
@@ -114,14 +114,14 @@ export async function PUT(req: NextRequest) {
   }
 
   if (mode === "replace") {
-    await db.neracaBulan.deleteMany({ where: { tahun, bulan } });
+    await db.neracaBulan.deleteMany({ where: { tahun, bulan, cabangId } });
   } else {
-    const existing = await db.neracaBulan.findMany({ where: { tahun, bulan } });
+    const existing = await db.neracaBulan.findMany({ where: { tahun, bulan, cabangId } });
     const existingRows: FRRow[] = existing.map(d => ({
       t: "item", name: d.akun, lvl: 1, sc: [d.kategori || "aset"], v: d.nilai, custom: d.isCustom,
     }));
     const merged = frMergeRows(existingRows, parsed);
-    await db.neracaBulan.deleteMany({ where: { tahun, bulan } });
+    await db.neracaBulan.deleteMany({ where: { tahun, bulan, cabangId } });
     for (const r of merged) {
       if (r.t !== "item" || !r.name) continue;
       await db.neracaBulan.create({

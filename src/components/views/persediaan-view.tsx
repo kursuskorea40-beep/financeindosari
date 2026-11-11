@@ -43,8 +43,8 @@ interface ApiResponse {
 export function PersediaanView({ cabangId }: { cabangId?: string }) {
   const { data: session } = useSession();
   const now = new Date();
-  const [bulan, setBulan] = useState<number>(now.getMonth() + 1);
-  const [tahun, setTahun] = useState<number>(now.getFullYear());
+  const [bulan, setBulan] = useState<number>(0);
+  const [tahun, setTahun] = useState<number>(Math.max(2026, now.getFullYear()));
   const [showPaste, setShowPaste] = useState(false);
 
   const { data, isLoading } = useQuery<ApiResponse>({
@@ -54,7 +54,7 @@ export function PersediaanView({ cabangId }: { cabangId?: string }) {
       if (!res.ok) throw new Error("Gagal load persediaan");
       return res.json();
     },
-    enabled: !!cabangId,
+    enabled: true,
   });
 
   const items = data?.items || [];
@@ -197,7 +197,7 @@ function PastePersediaanDialog({ bulan, tahun, onClose }: { bulan: number; tahun
       const res = await fetch("/api/persediaan/paste", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, mode, bulan, tahun, cabangId }),
+        body: JSON.stringify({ text, mode, bulan, tahun }),
       });
       if (!res.ok) {
         const err = await res.json();
