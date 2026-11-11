@@ -58,3 +58,8 @@ prompt
 server.log
 # Skills directory
 /skills/
+# Build artifacts
+.netlify/
+.next/
+node_modules/
+
