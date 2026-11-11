@@ -1,5 +1,5 @@
 # Netlify config — INDOSARI Akuntansi 2026 web app
-# Env vars HARDCODED di sini agar pasti terbaca (dashboard UI bermasalah)
+# Env vars di-set di Netlify dashboard (Site settings > Environment variables)
 
 [build]
   command = "npm run netlify-build"
@@ -12,14 +12,5 @@
 [functions]
   node_bundler = "esbuild"
 
-# ============================================================
-# ENVIRONMENT VARIABLES — HARDCODED
-# (Bila sudah jalan, bisa pindahkan ke Netlify dashboard
-#  dan hapus dari sini untuk keamanan lebih baik)
-# ============================================================
 [build.environment]
   NODE_VERSION = "20"
-  DATABASE_URL = "postgresql://postgres.dpzegmrezhtbsttdibsq:%40Babadan0107@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
-  DIRECT_URL = "postgresql://postgres.dpzegmrezhtbsttdibsq:%40Babadan0107@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres"
-  NEXTAUTH_SECRET = "POdDwigIRWCf0rZfhwIj6x8yvMB86YqBVkPXR3PO5ok="
-  NEXTAUTH_URL = "https://indosarie.netlify.app"
