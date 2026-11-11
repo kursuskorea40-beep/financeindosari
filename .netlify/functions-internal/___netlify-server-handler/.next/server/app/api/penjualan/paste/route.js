@@ -2,7 +2,7 @@ var R=require("../../../../chunks/[turbopack]_runtime.js")("server/app/api/penju
 R.c("server/chunks/[root-of-the-server]__4b131020._.js")
 R.c("server/chunks/[root-of-the-server]__23433c36._.js")
 R.c("server/chunks/node_modules_next_f2da0d3e._.js")
-R.c("server/chunks/[root-of-the-server]__7e2ac0e0._.js")
+R.c("server/chunks/[root-of-the-server]__56d897b9._.js")
 R.c("server/chunks/[root-of-the-server]__2d227295._.js")
 R.c("server/chunks/_next-internal_server_app_api_penjualan_paste_route_actions_114d6250.js")
 R.m(3078)
